@@ -17,6 +17,9 @@ const Browse = () => {
               <Button variant="outline" asChild>
                 <Link to="/">Home</Link>
               </Button>
+              <Button variant="outline" asChild>
+                <Link to="/auth">Retailer Portal</Link>
+              </Button>
               <Button asChild>
                 <Link to="/quote">Get Quote</Link>
               </Button>
