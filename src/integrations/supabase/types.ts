@@ -287,6 +287,7 @@ export type Database = {
           installation: string | null
           logo_url: string | null
           name: string | null
+          slug: string
           updated_at: string | null
           website: string | null
         }
@@ -299,6 +300,7 @@ export type Database = {
           installation?: string | null
           logo_url?: string | null
           name?: string | null
+          slug: string
           updated_at?: string | null
           website?: string | null
         }
@@ -311,6 +313,7 @@ export type Database = {
           installation?: string | null
           logo_url?: string | null
           name?: string | null
+          slug?: string
           updated_at?: string | null
           website?: string | null
         }
@@ -1099,6 +1102,10 @@ export type Database = {
       calculate_postal_distance: {
         Args: { postal1: string; postal2: string }
         Returns: number
+      }
+      generate_slug: {
+        Args: { input_text: string }
+        Returns: string
       }
       is_admin_user: {
         Args: Record<PropertyKey, never>

@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { slugify } from "@/utils/slugUtils";
 
 interface Brand {
   id: string;
@@ -11,6 +13,7 @@ interface Brand {
   description: string;
   logo_url: string;
   categories: string;
+  slug: string;
 }
 
 const FLOOR_TYPES = ["Tile", "Vinyl", "Hardwood", "Laminate", "Carpet", "Stone", "Engineered Wood"];
@@ -27,7 +30,7 @@ export default function BrandExplorer() {
       
       const { data, error } = await supabase
         .from("flooring_brands")
-        .select("id, name, description, logo_url, categories")
+        .select("id, name, description, logo_url, categories, slug")
         .ilike("categories", `%${activeType}%`);
       
       if (error) {
@@ -93,48 +96,60 @@ export default function BrandExplorer() {
                 </div>
               )
             : brands.map((brand) => (
-                <Link
-                  key={brand.id}
-                  to={`/quote?brand=${encodeURIComponent(brand.name || '')}`}
-                  className="group"
-                >
+                <div key={brand.id} className="group">
                   <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-blue-200">
-                    <CardContent className="p-6 flex flex-col items-center text-center h-full">
-                      <div className="flex-shrink-0 mb-4">
-                        {brand.logo_url ? (
-                          <img
-                            src={brand.logo_url}
-                            alt={`${brand.name} logo`}
-                            className="h-16 w-16 object-contain mx-auto"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                              target.nextElementSibling?.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <div className={`w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl mx-auto ${brand.logo_url ? 'hidden' : ''}`}>
-                          {brand.name ? brand.name.charAt(0).toUpperCase() : '?'}
-                        </div>
-                      </div>
-                      
-                      <div className="flex-grow flex flex-col justify-between">
-                        <div>
-                          <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors">
-                            {brand.name || 'Unknown Brand'}
-                          </h3>
-                          <p className="text-sm text-gray-600 line-clamp-3">
-                            {brand.description || 'Premium flooring solutions for your home.'}
-                          </p>
+                    {/* Main brand card area - links to brand detail page */}
+                    <Link
+                      to={`/brand/${brand.slug || slugify(brand.name || '')}`}
+                      className="block"
+                    >
+                      <CardContent className="p-6 flex flex-col items-center text-center h-full">
+                        <div className="flex-shrink-0 mb-4">
+                          {brand.logo_url ? (
+                            <img
+                              src={brand.logo_url}
+                              alt={`${brand.name} logo`}
+                              className="h-16 w-16 object-contain mx-auto"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          <div className={`w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xl mx-auto ${brand.logo_url ? 'hidden' : ''}`}>
+                            {brand.name ? brand.name.charAt(0).toUpperCase() : '?'}
+                          </div>
                         </div>
                         
-                        <div className="mt-4 text-xs text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                          Get Quote →
+                        <div className="flex-grow flex flex-col justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                              {brand.name || 'Unknown Brand'}
+                            </h3>
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {brand.description || 'Premium flooring solutions for your home.'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    </Link>
+                    
+                    {/* Separate Get Quote button */}
+                    <div className="p-4 pt-0">
+                      <Button 
+                        size="sm" 
+                        className="w-full" 
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Link to={`/quote?brand=${encodeURIComponent(brand.name || '')}`}>
+                          Get Quote
+                        </Link>
+                      </Button>
+                    </div>
                   </Card>
-                </Link>
+                </div>
               ))}
         </div>
       </div>
