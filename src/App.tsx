@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,8 @@ import Auth from "./pages/Auth";
 import RetailerLayout from "./components/retailer/RetailerLayout";
 import RetailerDashboard from "./pages/retailer/RetailerDashboard";
 import RetailerLeads from "./pages/retailer/RetailerLeads";
+import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
+import RetailerBilling from "./pages/retailer/RetailerBilling";
 
 const queryClient = new QueryClient();
 
@@ -47,20 +50,14 @@ const App = () => (
             <Route path="/retailer/subscriptions" element={
               <ProtectedRoute>
                 <RetailerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Subscriptions</h1>
-                    <p className="text-gray-600 mt-2">Coming soon...</p>
-                  </div>
+                  <RetailerSubscriptions />
                 </RetailerLayout>
               </ProtectedRoute>
             } />
             <Route path="/retailer/billing" element={
               <ProtectedRoute>
                 <RetailerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Billing</h1>
-                    <p className="text-gray-600 mt-2">Coming soon...</p>
-                  </div>
+                  <RetailerBilling />
                 </RetailerLayout>
               </ProtectedRoute>
             } />
