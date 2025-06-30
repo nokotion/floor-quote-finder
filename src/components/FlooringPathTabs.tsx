@@ -99,10 +99,6 @@ const FlooringPathTabs = () => {
         // Positions 2 and 5: digits only
         if (/[0-9]/.test(char)) {
           formatted += char;
-          // Add space after the third character (position 2, after processing i=2)
-          if (i === 2) {
-            formatted += ' ';
-          }
         } else {
           return currentValue;
         }
