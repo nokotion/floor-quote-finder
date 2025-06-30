@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,46 +77,62 @@ const FlooringPathTabs = () => {
     // Remove all spaces and convert to uppercase
     const cleaned = value.replace(/\s/g, '').toUpperCase();
     
+    // Valid Canadian postal letters (excluding D, F, I, O, Q, U, W)
+    const validPostalLetters = /^[ABCEGHJ-NPRSTVXY]$/;
+    const validSecondPositionLetters = /^[ABCEGHJ-NPRSTV-Z]$/;
+    
     let formatted = '';
-    let isValid = true;
     
     for (let i = 0; i < cleaned.length && i < 6; i++) {
       const char = cleaned[i];
       
       // Position rules for Canadian postal code: A1A 1A1
-      if (i === 0 || i === 2 || i === 5) {
-        // Letters only at positions 0, 2, 5
-        if (/[A-Z]/.test(char)) {
+      if (i === 0) {
+        // First position: only valid Canadian postal letters
+        if (validPostalLetters.test(char)) {
           formatted += char;
-          // Add space after the third character (position 2)
+        } else {
+          // Invalid character, return current value to block input
+          return currentValue;
+        }
+      } else if (i === 1 || i === 4) {
+        // Positions 2 and 5: digits only
+        if (/[0-9]/.test(char)) {
+          formatted += char;
+          // Add space after the third character (position 2, after processing i=2)
           if (i === 2) {
             formatted += ' ';
           }
         } else {
-          isValid = false;
-          break;
+          return currentValue;
         }
-      } else if (i === 1 || i === 3 || i === 4) {
-        // Digits only at positions 1, 3, 4
+      } else if (i === 2 || i === 5) {
+        // Positions 3 and 6: valid postal letters (broader set for these positions)
+        if (validSecondPositionLetters.test(char)) {
+          formatted += char;
+          // Add space after the third character
+          if (i === 2) {
+            formatted += ' ';
+          }
+        } else {
+          return currentValue;
+        }
+      } else if (i === 3) {
+        // Position 4: digit only
         if (/[0-9]/.test(char)) {
           formatted += char;
         } else {
-          isValid = false;
-          break;
+          return currentValue;
         }
       }
-    }
-    
-    // If we couldn't format properly, return the current value
-    if (!isValid && formatted.length < cleaned.length) {
-      return currentValue;
     }
     
     return formatted;
   };
 
   const validatePostalCode = (code: string) => {
-    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/;
+    // Strict Canadian postal code regex
+    const postalCodeRegex = /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z] \d[ABCEGHJ-NPRSTV-Z]\d$/;
     return postalCodeRegex.test(code);
   };
 
