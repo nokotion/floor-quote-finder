@@ -8,14 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap } from "lucide-react";
+import { Zap, ArrowLeft } from "lucide-react";
 
 interface Brand {
   id: string;
   name: string;
 }
 
-const QuickQuoteForm = () => {
+interface QuickQuoteFormProps {
+  onBack?: () => void;
+  showBackButton?: boolean;
+}
+
+const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -63,6 +68,8 @@ const QuickQuoteForm = () => {
     { value: "2000+", label: "2,000+ sq ft" }
   ];
 
+  const isFormValid = selectedBrand && projectSize && postalCode;
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="max-w-4xl mx-auto">
@@ -73,7 +80,17 @@ const QuickQuoteForm = () => {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+          {showBackButton && onBack && (
+            <Button 
+              variant="ghost" 
+              onClick={onBack}
+              className="mb-6 hover:bg-gray-100"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Options
+            </Button>
+          )}
+          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
             <Zap className="w-4 h-4" />
             Quick Quote
           </div>
@@ -144,10 +161,10 @@ const QuickQuoteForm = () => {
                   <Button 
                     type="submit" 
                     size="lg" 
-                    disabled={!selectedBrand || !projectSize || !postalCode || isLoading}
-                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    disabled={!isFormValid || isLoading}
+                    className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50"
                   >
-                    {isLoading ? "Getting Your Quote..." : "Get My Quote"}
+                    {isLoading ? "Getting Your Quote..." : "Get My Competitive Quotes"}
                   </Button>
                 </div>
               </form>
