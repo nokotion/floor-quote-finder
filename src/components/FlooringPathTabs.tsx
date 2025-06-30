@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +21,7 @@ const FlooringPathTabs = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [brandCountsLoading, setBrandCountsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("quick");
@@ -73,15 +73,54 @@ const FlooringPathTabs = () => {
     fetchData();
   }, []);
 
+  const formatPostalCode = (value: string) => {
+    // Remove all non-alphanumeric characters
+    const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    
+    // Format as A1A 1A1
+    if (cleaned.length <= 3) {
+      return cleaned;
+    } else if (cleaned.length <= 6) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+    } else {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)}`;
+    }
+  };
+
+  const validatePostalCode = (code: string) => {
+    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ ]?\d[A-Za-z]\d$/;
+    return postalCodeRegex.test(code);
+  };
+
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const formatted = formatPostalCode(value);
+    setPostalCode(formatted);
+    
+    // Clear error when user starts typing
+    if (postalCodeError) {
+      setPostalCodeError("");
+    }
+  };
+
+  const handlePostalCodeBlur = () => {
+    if (postalCode && !validatePostalCode(postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
+    } else {
+      setPostalCodeError("");
+    }
+  };
+
   const handleQuickQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBrand || !projectSize || !postalCode) return;
-
-    // Validate Canadian postal code format (A1A 1A1 or A1A-1A1)
-    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
-    if (!postalCodeRegex.test(postalCode)) {
+    
+    // Validate postal code on submit
+    if (postalCode && !validatePostalCode(postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
       return;
     }
+    
+    if (!selectedBrand || !projectSize || !postalCode) return;
 
     setIsLoading(true);
     
@@ -92,11 +131,6 @@ const FlooringPathTabs = () => {
     });
 
     navigate(`/quote?${params.toString()}`);
-  };
-
-  const validatePostalCode = (code: string) => {
-    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
-    return postalCodeRegex.test(code);
   };
 
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
@@ -206,12 +240,15 @@ const FlooringPathTabs = () => {
                         id="postal"
                         placeholder="e.g., M5V 3A8"
                         value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value.toUpperCase())}
+                        onChange={handlePostalCodeChange}
+                        onBlur={handlePostalCodeBlur}
                         maxLength={7}
-                        className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        className={`h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium ${
+                          postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                        }`}
                       />
-                      {postalCode && !validatePostalCode(postalCode) && (
-                        <p className="text-sm text-red-600 mt-2 font-medium">Please enter a valid Canadian postal code (e.g., M5V 3A8)</p>
+                      {postalCodeError && (
+                        <p className="text-sm text-red-600 mt-2 font-medium">{postalCodeError}</p>
                       )}
                     </div>
                   </div>
