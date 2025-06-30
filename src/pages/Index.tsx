@@ -5,15 +5,12 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
-import PathSelector from "@/components/PathSelector";
-import QuickQuoteForm from "@/components/QuickQuoteForm";
-import FlooringExplorer from "@/components/FlooringExplorer";
+import FlooringPathTabs from "@/components/FlooringPathTabs";
 
 const words = ["affordable", "beautiful", "quality", "trusted", "local"];
 
 const Index = () => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [selectedPath, setSelectedPath] = useState<'quick' | 'explore' | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -26,14 +23,6 @@ const Index = () => {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.6 }
-  };
-
-  const handlePathSelect = (path: 'quick' | 'explore') => {
-    setSelectedPath(path);
-  };
-
-  const handleBack = () => {
-    setSelectedPath(null);
   };
 
   return (
@@ -121,10 +110,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Path Selection and Conditional Content */}
-      {selectedPath === null && <PathSelector onPathSelect={handlePathSelect} />}
-      {selectedPath === 'quick' && <QuickQuoteForm />}
-      {selectedPath === 'explore' && <FlooringExplorer onBack={handleBack} />}
+      {/* Flooring Path Tabs */}
+      <FlooringPathTabs />
 
       {/* Final CTA */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
