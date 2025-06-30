@@ -73,18 +73,46 @@ const FlooringPathTabs = () => {
     fetchData();
   }, []);
 
-  const formatPostalCode = (value: string) => {
-    // Remove all non-alphanumeric characters
-    const cleaned = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const formatAndValidatePostalCode = (value: string, currentValue: string) => {
+    // Remove all spaces and convert to uppercase
+    const cleaned = value.replace(/\s/g, '').toUpperCase();
     
-    // Format as A1A 1A1
-    if (cleaned.length <= 3) {
-      return cleaned;
-    } else if (cleaned.length <= 6) {
-      return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
-    } else {
-      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)}`;
+    let formatted = '';
+    let isValid = true;
+    
+    for (let i = 0; i < cleaned.length && i < 6; i++) {
+      const char = cleaned[i];
+      
+      // Position rules for Canadian postal code: A1A 1A1
+      if (i === 0 || i === 2 || i === 5) {
+        // Letters only at positions 0, 2, 5
+        if (/[A-Z]/.test(char)) {
+          formatted += char;
+        } else {
+          isValid = false;
+          break;
+        }
+      } else if (i === 1 || i === 3 || i === 4) {
+        // Digits only at positions 1, 3, 4
+        if (/[0-9]/.test(char)) {
+          formatted += char;
+          // Add space after third character (A1A becomes A1A )
+          if (i === 2) {
+            formatted += ' ';
+          }
+        } else {
+          isValid = false;
+          break;
+        }
+      }
     }
+    
+    // If we couldn't format properly, return the current value
+    if (!isValid && formatted.length < cleaned.length) {
+      return currentValue;
+    }
+    
+    return formatted;
   };
 
   const validatePostalCode = (code: string) => {
@@ -93,8 +121,9 @@ const FlooringPathTabs = () => {
   };
 
   const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const formatted = formatPostalCode(value);
+    const inputValue = e.target.value;
+    const formatted = formatAndValidatePostalCode(inputValue, postalCode);
+    
     setPostalCode(formatted);
     
     // Clear error when user starts typing
