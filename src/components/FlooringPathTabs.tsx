@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +89,10 @@ const FlooringPathTabs = () => {
         // Letters only at positions 0, 2, 5
         if (/[A-Z]/.test(char)) {
           formatted += char;
+          // Add space after the third character (position 2)
+          if (i === 2) {
+            formatted += ' ';
+          }
         } else {
           isValid = false;
           break;
@@ -96,10 +101,6 @@ const FlooringPathTabs = () => {
         // Digits only at positions 1, 3, 4
         if (/[0-9]/.test(char)) {
           formatted += char;
-          // Add space after third character (A1A becomes A1A )
-          if (i === 2) {
-            formatted += ' ';
-          }
         } else {
           isValid = false;
           break;
