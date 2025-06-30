@@ -77,9 +77,9 @@ const FlooringPathTabs = () => {
     e.preventDefault();
     if (!selectedBrand || !projectSize || !postalCode) return;
 
-    // Validate Canadian postal code format
-    const postalCodeRegex = /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/;
-    if (!postalCodeRegex.test(postalCode.toUpperCase().replace(/\s/g, '').replace(/(.{3})/, '$1 '))) {
+    // Validate Canadian postal code format (A1A 1A1 or A1A-1A1)
+    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+    if (!postalCodeRegex.test(postalCode)) {
       return;
     }
 
@@ -95,9 +95,8 @@ const FlooringPathTabs = () => {
   };
 
   const validatePostalCode = (code: string) => {
-    const formatted = code.toUpperCase().replace(/\s/g, '');
-    const postalCodeRegex = /^[A-Z]\d[A-Z]\d[A-Z]\d$/;
-    return postalCodeRegex.test(formatted);
+    const postalCodeRegex = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+    return postalCodeRegex.test(code);
   };
 
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
@@ -106,24 +105,24 @@ const FlooringPathTabs = () => {
     <section className="py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <motion.div 
-          className="text-center mb-8"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold mb-4">How would you like to get started?</h2>
-          <p className="text-lg text-gray-600">Choose your preferred path to find the perfect flooring</p>
+          <h2 className="text-3xl font-bold mb-2">How would you like to get started?</h2>
+          <p className="text-lg text-gray-600 mb-6">Choose your preferred path to find the perfect flooring</p>
         </motion.div>
 
-        {/* Custom Tab Switcher */}
+        {/* Enhanced Connected Tab Switcher */}
         <div className="flex justify-center mb-8">
-          <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
+          <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-lg border border-gray-200">
             <button
               onClick={() => setActiveTab("quick")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium text-sm transition-all duration-200 ${
+              className={`flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm transition-all duration-300 relative ${
                 activeTab === "quick"
-                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-sm"
               }`}
             >
               <Zap className="w-4 h-4" />
@@ -131,10 +130,10 @@ const FlooringPathTabs = () => {
             </button>
             <button
               onClick={() => setActiveTab("explore")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium text-sm transition-all duration-200 ${
+              className={`flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm transition-all duration-300 relative ${
                 activeTab === "explore"
-                  ? "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-md"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg transform scale-105"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-sm"
               }`}
             >
               <Search className="w-4 h-4" />
@@ -151,29 +150,29 @@ const FlooringPathTabs = () => {
             transition={{ duration: 0.4 }}
             className="max-w-2xl mx-auto"
           >
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium mb-3">
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
                 <Zap className="w-4 h-4" />
                 Quick Quote
               </div>
             </div>
             
-            <Card className="shadow-lg border-0 bg-white">
+            <Card className="shadow-xl border-0 bg-white">
               <CardContent className="p-8">
                 <form onSubmit={handleQuickQuoteSubmit} className="space-y-6">
-                  <div className="grid gap-6">
+                  <div className="grid gap-5">
                     <div>
-                      <Label htmlFor="brand" className="text-sm font-medium text-gray-700 mb-2 block">
+                      <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-3 block">
                         Preferred Brand
                       </Label>
                       <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
                           <SelectValue placeholder="Select brand" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="no-preference">No preference</SelectItem>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                          <SelectItem value="no-preference" className="font-medium">No preference</SelectItem>
                           {brands.map((brand) => (
-                            <SelectItem key={brand.id} value={brand.name}>
+                            <SelectItem key={brand.id} value={brand.name} className="font-medium">
                               {brand.name}
                             </SelectItem>
                           ))}
@@ -182,16 +181,16 @@ const FlooringPathTabs = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="size" className="text-sm font-medium text-gray-700 mb-2 block">
+                      <Label htmlFor="size" className="text-sm font-semibold text-gray-800 mb-3 block">
                         Project Size (sq ft)
                       </Label>
                       <Select value={projectSize} onValueChange={setProjectSize}>
-                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
                           <SelectValue placeholder="Select size" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
                           {projectSizes.map((size) => (
-                            <SelectItem key={size.value} value={size.value}>
+                            <SelectItem key={size.value} value={size.value} className="font-medium">
                               {size.label}
                             </SelectItem>
                           ))}
@@ -200,7 +199,7 @@ const FlooringPathTabs = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="postal" className="text-sm font-medium text-gray-700 mb-2 block">
+                      <Label htmlFor="postal" className="text-sm font-semibold text-gray-800 mb-3 block">
                         Postal Code
                       </Label>
                       <Input
@@ -209,22 +208,33 @@ const FlooringPathTabs = () => {
                         value={postalCode}
                         onChange={(e) => setPostalCode(e.target.value.toUpperCase())}
                         maxLength={7}
-                        className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
                       {postalCode && !validatePostalCode(postalCode) && (
-                        <p className="text-sm text-red-600 mt-1">Please enter a valid Canadian postal code</p>
+                        <p className="text-sm text-red-600 mt-2 font-medium">Please enter a valid Canadian postal code (e.g., M5V 3A8)</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="text-center pt-4">
+                  <div className="text-center pt-6">
                     <Button 
                       type="submit" 
                       size="lg" 
                       disabled={!isFormValid || isLoading}
-                      className="px-8 py-4 text-base font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                      className={`px-10 py-4 text-base font-semibold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all duration-300 shadow-lg ${
+                        isFormValid && !isLoading 
+                          ? "transform hover:scale-105 hover:shadow-xl" 
+                          : "cursor-not-allowed"
+                      } ${isLoading ? "animate-pulse" : ""}`}
                     >
-                      {isLoading ? "Getting Your Quote..." : "Get My Competitive Quotes"}
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Getting Your Quote...
+                        </div>
+                      ) : (
+                        "Get My Competitive Quotes"
+                      )}
                     </Button>
                   </div>
                 </form>
