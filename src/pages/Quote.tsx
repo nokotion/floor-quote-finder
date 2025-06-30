@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronRight, ChevronLeft, Upload, Check } from "lucide-react";
+import { ChevronRight, ChevronLeft, Upload, Check, Sparkles } from "lucide-react";
 
 interface QuoteFormData {
   brands: string[];
@@ -26,11 +27,18 @@ interface QuoteFormData {
   projectDescription: string;
 }
 
+interface PrefilledValues {
+  brand?: string;
+  size?: string;
+  postal?: string;
+}
+
 const Quote = () => {
   const [searchParams] = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
+  const [prefilledValues, setPrefilledValues] = useState<PrefilledValues>({});
   const [formData, setFormData] = useState<QuoteFormData>({
-    brands: searchParams.get('brand') ? [searchParams.get('brand')!] : [],
+    brands: [],
     projectSize: '',
     roomType: '',
     installationType: '',
@@ -45,6 +53,48 @@ const Quote = () => {
   });
 
   const totalSteps = 6;
+
+  // Handle URL parameter pre-filling
+  useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    const sizeParam = searchParams.get('size');
+    const postalParam = searchParams.get('postal');
+
+    const prefilled: PrefilledValues = {};
+
+    if (brandParam) {
+      prefilled.brand = brandParam;
+      setFormData(prev => ({
+        ...prev,
+        brands: brandParam === 'no-preference' ? ['No preference - show me options'] : [brandParam]
+      }));
+    }
+
+    if (sizeParam) {
+      prefilled.size = sizeParam;
+      // Convert size range to approximate square footage for form
+      const sizeMap: { [key: string]: string } = {
+        '100-500': '300 sq ft',
+        '500-1000': '750 sq ft', 
+        '1000-2000': '1500 sq ft',
+        '2000+': '2500 sq ft'
+      };
+      setFormData(prev => ({
+        ...prev,
+        projectSize: sizeMap[sizeParam] || sizeParam
+      }));
+    }
+
+    if (postalParam) {
+      prefilled.postal = postalParam;
+      setFormData(prev => ({
+        ...prev,
+        postalCode: postalParam
+      }));
+    }
+
+    setPrefilledValues(prefilled);
+  }, [searchParams]);
 
   const updateFormData = (field: string, value: any) => {
     if (field.includes('.')) {
@@ -82,6 +132,13 @@ const Quote = () => {
     setCurrentStep(totalSteps + 1); // Show confirmation
   };
 
+  const renderPrefilledBadge = () => (
+    <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+      <Sparkles className="w-3 h-3 mr-1" />
+      Pre-selected for you
+    </Badge>
+  );
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -92,7 +149,10 @@ const Quote = () => {
             transition={{ duration: 0.5 }}
           >
             <CardHeader>
-              <CardTitle>Select Your Preferred Brands</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Select Your Preferred Brands
+                {prefilledValues.brand && renderPrefilledBadge()}
+              </CardTitle>
               <p className="text-gray-600">Choose one or more flooring brands you're interested in</p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -112,8 +172,11 @@ const Quote = () => {
                       }
                     }}
                   />
-                  <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
                     {brand}
+                    {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
+                      <Badge variant="outline" className="text-xs">Pre-selected</Badge>
+                    )}
                   </Label>
                 </div>
               ))}
@@ -129,12 +192,20 @@ const Quote = () => {
             transition={{ duration: 0.5 }}
           >
             <CardHeader>
-              <CardTitle>Project Details</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Project Details
+                {prefilledValues.size && renderPrefilledBadge()}
+              </CardTitle>
               <p className="text-gray-600">Tell us about your flooring project</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="projectSize">Approximate square footage</Label>
+                <Label htmlFor="projectSize" className="flex items-center gap-2">
+                  Approximate square footage
+                  {prefilledValues.size && (
+                    <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
+                  )}
+                </Label>
                 <Input
                   id="projectSize"
                   placeholder="e.g., 500 sq ft"
@@ -205,12 +276,20 @@ const Quote = () => {
             transition={{ duration: 0.5 }}
           >
             <CardHeader>
-              <CardTitle>Location & Timeline</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Location & Timeline
+                {prefilledValues.postal && renderPrefilledBadge()}
+              </CardTitle>
               <p className="text-gray-600">Help us find retailers in your area</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="postalCode">Postal Code (first 3 characters)</Label>
+                <Label htmlFor="postalCode" className="flex items-center gap-2">
+                  Postal Code (first 3 characters)
+                  {prefilledValues.postal && (
+                    <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
+                  )}
+                </Label>
                 <Input
                   id="postalCode"
                   placeholder="e.g., M5V"
@@ -370,6 +449,12 @@ const Quote = () => {
               <div className="text-sm text-gray-600">
                 Step {currentStep} of {totalSteps}
               </div>
+              {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Quick form used
+                </Badge>
+              )}
             </div>
           </div>
         </div>

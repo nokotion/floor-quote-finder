@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +5,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ChevronRight, Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
+import QuickQuoteForm from "@/components/QuickQuoteForm";
 
 const words = ["affordable", "beautiful", "quality", "trusted", "local"];
 
@@ -125,6 +125,9 @@ const Index = () => {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
         </div>
       </section>
+
+      {/* Quick Quote Form */}
+      <QuickQuoteForm />
 
       {/* How It Works */}
       <section className="py-20 px-4 bg-white">
