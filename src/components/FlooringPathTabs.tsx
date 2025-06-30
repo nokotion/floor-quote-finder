@@ -78,43 +78,53 @@ const FlooringPathTabs = () => {
     const cleaned = value.replace(/\s/g, '').toUpperCase();
     
     // Valid Canadian postal letters (excluding D, F, I, O, Q, U, W)
-    const validPostalLetters = /^[ABCEGHJ-NPRSTVXY]$/;
-    const validSecondPositionLetters = /^[ABCEGHJ-NPRSTV-Z]$/;
+    const validFirstPositionLetters = /^[ABCEGHJ-NPRSTVXY]$/;
+    const validThirdPositionLetters = /^[ABCEGHJ-NPRSTV-Z]$/;
     
     let formatted = '';
     
     for (let i = 0; i < cleaned.length && i < 6; i++) {
       const char = cleaned[i];
       
-      // Position rules for Canadian postal code: A1A 1A1
       if (i === 0) {
         // First position: only valid Canadian postal letters
-        if (validPostalLetters.test(char)) {
+        if (validFirstPositionLetters.test(char)) {
           formatted += char;
         } else {
-          // Invalid character, return current value to block input
           return currentValue;
         }
-      } else if (i === 1 || i === 4) {
-        // Positions 2 and 5: digits only
+      } else if (i === 1) {
+        // Second position: digits only
         if (/[0-9]/.test(char)) {
           formatted += char;
         } else {
           return currentValue;
         }
-      } else if (i === 2 || i === 5) {
-        // Positions 3 and 6: valid postal letters (broader set for these positions)
-        if (validSecondPositionLetters.test(char)) {
+      } else if (i === 2) {
+        // Third position: valid postal letters
+        if (validThirdPositionLetters.test(char)) {
           formatted += char;
-          // Add space after the third character
-          if (i === 2) {
-            formatted += ' ';
-          }
+          // Add space after the third character to create A1A 1A1 format
+          formatted += ' ';
         } else {
           return currentValue;
         }
       } else if (i === 3) {
-        // Position 4: digit only
+        // Fourth position: digit only
+        if (/[0-9]/.test(char)) {
+          formatted += char;
+        } else {
+          return currentValue;
+        }
+      } else if (i === 4) {
+        // Fifth position: valid postal letters
+        if (validThirdPositionLetters.test(char)) {
+          formatted += char;
+        } else {
+          return currentValue;
+        }
+      } else if (i === 5) {
+        // Sixth position: digit only
         if (/[0-9]/.test(char)) {
           formatted += char;
         } else {
