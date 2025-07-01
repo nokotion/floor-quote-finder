@@ -5,16 +5,9 @@ import { motion } from "framer-motion";
 import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
-import { Hero } from "@/components/ui/animated-hero";
 import { Footer7 } from "@/components/ui/footer-7";
 
 const Index = () => {
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Navigation */}
@@ -44,10 +37,41 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Streamlined Hero */}
-      <Hero onPathSelect={() => {}} />
+      {/* Compact Hero Section */}
+      <section className="py-8 px-4 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              Get <span className="text-blue-600">Competitive</span> Flooring Quotes from Verified Local Retailers
+            </h1>
+            <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+              Compare price, quality, and service from trusted flooring stores across Canada.
+            </p>
+            
+            {/* Trust Badges */}
+            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+              <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
+                <span className="text-lg">⏱️</span>
+                <span className="font-medium">2 Min</span>
+              </div>
+              <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
+                <span className="text-lg">🏬</span>
+                <span className="font-medium">500+ Retailers</span>
+              </div>
+              <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
+                <span className="text-lg">⭐</span>
+                <span className="font-medium">98% Satisfaction</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-      {/* Always Show Flooring Path Tabs */}
+      {/* Quick Quote Form - Now Immediately Visible */}
       <FlooringPathTabs />
 
       {/* Final CTA */}

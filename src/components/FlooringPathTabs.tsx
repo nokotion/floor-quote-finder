@@ -24,7 +24,7 @@ const FlooringPathTabs = () => {
   const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [brandCountsLoading, setBrandCountsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("quick");
+  const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
   const navigate = useNavigate();
 
   const flooringTypes = [
@@ -187,20 +187,20 @@ const FlooringPathTabs = () => {
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
   return (
-    <section id="flooring-form" className="py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-6 px-4 bg-white">
+      <div className="max-w-5xl mx-auto">
         <motion.div 
           className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold mb-2">How would you like to get started?</h2>
-          <p className="text-lg text-gray-600 mb-6">Choose your preferred path to find the perfect flooring</p>
+          <h2 className="text-2xl font-bold mb-2">How would you like to get started?</h2>
+          <p className="text-gray-600 mb-6">Choose your preferred path to find the perfect flooring</p>
         </motion.div>
 
         {/* Enhanced Connected Tab Switcher */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-lg border border-gray-200">
             <button
               onClick={() => setActiveTab("quick")}
@@ -233,7 +233,7 @@ const FlooringPathTabs = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-2xl mx-auto"
+            className="max-w-4xl mx-auto"
           >
             <div className="text-center mb-4">
               <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
@@ -243,11 +243,12 @@ const FlooringPathTabs = () => {
             </div>
             
             <Card className="shadow-xl border-0 bg-white">
-              <CardContent className="p-8">
+              <CardContent className="p-6">
                 <form onSubmit={handleQuickQuoteSubmit} className="space-y-6">
-                  <div className="grid gap-5">
+                  {/* Desktop: Horizontal Layout, Mobile: Vertical Stack */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-3 block">
+                      <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                         Preferred Brand
                       </Label>
                       <Select value={selectedBrand} onValueChange={setSelectedBrand}>
@@ -266,7 +267,7 @@ const FlooringPathTabs = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="size" className="text-sm font-semibold text-gray-800 mb-3 block">
+                      <Label htmlFor="size" className="text-sm font-semibold text-gray-800 mb-2 block">
                         Project Size (sq ft)
                       </Label>
                       <Select value={projectSize} onValueChange={setProjectSize}>
@@ -284,7 +285,7 @@ const FlooringPathTabs = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="postal" className="text-sm font-semibold text-gray-800 mb-3 block">
+                      <Label htmlFor="postal" className="text-sm font-semibold text-gray-800 mb-2 block">
                         Postal Code
                       </Label>
                       <Input
@@ -299,12 +300,12 @@ const FlooringPathTabs = () => {
                         }`}
                       />
                       {postalCodeError && (
-                        <p className="text-sm text-red-600 mt-2 font-medium">{postalCodeError}</p>
+                        <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="text-center pt-6">
+                  <div className="text-center pt-4">
                     <Button 
                       type="submit" 
                       size="lg" 
@@ -337,7 +338,7 @@ const FlooringPathTabs = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Browse by Flooring Type</h3>
               <p className="text-gray-600">Choose a flooring type to explore available brands</p>
             </div>
