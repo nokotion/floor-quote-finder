@@ -6,8 +6,17 @@ import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
 import { Hero } from "@/components/ui/animated-hero";
+import { useState } from "react";
 
 const Index = () => {
+  const [showPathTabs, setShowPathTabs] = useState(false);
+  const [selectedPath, setSelectedPath] = useState<'quick' | 'explore' | null>(null);
+
+  const handlePathSelect = (path: 'quick' | 'explore') => {
+    setSelectedPath(path);
+    setShowPathTabs(true);
+  };
+
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -39,46 +48,19 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* New Animated Hero */}
-      <Hero />
+      {/* New Compact Hero */}
+      <Hero onPathSelect={handlePathSelect} />
 
-      {/* Trust Indicators Section */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <motion.p 
-            className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            Connect with verified Canadian flooring retailers and get real quotes 
-            for your project in minutes, not days.
-          </motion.p>
-
-          <motion.div 
-            className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              10,000+ Happy Customers
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              Verified Retailers
-            </div>
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4" />
-              Best Price Guarantee
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Flooring Path Tabs */}
-      <FlooringPathTabs />
+      {/* Conditional Flooring Path Tabs */}
+      {showPathTabs && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <FlooringPathTabs />
+        </motion.div>
+      )}
 
       {/* Final CTA */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
