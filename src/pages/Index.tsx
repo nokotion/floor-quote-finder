@@ -20,8 +20,15 @@ const Index = () => {
       <nav className="bg-white/90 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="font-bold text-2xl text-blue-600">
-              Price My Floor
+            <div className="flex items-center">
+              <img 
+                src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+                alt="Price My Floor Logo" 
+                className="h-8 w-auto mr-3"
+              />
+              <span className="font-bold text-2xl text-blue-600">
+                Price My Floor
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -75,7 +82,14 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="font-bold text-2xl text-blue-400 mb-4">Price My Floor</div>
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+              alt="Price My Floor Logo" 
+              className="h-6 w-auto mr-2"
+            />
+            <span className="font-bold text-2xl text-blue-400">Price My Floor</span>
+          </div>
           <p className="text-gray-400 mb-6">
             Connecting Canadian homeowners with trusted flooring professionals since 2024
           </p>
