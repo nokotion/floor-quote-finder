@@ -2,23 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
-
-const words = ["affordable", "beautiful", "quality", "trusted", "local"];
+import { Hero } from "@/components/ui/animated-hero";
 
 const Index = () => {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentWordIndex((prev) => (prev + 1) % words.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -50,29 +39,14 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 px-4">
-        <div className="max-w-6xl mx-auto text-center relative z-10">
-          <motion.div {...fadeInUp}>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Find your{" "}
-              <motion.span
-                key={currentWordIndex}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.5 }}
-                className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-              >
-                {words[currentWordIndex]}
-              </motion.span>
-              <br />
-              floor today
-            </h1>
-          </motion.div>
-          
+      {/* New Animated Hero */}
+      <Hero />
+
+      {/* Trust Indicators Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
           <motion.p 
-            className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto"
+            className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
@@ -81,12 +55,11 @@ const Index = () => {
             for your project in minutes, not days.
           </motion.p>
 
-          {/* Trust Indicators */}
           <motion.div 
             className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -101,12 +74,6 @@ const Index = () => {
               Best Price Guarantee
             </div>
           </motion.div>
-        </div>
-
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
         </div>
       </section>
 
