@@ -21,26 +21,28 @@ export function Hero({ onPathSelect }: HeroProps) {
   return (
     <div className="w-full bg-muted py-12 md:py-20">
       <div className="container text-center max-w-4xl mx-auto px-4">
-        {/* Main Headline with Enhanced Animation */}
-        <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
-          Get{" "}
-          <span className="relative inline-block h-[1em] w-44 md:w-56 overflow-hidden align-baseline">
+        {/* Main Headline with Multi-Line Structure */}
+        <div className="text-center text-4xl sm:text-5xl md:text-6xl font-bold leading-tight space-y-2 mb-4">
+          <div>Get</div>
+
+          <div className="text-blue-600">
             <TextRotate
               texts={adjectives}
-              mainClassName="absolute left-0 top-0 w-full font-bold text-blue-600 text-left whitespace-nowrap"
+              mainClassName="inline-block px-2"
               staggerFrom="last"
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: "0%", opacity: 1 }}
-              exit={{ y: "-100%", opacity: 0 }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "-120%" }}
               staggerDuration={0.03}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
               rotationInterval={2000}
             />
-          </span>{" "}
-          Flooring Quotes from{" "}
-          <br />
-          <span className="font-bold">Verified Local Retailers</span>
-        </h1>
+          </div>
+
+          <div>Flooring Quotes from</div>
+
+          <div className="font-bold text-blue-600">Verified Local Retailers</div>
+        </div>
 
         {/* Subheadline */}
         <motion.p 
