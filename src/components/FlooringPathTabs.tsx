@@ -24,7 +24,7 @@ const FlooringPathTabs = () => {
   const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [brandCountsLoading, setBrandCountsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
+  const [activeTab, setActiveTab("quick"); // Default to "quick" (I Know What I Want)
   const navigate = useNavigate();
 
   const flooringTypes = [
@@ -190,38 +190,38 @@ const FlooringPathTabs = () => {
     <section className="py-4 px-4 bg-white">
       <div className="max-w-5xl mx-auto">
         <motion.div 
-          className="text-center mb-4"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-2xl font-bold mb-2">How would you like to get started?</h2>
-          <p className="text-gray-600 mb-4">Choose your preferred path to find the perfect flooring</p>
+          <p className="text-gray-600 mb-6">Choose your preferred path to find the perfect flooring</p>
         </motion.div>
 
-        {/* Enhanced Connected Tab Switcher */}
-        <div className="flex justify-center mb-4">
-          <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-lg border border-gray-200">
+        {/* Enhanced Connected Tab Switcher - Bigger and More Prominent */}
+        <div className="flex justify-center mb-2">
+          <div className="inline-flex bg-gray-100 rounded-xl p-2 shadow-xl border border-gray-200">
             <button
               onClick={() => setActiveTab("quick")}
-              className={`flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm transition-all duration-300 relative ${
+              className={`flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-lg transition-all duration-300 relative ${
                 activeTab === "quick"
-                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg transform scale-105"
-                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-sm"
+                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl transform scale-105"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-md"
               }`}
             >
-              <Zap className="w-4 h-4" />
+              <Zap className="w-5 h-5" />
               I Know What I Want
             </button>
             <button
               onClick={() => setActiveTab("explore")}
-              className={`flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm transition-all duration-300 relative ${
+              className={`flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-lg transition-all duration-300 relative ${
                 activeTab === "explore"
-                  ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg transform scale-105"
-                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-sm"
+                  ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-xl transform scale-105"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-md"
               }`}
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-5 h-5" />
               Help Me Explore
             </button>
           </div>
@@ -235,13 +235,6 @@ const FlooringPathTabs = () => {
             transition={{ duration: 0.4 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="text-center mb-3">
-              <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
-                <Zap className="w-4 h-4" />
-                Quick Quote
-              </div>
-            </div>
-            
             <Card className="shadow-xl border-0 bg-white">
               <CardContent className="p-4">
                 <form onSubmit={handleQuickQuoteSubmit} className="space-y-4">
