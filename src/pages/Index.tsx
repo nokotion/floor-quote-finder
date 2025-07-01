@@ -6,17 +6,8 @@ import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
 import { Hero } from "@/components/ui/animated-hero";
-import { useState } from "react";
 
 const Index = () => {
-  const [showPathTabs, setShowPathTabs] = useState(false);
-  const [selectedPath, setSelectedPath] = useState<'quick' | 'explore' | null>(null);
-
-  const handlePathSelect = (path: 'quick' | 'explore') => {
-    setSelectedPath(path);
-    setShowPathTabs(true);
-  };
-
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -48,19 +39,11 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* New Compact Hero */}
-      <Hero onPathSelect={handlePathSelect} />
+      {/* Streamlined Hero */}
+      <Hero onPathSelect={() => {}} />
 
-      {/* Conditional Flooring Path Tabs */}
-      {showPathTabs && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <FlooringPathTabs />
-        </motion.div>
-      )}
+      {/* Always Show Flooring Path Tabs */}
+      <FlooringPathTabs />
 
       {/* Final CTA */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">

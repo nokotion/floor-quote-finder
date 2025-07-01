@@ -187,7 +187,7 @@ const FlooringPathTabs = () => {
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
   return (
-    <section className="py-12 px-4">
+    <section id="flooring-form" className="py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <motion.div 
           className="text-center mb-6"

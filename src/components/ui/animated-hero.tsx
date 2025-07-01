@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Zap, Search } from "lucide-react";
+import { Zap, Search, ArrowDown } from "lucide-react";
 import { Typewriter } from "@/components/ui/typewriter";
 
 const adjectives = [
@@ -18,6 +18,13 @@ interface HeroProps {
 }
 
 export function Hero({ onPathSelect }: HeroProps) {
+  const scrollToForm = () => {
+    const formSection = document.querySelector('#flooring-form');
+    if (formSection) {
+      formSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="w-full bg-muted py-12 md:py-20">
       <div className="container text-center max-w-4xl mx-auto px-4">
@@ -72,29 +79,20 @@ export function Hero({ onPathSelect }: HeroProps) {
           </div>
         </motion.div>
 
-        {/* Action Buttons */}
+        {/* Scroll to Form Button */}
         <motion.div 
-          className="flex flex-col sm:flex-row justify-center gap-4 max-w-lg mx-auto"
+          className="flex justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.6 }}
         >
           <Button 
             size="lg" 
-            className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-6 py-4 text-base"
-            onClick={() => onPathSelect('quick')}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-4 text-base"
+            onClick={scrollToForm}
           >
-            <Zap className="w-5 h-5 mr-2" />
-            I Know What I Want
-          </Button>
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="flex-1 border-2 border-gray-300 hover:bg-gray-50 font-semibold px-6 py-4 text-base"
-            onClick={() => onPathSelect('explore')}
-          >
-            <Search className="w-5 h-5 mr-2" />
-            Help Me Explore
+            <ArrowDown className="w-5 h-5 mr-2" />
+            Get Started Below
           </Button>
         </motion.div>
       </div>
