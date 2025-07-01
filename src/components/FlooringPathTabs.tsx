@@ -187,20 +187,20 @@ const FlooringPathTabs = () => {
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
   return (
-    <section className="py-6 px-4 bg-white">
+    <section className="py-4 px-4 bg-white">
       <div className="max-w-5xl mx-auto">
         <motion.div 
-          className="text-center mb-6"
+          className="text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-2xl font-bold mb-2">How would you like to get started?</h2>
-          <p className="text-gray-600 mb-6">Choose your preferred path to find the perfect flooring</p>
+          <p className="text-gray-600 mb-4">Choose your preferred path to find the perfect flooring</p>
         </motion.div>
 
         {/* Enhanced Connected Tab Switcher */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-lg border border-gray-200">
             <button
               onClick={() => setActiveTab("quick")}
@@ -235,7 +235,7 @@ const FlooringPathTabs = () => {
             transition={{ duration: 0.4 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="text-center mb-4">
+            <div className="text-center mb-3">
               <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
                 <Zap className="w-4 h-4" />
                 Quick Quote
@@ -243,10 +243,10 @@ const FlooringPathTabs = () => {
             </div>
             
             <Card className="shadow-xl border-0 bg-white">
-              <CardContent className="p-6">
-                <form onSubmit={handleQuickQuoteSubmit} className="space-y-6">
+              <CardContent className="p-4">
+                <form onSubmit={handleQuickQuoteSubmit} className="space-y-4">
                   {/* Desktop: Horizontal Layout, Mobile: Vertical Stack */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
                       <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                         Preferred Brand
@@ -305,7 +305,7 @@ const FlooringPathTabs = () => {
                     </div>
                   </div>
 
-                  <div className="text-center pt-4">
+                  <div className="text-center pt-2">
                     <Button 
                       type="submit" 
                       size="lg" 
@@ -338,12 +338,12 @@ const FlooringPathTabs = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
               <h3 className="text-2xl font-bold mb-2">Browse by Flooring Type</h3>
               <p className="text-gray-600">Choose a flooring type to explore available brands</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {flooringTypes.map((type, index) => (
                 <motion.div
                   key={type.name}
@@ -356,12 +356,12 @@ const FlooringPathTabs = () => {
                     className="group block"
                   >
                     <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-blue-200">
-                      <CardContent className="p-6 text-center relative">
-                        <div className="text-4xl mb-4">{type.emoji}</div>
+                      <CardContent className="p-4 text-center relative">
+                        <div className="text-4xl mb-3">{type.emoji}</div>
                         <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
                           {type.name}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">{type.description}</p>
+                        <p className="text-sm text-gray-600 mb-3">{type.description}</p>
                         {!brandCountsLoading && (
                           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                             {brandCounts[type.name] || 0} brands available

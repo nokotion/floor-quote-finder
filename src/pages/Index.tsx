@@ -6,6 +6,7 @@ import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
 import { Footer7 } from "@/components/ui/footer-7";
+import { Typewriter } from "@/components/ui/typewriter";
 
 const Index = () => {
   return (
@@ -37,23 +38,29 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Compact Hero Section */}
-      <section className="py-8 px-4 bg-white">
+      {/* Enhanced Hero Section with Typewriter Animation */}
+      <section className="py-4 px-4 bg-white">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              Get <span className="text-blue-600">Competitive</span> Flooring Quotes from Verified Local Retailers
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+              Get <Typewriter 
+                text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
+                className="text-blue-600"
+                speed={60}
+                waitTime={1500}
+                deleteSpeed={40}
+              /> Flooring Quotes from Verified Local Retailers
             </h1>
-            <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
               Compare price, quality, and service from trusted flooring stores across Canada.
             </p>
             
             {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+            <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2 bg-gray-50 px-3 py-1 rounded-full">
                 <span className="text-lg">⏱️</span>
                 <span className="font-medium">2 Min</span>
@@ -75,7 +82,7 @@ const Index = () => {
       <FlooringPathTabs />
 
       {/* Final CTA */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-12 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -86,7 +93,7 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Ready to transform your space?
             </h2>
-            <p className="text-xl mb-10 opacity-90">
+            <p className="text-xl mb-6 opacity-90">
               Join thousands of satisfied customers who found their perfect flooring through Price My Floor
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
