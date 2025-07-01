@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Zap, Search } from "lucide-react";
-import { TextRotate } from "@/components/ui/text-rotate";
+import { Typewriter } from "@/components/ui/typewriter";
 
 const adjectives = [
   "Trusted",
@@ -22,20 +22,17 @@ export function Hero({ onPathSelect }: HeroProps) {
     <div className="w-full bg-muted py-12 md:py-20">
       <div className="container text-center max-w-4xl mx-auto px-4">
         {/* Main Headline with Multi-Line Structure */}
-        <div className="text-center text-4xl sm:text-5xl md:text-6xl font-bold leading-tight space-y-2 mb-4">
+        <div className="text-center text-4xl sm:text-5xl md:text-6xl font-bold leading-tight space-y-3 mb-4">
           <div>Get</div>
 
           <div className="text-blue-600">
-            <TextRotate
-              texts={adjectives}
-              mainClassName="inline-block px-2"
-              staggerFrom="last"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "-120%" }}
-              staggerDuration={0.03}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              rotationInterval={2000}
+            <Typewriter
+              text={adjectives}
+              speed={60}
+              waitTime={1500}
+              deleteSpeed={40}
+              className="text-blue-600"
+              cursorChar="|"
             />
           </div>
 
