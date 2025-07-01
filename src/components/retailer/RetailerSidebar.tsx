@@ -26,7 +26,7 @@ const RetailerSidebar = () => {
         <img 
           src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
           alt="Price My Floor Logo" 
-          className="h-6 w-auto mr-2"
+          className="h-10 w-auto mr-3"
         />
         <h1 className="text-xl font-semibold text-gray-900">Retailer Portal</h1>
       </div>

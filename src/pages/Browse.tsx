@@ -14,11 +14,8 @@ const Browse = () => {
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-8 w-auto mr-3"
+                className="h-12 w-auto"
               />
-              <span className="font-bold text-2xl text-blue-600">
-                Price My Floor
-              </span>
             </Link>
             <div className="flex items-center space-x-4">
               <Button variant="outline" asChild>
