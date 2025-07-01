@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +8,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink } from "lucide-react";
 import { slugify } from "@/utils/slugUtils";
-import DisplayCards from "@/components/ui/display-cards";
+import FlooringCategories from "@/components/ui/flooring-categories";
 
 interface Brand {
   id: string;
@@ -29,75 +30,39 @@ const BrandExplorer = () => {
     { 
       id: "all", 
       name: "All", 
-      emoji: "🏠", 
       description: "Browse all flooring brands and options" 
     },
     { 
       id: "tile", 
       name: "Tile", 
-      emoji: "🟫", 
       description: "Ceramic, porcelain, and natural stone" 
     },
     { 
       id: "vinyl", 
       name: "Vinyl", 
-      emoji: "📱", 
       description: "Luxury vinyl plank and sheet options" 
     },
     { 
       id: "hardwood", 
       name: "Hardwood", 
-      emoji: "🪵", 
       description: "Premium hardwood flooring options" 
     },
     { 
       id: "laminate", 
       name: "Laminate", 
-      emoji: "✨", 
       description: "Durable and affordable wood-look floors" 
     },
     { 
       id: "carpet", 
       name: "Carpet", 
-      emoji: "🧶", 
       description: "Soft and comfortable floor coverings" 
     },
     { 
       id: "sports", 
       name: "Sports", 
-      emoji: "🏀", 
       description: "Performance flooring for gyms and sports areas" 
     }
   ];
-
-  const displayCardsData = categories.slice(0, 3).map((category, index) => {
-    const baseClassName = "[grid-area:stack] transition-all duration-700 hover:grayscale-0";
-    let className = "";
-    
-    if (index === 0) {
-      className = `${baseClassName} hover:-translate-y-10 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 before:left-0 before:top-0`;
-    } else if (index === 1) {
-      className = `${baseClassName} translate-x-16 translate-y-10 hover:-translate-y-1 before:absolute before:w-[100%] before:outline-1 before:rounded-xl before:outline-border before:h-[100%] before:content-[''] before:bg-blend-overlay before:bg-background/50 grayscale-[100%] hover:before:opacity-0 before:transition-opacity before:duration-700 before:left-0 before:top-0`;
-    } else {
-      className = `${baseClassName} translate-x-32 translate-y-20 hover:translate-y-10`;
-    }
-
-    // Add selected state styling
-    if (selectedCategory === category.id) {
-      className += " ring-2 ring-blue-500 bg-blue-50/70 grayscale-0";
-    }
-
-    return {
-      className,
-      icon: <span className="text-lg">{category.emoji}</span>,
-      title: category.name,
-      description: category.description,
-      date: "",
-      iconClassName: "text-blue-500",
-      titleClassName: selectedCategory === category.id ? "text-blue-600" : "text-blue-500",
-      onClick: () => setSelectedCategory(category.id),
-    };
-  });
 
   useEffect(() => {
     fetchBrands();
@@ -163,39 +128,13 @@ const BrandExplorer = () => {
           </p>
         </motion.div>
 
-        {/* Category Selector - New Animated Cards */}
+        {/* Category Selector - New Flat Design */}
         <div className="mb-12">
           <h2 className="text-2xl font-semibold mb-8 text-center">Choose a Category</h2>
-          <div className="flex justify-center mb-8">
-            <DisplayCards cards={displayCardsData} />
-          </div>
-          
-          {/* Additional Categories Grid for remaining categories */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {categories.slice(3).map((category, index) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: (index + 3) * 0.1 }}
-              >
-                <Card 
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-                    selectedCategory === category.id 
-                      ? "ring-2 ring-blue-500 bg-blue-50 shadow-md" 
-                      : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => setSelectedCategory(category.id)}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl mb-2">{category.emoji}</div>
-                    <h3 className="font-bold text-sm mb-1">{category.name}</h3>
-                    <p className="text-xs text-gray-600">{category.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          <FlooringCategories 
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+          />
         </div>
 
         {/* Results Header */}
