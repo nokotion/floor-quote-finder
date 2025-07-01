@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,7 @@ const FlooringPathTabs = () => {
   const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [brandCountsLoading, setBrandCountsLoading] = useState(true);
-  const [activeTab, setActiveTab("quick"); // Default to "quick" (I Know What I Want)
+  const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
   const navigate = useNavigate();
 
   const flooringTypes = [
