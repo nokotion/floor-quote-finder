@@ -32,7 +32,7 @@ export function Hero({ onPathSelect }: HeroProps) {
               waitTime={1500}
               deleteSpeed={40}
               className="text-blue-600"
-              cursorChar="|"
+              cursorChar={<span className="text-[0.6em] align-baseline">_</span>}
             />
           </div>
 

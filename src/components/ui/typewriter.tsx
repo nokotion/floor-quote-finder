@@ -8,7 +8,7 @@ export interface TypewriterProps {
   deleteSpeed?: number;
   waitTime?: number;
   className?: string;
-  cursorChar?: string;
+  cursorChar?: string | React.ReactNode;
 }
 
 export function Typewriter({
