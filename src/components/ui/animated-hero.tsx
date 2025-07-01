@@ -29,7 +29,7 @@ export function Hero() {
             {adjectives.map((word, i) => (
               <motion.span
                 key={word}
-                className="absolute inset-0 flex items-center justify-center font-bold text-blue-600 whitespace-nowrap"
+                className="absolute left-0 top-0 w-full font-bold text-blue-600 text-left whitespace-nowrap"
                 initial={{ y: "100%", opacity: 0 }}
                 animate={
                   i === index
