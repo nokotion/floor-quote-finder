@@ -89,7 +89,7 @@ const Index = () => {
       <FlooringPathTabs />
 
       {/* Final CTA */}
-      <section className="py-12 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-12 px-4 bg-gradient-to-r from-orange-600 to-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -104,10 +104,10 @@ const Index = () => {
               Join thousands of satisfied customers who found their perfect flooring through Price My Floor
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100" asChild>
+              <Button size="lg" className="text-lg px-8 py-4 bg-white text-orange-600 hover:bg-gray-100" asChild>
                 <Link to="/quote">Start My Quote</Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-blue-600" asChild>
+              <Button size="lg" className="text-lg px-8 py-4 bg-white/20 hover:bg-white/30 text-white border-2 border-white/50 backdrop-blur-sm" asChild>
                 <Link to="/browse">Browse Retailers</Link>
               </Button>
             </div>
