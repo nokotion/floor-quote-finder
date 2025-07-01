@@ -19,7 +19,8 @@ const Index = () => {
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-12 md:h-16 lg:h-20 w-auto"
+                className="h-16 md:h-20 lg:h-24 w-auto"
+                style={{ maxHeight: '72px' }}
               />
             </Link>
             <div className="flex items-center space-x-4">
@@ -38,23 +39,28 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Enhanced Hero Section with Typewriter Animation */}
-      <section className="py-4 px-4 bg-white">
+      {/* Enhanced Hero Section with Restructured Headline */}
+      <section className="py-2 px-4 bg-white">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
-              Get <Typewriter 
-                text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
-                className="text-blue-600"
-                speed={60}
-                waitTime={1500}
-                deleteSpeed={40}
-              /> Flooring Quotes from Verified Local Retailers
-            </h1>
+            <div className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+              <div>Get</div>
+              <div className="text-2xl md:text-3xl lg:text-4xl text-blue-600 my-2">
+                <Typewriter 
+                  text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
+                  className="text-blue-600"
+                  speed={60}
+                  waitTime={1500}
+                  deleteSpeed={40}
+                />
+              </div>
+              <div>Flooring Quotes from</div>
+              <div className="text-blue-600">Verified Local Retailers</div>
+            </div>
             <p className="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
               Compare price, quality, and service from trusted flooring stores across Canada.
             </p>
@@ -78,7 +84,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Quick Quote Form - Now Immediately Visible */}
+      {/* Quick Quote Form - Immediately Visible */}
       <FlooringPathTabs />
 
       {/* Final CTA */}
