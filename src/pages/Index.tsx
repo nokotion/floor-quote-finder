@@ -49,13 +49,14 @@ const Index = () => {
           >
             <div className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               <div>Get</div>
-              <div className="text-4xl md:text-5xl lg:text-6xl text-blue-600 my-2">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-600 my-2">
                 <Typewriter 
                   text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
-                  className="text-blue-600"
+                  className="text-blue-600 font-bold"
                   speed={60}
                   waitTime={1500}
                   deleteSpeed={40}
+                  cursorChar="|"
                 />
               </div>
               <div>Flooring Quotes from</div>

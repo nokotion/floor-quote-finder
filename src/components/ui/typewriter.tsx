@@ -63,8 +63,11 @@ export function Typewriter({
   return (
     <span className={cn("inline-block", className)}>
       {displayText}
-      <span className={`${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100`}>
-        {cursorChar}
+      <span 
+        className={`inline-block w-0.5 bg-current ml-0.5 ${showCursor ? 'opacity-100' : 'opacity-0'} transition-opacity duration-100`}
+        style={{ height: '1em' }}
+      >
+        &nbsp;
       </span>
     </span>
   );
