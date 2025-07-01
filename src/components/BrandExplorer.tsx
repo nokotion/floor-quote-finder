@@ -170,10 +170,10 @@ const BrandExplorer = () => {
                             <img 
                               src={brand.logo_url} 
                               alt={`${brand.name} logo`}
-                              className="h-12 w-auto mb-3"
+                              className="h-12 w-12 object-contain mb-2"
                             />
                           ) : (
-                            <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mb-3">
+                            <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mb-2">
                               <span className="text-blue-600 font-bold text-lg">
                                 {brand.name.charAt(0)}
                               </span>
