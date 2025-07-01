@@ -49,7 +49,7 @@ const Index = () => {
           >
             <div className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               <div>Get</div>
-              <div className="text-2xl md:text-3xl lg:text-4xl text-blue-600 my-2">
+              <div className="text-4xl md:text-5xl lg:text-6xl text-blue-600 my-2">
                 <Typewriter 
                   text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
                   className="text-blue-600"
