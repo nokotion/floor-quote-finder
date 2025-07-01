@@ -25,11 +25,11 @@ export function Hero() {
       <div className="container text-center max-w-4xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-bold leading-tight">
           Get{" "}
-          <span className="relative inline-block h-[1em] w-[12ch] overflow-hidden align-baseline">
+          <span className="relative inline-block h-[1em] w-32 md:w-40 overflow-hidden align-baseline">
             {adjectives.map((word, i) => (
               <motion.span
                 key={word}
-                className="absolute w-full font-bold text-blue-600"
+                className="absolute w-full font-bold text-blue-600 text-center whitespace-nowrap"
                 initial={{ y: "-100%", opacity: 0 }}
                 animate={
                   i === index
@@ -42,7 +42,8 @@ export function Hero() {
               </motion.span>
             ))}
           </span>{" "}
-          Flooring Quotes from <br />
+          Flooring Quotes from{" "}
+          <br />
           <span className="font-bold">Verified Local Retailers</span>
         </h1>
       </div>
