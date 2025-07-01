@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Zap, Search } from "lucide-react";
+import { TextRotate } from "@/components/ui/text-rotate";
 
 const adjectives = [
   "Trusted",
@@ -17,37 +18,24 @@ interface HeroProps {
 }
 
 export function Hero({ onPathSelect }: HeroProps) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % adjectives.length);
-    }, 2000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <div className="w-full bg-muted py-12 md:py-20">
       <div className="container text-center max-w-4xl mx-auto px-4">
-        {/* Main Headline with Animation */}
+        {/* Main Headline with Enhanced Animation */}
         <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
           Get{" "}
           <span className="relative inline-block h-[1em] w-44 md:w-56 overflow-hidden align-baseline">
-            {adjectives.map((word, i) => (
-              <motion.span
-                key={word}
-                className="absolute left-0 top-0 w-full font-bold text-blue-600 text-left whitespace-nowrap"
-                initial={{ y: "100%", opacity: 0 }}
-                animate={
-                  i === index
-                    ? { y: "0%", opacity: 1 }
-                    : { y: "100%", opacity: 0 }
-                }
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              >
-                {word}
-              </motion.span>
-            ))}
+            <TextRotate
+              texts={adjectives}
+              mainClassName="absolute left-0 top-0 w-full font-bold text-blue-600 text-left whitespace-nowrap"
+              staggerFrom="last"
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: "0%", opacity: 1 }}
+              exit={{ y: "-100%", opacity: 0 }}
+              staggerDuration={0.03}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              rotationInterval={2000}
+            />
           </span>{" "}
           Flooring Quotes from{" "}
           <br />
