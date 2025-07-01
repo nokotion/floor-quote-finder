@@ -82,7 +82,7 @@ export const Footer7 = ({
   legalLinks = defaultLegalLinks,
 }: Footer7Props) => {
   return (
-    <section className="py-32 bg-gray-900 text-white">
+    <section className="py-32 bg-white text-gray-900">
       <div className="container mx-auto">
         <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
@@ -97,12 +97,12 @@ export const Footer7 = ({
                 />
               </a>
             </div>
-            <p className="max-w-[70%] text-sm text-gray-400">
+            <p className="max-w-[70%] text-sm text-gray-600">
               {description}
             </p>
-            <ul className="flex items-center space-x-6 text-gray-400">
+            <ul className="flex items-center space-x-6 text-gray-600">
               {socialLinks.map((social, idx) => (
-                <li key={idx} className="font-medium hover:text-white transition-colors">
+                <li key={idx} className="font-medium hover:text-gray-900 transition-colors">
                   <a href={social.href} aria-label={social.label}>
                     {social.icon}
                   </a>
@@ -113,12 +113,12 @@ export const Footer7 = ({
           <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
             {sections.map((section, sectionIdx) => (
               <div key={sectionIdx}>
-                <h3 className="mb-4 font-bold text-white">{section.title}</h3>
-                <ul className="space-y-3 text-sm text-gray-400">
+                <h3 className="mb-4 font-bold text-gray-900">{section.title}</h3>
+                <ul className="space-y-3 text-sm text-gray-600">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
-                      className="font-medium hover:text-white transition-colors"
+                      className="font-medium hover:text-gray-900 transition-colors"
                     >
                       <a href={link.href}>{link.name}</a>
                     </li>
@@ -128,11 +128,11 @@ export const Footer7 = ({
             ))}
           </div>
         </div>
-        <div className="mt-8 flex flex-col justify-between gap-4 border-t border-gray-700 py-8 text-xs font-medium text-gray-400 md:flex-row md:items-center md:text-left">
+        <div className="mt-8 flex flex-col justify-between gap-4 border-t border-gray-200 py-8 text-xs font-medium text-gray-600 md:flex-row md:items-center md:text-left">
           <p className="order-2 lg:order-1">{copyright}</p>
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
             {legalLinks.map((link, idx) => (
-              <li key={idx} className="hover:text-white transition-colors">
+              <li key={idx} className="hover:text-gray-900 transition-colors">
                 <a href={link.href}> {link.name}</a>
               </li>
             ))}
