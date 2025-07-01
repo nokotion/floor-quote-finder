@@ -6,6 +6,7 @@ import { Shield, Users, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import FlooringPathTabs from "@/components/FlooringPathTabs";
 import { Hero } from "@/components/ui/animated-hero";
+import { Footer7 } from "@/components/ui/footer-7";
 
 const Index = () => {
   const fadeInUp = {
@@ -77,29 +78,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
-              alt="Price My Floor Logo" 
-              className="h-12 md:h-14 w-auto"
-            />
-          </div>
-          <p className="text-gray-400 mb-6">
-            Connecting Canadian homeowners with trusted flooring professionals since 2024
-          </p>
-          <div className="flex justify-center items-center gap-8 text-sm text-gray-400">
-            <span>© 2024 Price My Floor</span>
-            <span>•</span>
-            <span>Privacy Policy</span>
-            <span>•</span>
-            <span>Terms of Service</span>
-            <span>•</span>
-            <span>Contact Us</span>
-          </div>
-        </div>
-      </footer>
+      <Footer7 />
     </div>
   );
 };
