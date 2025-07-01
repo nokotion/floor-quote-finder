@@ -25,18 +25,18 @@ export function Hero() {
       <div className="container text-center max-w-4xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-bold leading-tight">
           Get{" "}
-          <span className="relative inline-block h-[1em] w-32 md:w-40 overflow-hidden align-baseline">
+          <span className="relative inline-block h-[1em] w-44 md:w-56 overflow-hidden align-baseline">
             {adjectives.map((word, i) => (
               <motion.span
                 key={word}
-                className="absolute w-full font-bold text-blue-600 text-center whitespace-nowrap"
-                initial={{ y: "-100%", opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center font-bold text-blue-600 whitespace-nowrap"
+                initial={{ y: "100%", opacity: 0 }}
                 animate={
                   i === index
                     ? { y: "0%", opacity: 1 }
-                    : { y: "-100%", opacity: 0 }
+                    : { y: "100%", opacity: 0 }
                 }
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
               >
                 {word}
               </motion.span>
