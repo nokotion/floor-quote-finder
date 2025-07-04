@@ -613,13 +613,13 @@ const Quote = () => {
                       <img 
                         src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//batchnumber.png"
                         alt="Example of flooring box edge showing batch number and product information"
-                        className="w-32 h-24 object-cover rounded-lg border border-gray-200"
+                        className="w-48 h-36 object-cover rounded-lg border border-gray-200"
                       />
                     </div>
                     
                     {/* Upload Area */}
                     <div className="flex-1">
-                      <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center h-24 flex flex-col justify-center">
+                      <div className="p-2 border-2 border-dashed border-gray-300 rounded-lg text-center h-20 flex flex-col justify-center">
                         <Upload className="w-6 h-6 mx-auto mb-1 text-gray-400" />
                         <p className="text-sm text-gray-600">Upload photos (Optional)</p>
                         <p className="text-xs text-gray-500">Drag and drop or click to select</p>
