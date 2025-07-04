@@ -62,24 +62,24 @@ const categories = [
 
 export default function FlooringCategories({ selectedCategory, onCategorySelect }: FlooringCategoriesProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 px-4 py-10">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 py-6">
       {categories.map((cat) => (
         <div
           key={cat.id}
           onClick={() => onCategorySelect(cat.id)}
           className={cn(
-            "group relative flex h-40 cursor-pointer flex-col justify-between rounded-xl border border-border bg-background p-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-md hover:border-accent hover:bg-muted/50 grayscale hover:grayscale-0",
+            "group relative flex cursor-pointer flex-col items-start rounded-lg border border-border bg-background p-3 max-w-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-sm hover:border-accent hover:bg-muted/50 grayscale hover:grayscale-0",
             selectedCategory === cat.id && "ring-2 ring-accent bg-accent/10 grayscale-0 border-accent"
           )}
         >
-          <div className="flex items-center gap-3">
-            <div className="rounded-md bg-muted p-2">{cat.icon}</div>
+          <div className="flex items-center gap-2 mb-2">
+            {cat.icon}
             <h3 className={cn(
-              "text-lg font-semibold",
+              "text-base font-medium",
               selectedCategory === cat.id ? "text-accent" : ""
             )}>{cat.title}</h3>
           </div>
-          <p className="text-sm text-muted-foreground">{cat.description}</p>
+          <p className="text-sm text-muted-foreground sm:hidden">{cat.description}</p>
         </div>
       ))}
     </div>
