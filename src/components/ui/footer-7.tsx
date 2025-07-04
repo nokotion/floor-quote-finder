@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
 interface Footer7Props {
@@ -90,14 +91,14 @@ export const Footer7 = ({
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
             {/* Logo */}
             <div className="flex items-center gap-2 lg:justify-start">
-              <a href={logo.url}>
+              <Link to={logo.url}>
                 <img
                   src={logo.src}
                   alt={logo.alt}
                   title={logo.title}
                   className="h-12 md:h-14 w-auto"
                 />
-              </a>
+              </Link>
             </div>
             <p className="max-w-[70%] text-sm text-gray-600">
               {description}
@@ -122,7 +123,11 @@ export const Footer7 = ({
                       key={linkIdx}
                       className="font-medium hover:text-gray-900 transition-colors"
                     >
-                      <a href={link.href}>{link.name}</a>
+                      {link.href.startsWith('#') ? (
+                        <a href={link.href}>{link.name}</a>
+                      ) : (
+                        <Link to={link.href}>{link.name}</Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -135,7 +140,11 @@ export const Footer7 = ({
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row">
             {legalLinks.map((link, idx) => (
               <li key={idx} className="hover:text-gray-900 transition-colors">
-                <a href={link.href}> {link.name}</a>
+                {link.href.startsWith('#') ? (
+                  <a href={link.href}> {link.name}</a>
+                ) : (
+                  <Link to={link.href}> {link.name}</Link>
+                )}
               </li>
             ))}
           </ul>

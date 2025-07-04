@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -66,58 +67,69 @@ const RetailerApply = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        {/* Navigation */}
-        <nav className="bg-white/90 backdrop-blur-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link to="/" className="font-bold text-2xl text-blue-600">
-                Price My Floor
-              </Link>
-              <Button variant="ghost" asChild>
-                <Link to="/" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Home
+      <>
+        <Helmet>
+          <title>Application Submitted - Price My Floor</title>
+          <meta name="description" content="Your retailer application has been submitted successfully." />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+          {/* Navigation */}
+          <nav className="bg-white/90 backdrop-blur-sm border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <Link to="/" className="font-bold text-2xl text-blue-600">
+                  Price My Floor
                 </Link>
-              </Button>
+                <Button variant="ghost" asChild>
+                  <Link to="/" className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </nav>
+
+          <div className="py-12 px-4">
+            <div className="max-w-md mx-auto">
+              <Card className="shadow-xl border-green-200">
+                <CardHeader className="text-center">
+                  <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <CardTitle className="text-2xl text-green-800">Application Submitted!</CardTitle>
+                  <CardDescription>
+                    Thank you for your interest in joining our retailer network.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  <p className="text-gray-600">
+                    We'll review your application and contact you within 2-3 business days.
+                  </p>
+                  <div className="space-y-2">
+                    <Button asChild className="w-full">
+                      <Link to="/">Return to Home</Link>
+                    </Button>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/retailer/login">Already have an account? Sign In</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </nav>
-
-        <div className="py-12 px-4">
-          <div className="max-w-md mx-auto">
-            <Card className="shadow-xl border-green-200">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                <CardTitle className="text-2xl text-green-800">Application Submitted!</CardTitle>
-                <CardDescription>
-                  Thank you for your interest in joining our retailer network.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center space-y-4">
-                <p className="text-gray-600">
-                  We'll review your application and contact you within 2-3 business days.
-                </p>
-                <div className="space-y-2">
-                  <Button asChild className="w-full">
-                    <Link to="/">Return to Home</Link>
-                  </Button>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link to="/retailer/login">Already have an account? Sign In</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <>
+      <Helmet>
+        <title>Apply to Join Network - Price My Floor</title>
+        <meta name="description" content="Apply to become a verified retailer partner with Price My Floor." />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Navigation */}
       <nav className="bg-white/90 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -329,6 +341,7 @@ const RetailerApply = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

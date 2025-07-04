@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -124,7 +125,12 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <>
+      <Helmet>
+        <title>Admin Dashboard - Price My Floor</title>
+        <meta name="description" content="Administrative dashboard for managing retailer applications and system overview." />
+      </Helmet>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -229,6 +235,7 @@ const AdminDashboard = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
