@@ -317,19 +317,19 @@ const Quote = () => {
       </div>
 
       {/* Single Page Form */}
-      <div className="py-8 px-4">
-        <div className="max-w-3xl mx-auto">
+      <div className="py-4 px-4">
+        <div className="max-w-[960px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-8"
+            className="text-center mb-4"
           >
-            <h1 className="text-3xl font-bold mb-4">Get Your Free Flooring Quote</h1>
-            <p className="text-gray-600">Complete the form below to connect with verified flooring retailers in your area</p>
+            <h1 className="text-2xl font-bold mb-2">Get Your Free Flooring Quote</h1>
+            <p className="text-sm text-gray-600">Complete the form below to connect with verified flooring retailers in your area</p>
           </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Brand Selection Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -337,39 +337,41 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Building className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <Building className="w-4 h-4 text-accent" />
                     Select Your Preferred Brands
                     {prefilledValues.brand && renderPrefilledBadge()}
                   </CardTitle>
-                  <p className="text-gray-600">Choose one or more flooring brands you're interested in</p>
+                  <p className="text-sm text-gray-600">Choose one or more flooring brands you're interested in</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    "Bruce Hardwood", "Shaw Floors", "Mohawk Flooring", "Daltile", 
-                    "Luxury Vinyl Pro", "Stainmaster", "No preference - show me options"
-                  ].map((brand) => (
-                    <div key={brand} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={brand}
-                        checked={formData.brands.includes(brand)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            updateFormData('brands', [...formData.brands, brand]);
-                          } else {
-                            updateFormData('brands', formData.brands.filter(b => b !== brand));
-                          }
-                        }}
-                      />
-                      <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
-                        {brand}
-                        {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
-                          <Badge variant="outline" className="text-xs">Pre-selected</Badge>
-                        )}
-                      </Label>
-                    </div>
-                  ))}
+                <CardContent className="p-4 pt-0">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {[
+                      "Bruce Hardwood", "Shaw Floors", "Mohawk Flooring", "Daltile", 
+                      "Luxury Vinyl Pro", "Stainmaster", "No preference - show me options"
+                    ].map((brand) => (
+                      <div key={brand} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={brand}
+                          checked={formData.brands.includes(brand)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              updateFormData('brands', [...formData.brands, brand]);
+                            } else {
+                              updateFormData('brands', formData.brands.filter(b => b !== brand));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1">
+                          {brand}
+                          {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
+                            <Badge variant="outline" className="text-xs">Pre-selected</Badge>
+                          )}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -381,17 +383,17 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <Package className="w-4 h-4 text-accent" />
                     Project Details
                     {prefilledValues.size && renderPrefilledBadge()}
                   </CardTitle>
-                  <p className="text-gray-600">Tell us about your flooring project</p>
+                  <p className="text-sm text-gray-600">Tell us about your flooring project</p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="p-4 pt-0 space-y-4">
                   <div>
-                    <Label htmlFor="projectSize" className="flex items-center gap-2">
+                    <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-semibold">
                       Approximate square footage
                       {prefilledValues.size && (
                         <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
@@ -402,21 +404,21 @@ const Quote = () => {
                       placeholder="e.g., 500 sq ft"
                       value={formData.projectSize}
                       onChange={(e) => updateFormData('projectSize', e.target.value)}
-                      className="mt-2"
+                      className="mt-1"
                     />
                   </div>
                   <Separator />
                   <div>
-                    <Label className="font-medium mb-3 block">Room type</Label>
+                    <Label className="text-sm font-semibold mb-2 block">Room type</Label>
                     <RadioGroup 
                       value={formData.roomType} 
                       onValueChange={(value) => updateFormData('roomType', value)}
-                      className="grid grid-cols-2 gap-4"
+                      className="grid grid-cols-2 md:grid-cols-3 gap-2"
                     >
                       {["Living Room", "Kitchen", "Bedroom", "Bathroom", "Basement", "Whole House", "Other"].map((room) => (
                         <div key={room} className="flex items-center space-x-2">
                           <RadioGroupItem value={room} id={room} />
-                          <Label htmlFor={room}>{room}</Label>
+                          <Label htmlFor={room} className="text-sm">{room}</Label>
                         </div>
                       ))}
                     </RadioGroup>
@@ -432,31 +434,31 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <User className="w-4 h-4 text-accent" />
                     Installation Preference
                   </CardTitle>
-                  <p className="text-gray-600">Do you need installation services?</p>
+                  <p className="text-sm text-gray-600">Do you need installation services?</p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0">
                   <RadioGroup 
                     value={formData.installationType} 
                     onValueChange={(value) => updateFormData('installationType', value)}
-                    className="space-y-4"
+                    className="space-y-2"
                   >
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
                       <RadioGroupItem value="supply-and-install" id="supply-and-install" />
                       <div>
-                        <Label htmlFor="supply-and-install" className="font-medium">Supply & Install</Label>
-                        <p className="text-sm text-gray-600">Materials and professional installation included</p>
+                        <Label htmlFor="supply-and-install" className="text-sm font-medium">Supply & Install</Label>
+                        <p className="text-xs text-gray-600">Materials and professional installation included</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg">
                       <RadioGroupItem value="supply-only" id="supply-only" />
                       <div>
-                        <Label htmlFor="supply-only" className="font-medium">Supply Only</Label>
-                        <p className="text-sm text-gray-600">Materials only, I'll handle installation</p>
+                        <Label htmlFor="supply-only" className="text-sm font-medium">Supply Only</Label>
+                        <p className="text-xs text-gray-600">Materials only, I'll handle installation</p>
                       </div>
                     </div>
                   </RadioGroup>
@@ -471,17 +473,17 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <MapPin className="w-4 h-4 text-accent" />
                     Location & Timeline
                     {prefilledValues.postal && renderPrefilledBadge()}
                   </CardTitle>
-                  <p className="text-gray-600">Help us find retailers in your area</p>
+                  <p className="text-sm text-gray-600">Help us find retailers in your area</p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="p-4 pt-0 space-y-4">
                   <div>
-                    <Label htmlFor="postalCode" className="flex items-center gap-2">
+                    <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold">
                       Postal Code
                       {prefilledValues.postal && (
                         <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
@@ -494,7 +496,7 @@ const Quote = () => {
                       value={formData.postalCode}
                       onChange={handlePostalCodeChange}
                       onBlur={handlePostalCodeBlur}
-                      className={`mt-2 ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+                      className={`mt-1 ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                     />
                     {postalCodeError && (
                       <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
@@ -502,14 +504,14 @@ const Quote = () => {
                   </div>
                   <Separator />
                   <div>
-                    <Label className="flex items-center gap-2 font-medium mb-3">
+                    <Label className="flex items-center gap-2 text-sm font-semibold mb-2">
                       <Clock className="w-4 h-4" />
                       When do you plan to start?
                     </Label>
                     <RadioGroup 
                       value={formData.timeline} 
                       onValueChange={(value) => updateFormData('timeline', value)}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-2"
                     >
                       {[
                         "As soon as possible",
@@ -520,7 +522,7 @@ const Quote = () => {
                       ].map((timeline) => (
                         <div key={timeline} className="flex items-center space-x-2">
                           <RadioGroupItem value={timeline} id={timeline} />
-                          <Label htmlFor={timeline}>{timeline}</Label>
+                          <Label htmlFor={timeline} className="text-sm">{timeline}</Label>
                         </div>
                       ))}
                     </RadioGroup>
@@ -536,43 +538,43 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.5 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <User className="w-4 h-4 text-accent" />
                     Contact Information
                   </CardTitle>
-                  <p className="text-gray-600">How should retailers contact you?</p>
+                  <p className="text-sm text-gray-600">How should retailers contact you?</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <CardContent className="p-4 pt-0 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="name">Full Name</Label>
+                      <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
                       <Input
                         id="name"
                         value={formData.contactInfo.name}
                         onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                        className="mt-2"
+                        className="mt-1"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={formData.contactInfo.phone}
                         onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                        className="mt-2"
+                        className="mt-1"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.contactInfo.email}
                       onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
-                      className="mt-2"
+                      className="mt-1"
                     />
                   </div>
                 </CardContent>
@@ -586,27 +588,27 @@ const Quote = () => {
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-accent" />
+                <CardHeader className="p-4">
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <FileText className="w-4 h-4 text-accent" />
                     Additional Details
                   </CardTitle>
-                  <p className="text-gray-600">Any specific requirements or questions?</p>
+                  <p className="text-sm text-gray-600">Any specific requirements or questions?</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="p-4 pt-0 space-y-3">
                   <div>
-                    <Label htmlFor="description">Project Description (Optional)</Label>
+                    <Label htmlFor="description" className="text-sm font-semibold">Project Description (Optional)</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe your project, any specific requirements, budget range, or questions..."
                       value={formData.projectDescription}
                       onChange={(e) => updateFormData('projectDescription', e.target.value)}
-                      rows={4}
-                      className="mt-2"
+                      rows={3}
+                      className="mt-1"
                     />
                   </div>
-                  <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                    <Upload className="w-6 h-6 mx-auto mb-1 text-gray-400" />
                     <p className="text-sm text-gray-600">Upload photos (Optional)</p>
                     <p className="text-xs text-gray-500">Drag and drop or click to select</p>
                   </div>
@@ -625,11 +627,11 @@ const Quote = () => {
                 type="submit" 
                 size="lg" 
                 disabled={!isFormValid()}
-                className="px-12 py-4 text-lg bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-8 py-3 text-base bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Submit Quote Request
               </Button>
-              <p className="text-sm text-gray-500 mt-4">
+              <p className="text-sm text-gray-500 mt-3">
                 You'll receive quotes within 24-48 hours
               </p>
             </motion.div>
