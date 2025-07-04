@@ -607,11 +607,30 @@ const Quote = () => {
                       className="mt-1"
                     />
                   </div>
-                  <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                    <Upload className="w-6 h-6 mx-auto mb-1 text-gray-400" />
-                    <p className="text-sm text-gray-600">Upload photos (Optional)</p>
-                    <p className="text-xs text-gray-500">Drag and drop or click to select</p>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    {/* Example Image */}
+                    <div className="flex-shrink-0">
+                      <img 
+                        src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//batchnumber.png"
+                        alt="Example of flooring box edge showing batch number and product information"
+                        className="w-32 h-24 object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                    
+                    {/* Upload Area */}
+                    <div className="flex-1">
+                      <div className="p-3 border-2 border-dashed border-gray-300 rounded-lg text-center h-24 flex flex-col justify-center">
+                        <Upload className="w-6 h-6 mx-auto mb-1 text-gray-400" />
+                        <p className="text-sm text-gray-600">Upload photos (Optional)</p>
+                        <p className="text-xs text-gray-500">Drag and drop or click to select</p>
+                      </div>
+                    </div>
                   </div>
+                  
+                  {/* Helpful Caption */}
+                  <p className="text-sm text-gray-600 mt-2">
+                    <strong>Tip:</strong> A photo of the short box edge is helpful — it usually shows the batch number, square footage, color name, and production info.
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
