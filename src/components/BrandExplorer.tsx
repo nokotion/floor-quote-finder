@@ -173,13 +173,13 @@ const BrandExplorer = () => {
                               className="h-16 w-auto object-contain mb-2"
                             />
                           ) : (
-                            <div className="h-16 w-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mb-2">
-                              <span className="text-blue-600 font-bold text-xl">
+                            <div className="h-16 w-16 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2">
+                              <span className="text-accent-foreground font-bold text-xl">
                                 {brand.name.charAt(0)}
                               </span>
                             </div>
                           )}
-                          <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">
+                          <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
                             {brand.name}
                           </h3>
                           {brand.description && (
@@ -189,7 +189,7 @@ const BrandExplorer = () => {
                           )}
                         </div>
                         {brand.website_url && (
-                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
                         )}
                       </div>
                       <div className="flex flex-wrap gap-2 mb-4">

@@ -14,7 +14,7 @@ export const TabSwitcher = ({ activeTab, onTabChange }: TabSwitcherProps) => {
           onClick={() => onTabChange("quick")}
           className={`flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-lg transition-all duration-300 relative ${
             activeTab === "quick"
-              ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl transform scale-105"
+              ? "bg-accent text-accent-foreground shadow-xl transform scale-105"
               : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-md"
           }`}
         >
@@ -25,7 +25,7 @@ export const TabSwitcher = ({ activeTab, onTabChange }: TabSwitcherProps) => {
           onClick={() => onTabChange("explore")}
           className={`flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-lg transition-all duration-300 relative ${
             activeTab === "explore"
-              ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-xl transform scale-105"
+              ? "bg-primary text-primary-foreground shadow-xl transform scale-105"
               : "text-gray-700 hover:text-gray-900 hover:bg-gray-200/60 hover:shadow-md"
           }`}
         >

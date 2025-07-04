@@ -1,10 +1,16 @@
 
+import tileIcon from "@/assets/categories/tile.png";
+import vinylIcon from "@/assets/categories/vinyl.png";
+import hardwoodIcon from "@/assets/categories/hardwood.png";
+import laminateIcon from "@/assets/categories/laminate.png";
+import carpetIcon from "@/assets/categories/carpet.png";
+
 export const flooringTypes = [
-  { name: "Tile", emoji: "🔲", description: "Ceramic, porcelain, and natural stone" },
-  { name: "Vinyl", emoji: "📱", description: "Luxury vinyl plank and sheet vinyl" },
-  { name: "Hardwood", emoji: "🪵", description: "Solid and engineered hardwood floors" },
-  { name: "Laminate", emoji: "✨", description: "Durable and affordable wood-look floors" },
-  { name: "Carpet", emoji: "🏠", description: "Soft and comfortable floor coverings" }
+  { name: "Tile", icon: tileIcon, description: "Ceramic, porcelain, and natural stone" },
+  { name: "Vinyl", icon: vinylIcon, description: "Luxury vinyl plank and sheet vinyl" },
+  { name: "Hardwood", icon: hardwoodIcon, description: "Solid and engineered hardwood floors" },
+  { name: "Laminate", icon: laminateIcon, description: "Durable and affordable wood-look floors" },
+  { name: "Carpet", icon: carpetIcon, description: "Soft and comfortable floor coverings" }
 ];
 
 export const projectSizes = [

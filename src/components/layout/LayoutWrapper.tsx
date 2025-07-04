@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { MainLayout } from "./MainLayout";
+import { AdminLayout } from "./AdminLayout";
 import RetailerLayout from "../retailer/RetailerLayout";
 
 interface LayoutWrapperProps {
@@ -21,9 +22,9 @@ export const LayoutWrapper = ({ children }: LayoutWrapperProps) => {
     return <RetailerLayout>{children}</RetailerLayout>;
   }
 
-  // Admin pages - no layout wrapper (they handle their own layout)
-  if (path.startsWith('/admin')) {
-    return <>{children}</>;
+  // Admin pages - use AdminLayout
+  if (path.startsWith('/admin') && path !== '/admin/login') {
+    return <AdminLayout>{children}</AdminLayout>;
   }
 
   // Public pages - use MainLayout

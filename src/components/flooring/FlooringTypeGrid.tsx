@@ -30,15 +30,21 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
               to={`/browse?category=${encodeURIComponent(type.name.toLowerCase())}`}
               className="group block"
             >
-              <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-blue-200">
+              <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-accent">
                 <CardContent className="p-4 text-center relative">
-                  <div className="text-4xl mb-3">{type.emoji}</div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
+                  <div className="mb-3 flex justify-center">
+                    <img 
+                      src={type.icon} 
+                      alt={`${type.name} flooring icon`}
+                      className="w-16 h-16 object-contain"
+                    />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-accent transition-colors">
                     {type.name}
                   </h3>
                   <p className="text-sm text-gray-600 mb-3">{type.description}</p>
                   {!brandCountsLoading && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">
                       {brandCounts[type.name] || 0} brands available
                     </Badge>
                   )}

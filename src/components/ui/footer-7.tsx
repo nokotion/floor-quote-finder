@@ -32,7 +32,7 @@ const defaultSections = [
     title: "Services",
     links: [
       { name: "Get Quote", href: "/quote" },
-      { name: "Browse Retailers", href: "/browse" },
+      { name: "Browse Brands", href: "/browse" },
       { name: "Flooring Types", href: "#" },
       { name: "Installation", href: "#" },
     ],

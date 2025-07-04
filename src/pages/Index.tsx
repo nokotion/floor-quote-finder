@@ -81,7 +81,7 @@ const Index = () => {
                 <Link to="/quote">Start My Quote</Link>
               </Button>
               <Button size="lg" className="text-lg px-8 py-4 bg-white/20 hover:bg-white/30 text-white border-2 border-white/50 backdrop-blur-sm" asChild>
-                <Link to="/browse">Browse Retailers</Link>
+                <Link to="/browse">Browse Brands</Link>
               </Button>
             </div>
           </motion.div>
