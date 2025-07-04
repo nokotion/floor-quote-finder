@@ -33,7 +33,7 @@ const Index = () => {
                 />
               </div>
               <div>Flooring Quotes from</div>
-              <div className="text-primary">Verified Local Retailers</div>
+              <div className="bg-gradient-to-r from-yellow-300 to-yellow-600 bg-clip-text text-transparent">Verified Local Retailers</div>
             </div>
             <p className="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
               Compare price, quality, and service from trusted flooring stores across Canada.
