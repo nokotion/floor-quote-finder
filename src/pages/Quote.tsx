@@ -445,7 +445,7 @@ const Quote = () => {
                   <RadioGroup 
                     value={formData.installationType} 
                     onValueChange={(value) => updateFormData('installationType', value)}
-                    className="space-y-2"
+                    className="grid grid-cols-1 md:grid-cols-2 gap-3"
                   >
                     <div className="flex items-center space-x-2 p-3 border rounded-lg">
                       <RadioGroupItem value="supply-and-install" id="supply-and-install" />
