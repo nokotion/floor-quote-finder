@@ -92,18 +92,20 @@ const BrandExplorer = () => {
     if (selectedCategory === "all") {
       setFilteredBrands(brands);
     } else {
-      const filtered = brands.filter(brand =>
-        brand.categories?.toLowerCase().includes(selectedCategory.toLowerCase())
-      );
+      const filtered = brands.filter(brand => {
+        if (!brand.categories) return false;
+        const brandCategories = brand.categories.split(',').map(cat => cat.trim().toLowerCase());
+        return brandCategories.includes(selectedCategory.toLowerCase());
+      });
       setFilteredBrands(filtered);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading brands...</p>
         </div>
       </div>
@@ -111,7 +113,7 @@ const BrandExplorer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 

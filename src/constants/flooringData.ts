@@ -14,7 +14,7 @@ export const flooringTypes = [
 ];
 
 export const projectSizes = [
-  { value: "100-less", label: "100 and less" },
+  { value: "100-less", label: "0–100" },
   { value: "100-500", label: "100–500" },
   { value: "500-1000", label: "500–1,000" },
   { value: "1000-5000", label: "1,000–5,000" },

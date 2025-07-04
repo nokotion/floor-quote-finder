@@ -22,10 +22,10 @@ const Index = () => {
           >
             <div className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               <div>Get</div>
-              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-600 my-2">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-accent my-2">
                 <Typewriter 
                   text={["Competitive", "Local", "Amazing", "Quality", "Trusted"]}
-                  className="text-blue-600 font-bold"
+                  className="text-accent font-bold"
                   speed={60}
                   waitTime={1500}
                   deleteSpeed={40}
@@ -33,7 +33,7 @@ const Index = () => {
                 />
               </div>
               <div>Flooring Quotes from</div>
-              <div className="text-blue-600">Verified Local Retailers</div>
+              <div className="text-primary">Verified Local Retailers</div>
             </div>
             <p className="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">
               Compare price, quality, and service from trusted flooring stores across Canada.

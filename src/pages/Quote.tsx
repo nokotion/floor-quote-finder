@@ -247,7 +247,7 @@ const Quote = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-8">
             <motion.div
@@ -279,20 +279,24 @@ const Quote = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
       {/* Progress Header */}
       <div className="bg-white/90 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link to="/" className="font-bold text-2xl text-blue-600">
-              Price My Floor
+            <Link to="/" className="flex items-center">
+              <img 
+                src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+                alt="Price My Floor Logo" 
+                className="h-12 w-auto"
+              />
             </Link>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
                 {Math.round(calculateProgress())}% Complete
               </div>
               {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">
                   <Sparkles className="w-3 h-3 mr-1" />
                   Quick form used
                 </Badge>
@@ -305,7 +309,7 @@ const Quote = () => {
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 h-2">
         <motion.div
-          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2"
+          className="bg-gradient-to-r from-accent to-primary h-2"
           initial={{ width: 0 }}
           animate={{ width: `${calculateProgress()}%` }}
           transition={{ duration: 0.5 }}
@@ -335,7 +339,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <Building className="w-5 h-5 text-blue-600" />
+                    <Building className="w-5 h-5 text-accent" />
                     Select Your Preferred Brands
                     {prefilledValues.brand && renderPrefilledBadge()}
                   </CardTitle>
@@ -379,7 +383,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-blue-600" />
+                    <Package className="w-5 h-5 text-accent" />
                     Project Details
                     {prefilledValues.size && renderPrefilledBadge()}
                   </CardTitle>
@@ -430,7 +434,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-blue-600" />
+                    <User className="w-5 h-5 text-accent" />
                     Installation Preference
                   </CardTitle>
                   <p className="text-gray-600">Do you need installation services?</p>
@@ -469,7 +473,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+                    <MapPin className="w-5 h-5 text-accent" />
                     Location & Timeline
                     {prefilledValues.postal && renderPrefilledBadge()}
                   </CardTitle>
@@ -534,7 +538,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <User className="w-5 h-5 text-blue-600" />
+                    <User className="w-5 h-5 text-accent" />
                     Contact Information
                   </CardTitle>
                   <p className="text-gray-600">How should retailers contact you?</p>
@@ -584,7 +588,7 @@ const Quote = () => {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-blue-600" />
+                    <FileText className="w-5 h-5 text-accent" />
                     Additional Details
                   </CardTitle>
                   <p className="text-gray-600">Any specific requirements or questions?</p>
@@ -621,7 +625,7 @@ const Quote = () => {
                 type="submit" 
                 size="lg" 
                 disabled={!isFormValid()}
-                className="px-12 py-4 text-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-12 py-4 text-lg bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Submit Quote Request
               </Button>
