@@ -280,40 +280,43 @@ const Quote = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
-      {/* Progress Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
-                alt="Price My Floor Logo" 
-                className="h-12 w-auto"
-              />
-            </Link>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                {Math.round(calculateProgress())}% Complete
+      {/* Sticky Header Container */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md">
+        {/* Progress Header */}
+        <div className="border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <Link to="/" className="flex items-center">
+                <img 
+                  src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+                  alt="Price My Floor Logo" 
+                  className="h-12 w-auto"
+                />
+              </Link>
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-600">
+                  {Math.round(calculateProgress())}% Complete
+                </div>
+                {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
+                  <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Quick form used
+                  </Badge>
+                )}
               </div>
-              {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
-                <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">
-                  <Sparkles className="w-3 h-3 mr-1" />
-                  Quick form used
-                </Badge>
-              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-200 h-2">
-        <motion.div
-          className="bg-gradient-to-r from-accent to-primary h-2"
-          initial={{ width: 0 }}
-          animate={{ width: `${calculateProgress()}%` }}
-          transition={{ duration: 0.5 }}
-        />
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 h-2">
+          <motion.div
+            className="bg-gradient-to-r from-accent to-primary h-2"
+            initial={{ width: 0 }}
+            animate={{ width: `${calculateProgress()}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
       </div>
 
       {/* Single Page Form */}
