@@ -12,6 +12,10 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./components/auth/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Auth from "./pages/Auth";
+import RetailerLogin from "./pages/RetailerLogin";
+import AdminLogin from "./pages/AdminLogin";
+import RetailerApply from "./pages/RetailerApply";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import RetailerLayout from "./components/retailer/RetailerLayout";
 import RetailerDashboard from "./pages/retailer/RetailerDashboard";
 import RetailerLeads from "./pages/retailer/RetailerLeads";
@@ -33,6 +37,16 @@ const App = () => (
             <Route path="/quote" element={<Quote />} />
             <Route path="/brand/:slug" element={<BrandDetail />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/retailer/login" element={<RetailerLogin />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/retailer/apply" element={<RetailerApply />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             
             {/* Retailer Routes */}
             <Route path="/retailer" element={

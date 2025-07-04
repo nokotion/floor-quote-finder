@@ -14,9 +14,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/auth');
+      if (requireRole === 'admin') {
+        navigate('/admin/login');
+      } else {
+        navigate('/retailer/login');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, requireRole]);
 
   if (loading) {
     return (

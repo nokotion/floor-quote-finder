@@ -42,7 +42,9 @@ const defaultSections = [
       { name: "About Us", href: "#" },
       { name: "How It Works", href: "#" },
       { name: "Partners", href: "#" },
-      { name: "Retailer Portal", href: "/auth" },
+      { name: "Retailer Login", href: "/retailer/login" },
+      { name: "Admin Login", href: "/admin/login" },
+      { name: "Apply to Join Network", href: "/retailer/apply" },
     ],
   },
   {
