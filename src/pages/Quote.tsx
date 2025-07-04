@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { ChevronRight, ChevronLeft, Upload, Check, Sparkles } from "lucide-react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Building } from "lucide-react";
+import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 
 interface QuoteFormData {
   brands: string[];
@@ -35,8 +36,10 @@ interface PrefilledValues {
 
 const Quote = () => {
   const [searchParams] = useSearchParams();
-  const [currentStep, setCurrentStep] = useState(1);
+  const navigate = useNavigate();
   const [prefilledValues, setPrefilledValues] = useState<PrefilledValues>({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [postalCodeError, setPostalCodeError] = useState("");
   const [formData, setFormData] = useState<QuoteFormData>({
     brands: [],
     projectSize: '',
@@ -51,8 +54,6 @@ const Quote = () => {
     },
     projectDescription: ''
   });
-
-  const totalSteps = 6;
 
   // Handle URL parameter pre-filling
   useEffect(() => {
@@ -114,22 +115,66 @@ const Quote = () => {
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formatted = formatAndValidatePostalCode(inputValue, formData.postalCode);
+    
+    updateFormData('postalCode', formatted);
+    
+    if (postalCodeError) {
+      setPostalCodeError("");
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+  const handlePostalCodeBlur = () => {
+    if (formData.postalCode && !validatePostalCode(formData.postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
+    } else {
+      setPostalCodeError("");
     }
   };
 
-  const handleSubmit = () => {
+  const calculateProgress = () => {
+    const requiredFields = [
+      formData.brands.length > 0,
+      formData.projectSize,
+      formData.roomType,
+      formData.installationType,
+      formData.postalCode && validatePostalCode(formData.postalCode),
+      formData.timeline,
+      formData.contactInfo.name,
+      formData.contactInfo.email,
+      formData.contactInfo.phone
+    ];
+    const filledFields = requiredFields.filter(Boolean).length;
+    return (filledFields / requiredFields.length) * 100;
+  };
+
+  const isFormValid = () => {
+    return formData.brands.length > 0 &&
+           formData.projectSize &&
+           formData.roomType &&
+           formData.installationType &&
+           formData.postalCode && validatePostalCode(formData.postalCode) &&
+           formData.timeline &&
+           formData.contactInfo.name &&
+           formData.contactInfo.email &&
+           formData.contactInfo.phone;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formData.postalCode && !validatePostalCode(formData.postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
+      return;
+    }
+
+    if (!isFormValid()) return;
+
     // Here you would typically send the data to your backend
     console.log('Quote submitted:', formData);
-    setCurrentStep(totalSteps + 1); // Show confirmation
+    setIsSubmitted(true);
   };
 
   const renderPrefilledBadge = () => (
@@ -139,297 +184,33 @@ const Quote = () => {
     </Badge>
   );
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Select Your Preferred Brands
-                {prefilledValues.brand && renderPrefilledBadge()}
-              </CardTitle>
-              <p className="text-gray-600">Choose one or more flooring brands you're interested in</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                "Bruce Hardwood", "Shaw Floors", "Mohawk Flooring", "Daltile", 
-                "Luxury Vinyl Pro", "Stainmaster", "No preference - show me options"
-              ].map((brand) => (
-                <div key={brand} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={brand}
-                    checked={formData.brands.includes(brand)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFormData('brands', [...formData.brands, brand]);
-                      } else {
-                        updateFormData('brands', formData.brands.filter(b => b !== brand));
-                      }
-                    }}
-                  />
-                  <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
-                    {brand}
-                    {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
-                      <Badge variant="outline" className="text-xs">Pre-selected</Badge>
-                    )}
-                  </Label>
-                </div>
-              ))}
-            </CardContent>
-          </motion.div>
-        );
-
-      case 2:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Project Details
-                {prefilledValues.size && renderPrefilledBadge()}
-              </CardTitle>
-              <p className="text-gray-600">Tell us about your flooring project</p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="projectSize" className="flex items-center gap-2">
-                  Approximate square footage
-                  {prefilledValues.size && (
-                    <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
-                  )}
-                </Label>
-                <Input
-                  id="projectSize"
-                  placeholder="e.g., 500 sq ft"
-                  value={formData.projectSize}
-                  onChange={(e) => updateFormData('projectSize', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Room type</Label>
-                <RadioGroup 
-                  value={formData.roomType} 
-                  onValueChange={(value) => updateFormData('roomType', value)}
-                  className="mt-2"
-                >
-                  {["Living Room", "Kitchen", "Bedroom", "Bathroom", "Basement", "Whole House", "Other"].map((room) => (
-                    <div key={room} className="flex items-center space-x-2">
-                      <RadioGroupItem value={room} id={room} />
-                      <Label htmlFor={room}>{room}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            </CardContent>
-          </motion.div>
-        );
-
-      case 3:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle>Installation Preference</CardTitle>
-              <p className="text-gray-600">Do you need installation services?</p>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup 
-                value={formData.installationType} 
-                onValueChange={(value) => updateFormData('installationType', value)}
-                className="space-y-4"
-              >
-                <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                  <RadioGroupItem value="supply-and-install" id="supply-and-install" />
-                  <div>
-                    <Label htmlFor="supply-and-install" className="font-medium">Supply & Install</Label>
-                    <p className="text-sm text-gray-600">Materials and professional installation included</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                  <RadioGroupItem value="supply-only" id="supply-only" />
-                  <div>
-                    <Label htmlFor="supply-only" className="font-medium">Supply Only</Label>
-                    <p className="text-sm text-gray-600">Materials only, I'll handle installation</p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </CardContent>
-          </motion.div>
-        );
-
-      case 4:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Location & Timeline
-                {prefilledValues.postal && renderPrefilledBadge()}
-              </CardTitle>
-              <p className="text-gray-600">Help us find retailers in your area</p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="postalCode" className="flex items-center gap-2">
-                  Postal Code (first 3 characters)
-                  {prefilledValues.postal && (
-                    <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
-                  )}
-                </Label>
-                <Input
-                  id="postalCode"
-                  placeholder="e.g., M5V"
-                  maxLength={3}
-                  value={formData.postalCode}
-                  onChange={(e) => updateFormData('postalCode', e.target.value.toUpperCase())}
-                />
-              </div>
-              <div>
-                <Label>When do you plan to start?</Label>
-                <RadioGroup 
-                  value={formData.timeline} 
-                  onValueChange={(value) => updateFormData('timeline', value)}
-                  className="mt-2"
-                >
-                  {[
-                    "As soon as possible",
-                    "Within 1 month", 
-                    "1-3 months",
-                    "3-6 months",
-                    "Just browsing/planning"
-                  ].map((timeline) => (
-                    <div key={timeline} className="flex items-center space-x-2">
-                      <RadioGroupItem value={timeline} id={timeline} />
-                      <Label htmlFor={timeline}>{timeline}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            </CardContent>
-          </motion.div>
-        );
-
-      case 5:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-              <p className="text-gray-600">How should retailers contact you?</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={formData.contactInfo.name}
-                  onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.contactInfo.email}
-                  onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.contactInfo.phone}
-                  onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                />
-              </div>
-            </CardContent>
-          </motion.div>
-        );
-
-      case 6:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CardHeader>
-              <CardTitle>Additional Details</CardTitle>
-              <p className="text-gray-600">Any specific requirements or questions?</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="description">Project Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe your project, any specific requirements, budget range, or questions..."
-                  value={formData.projectDescription}
-                  onChange={(e) => updateFormData('projectDescription', e.target.value)}
-                  rows={4}
-                />
-              </div>
-              <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Upload photos (Optional)</p>
-                <p className="text-xs text-gray-500">Drag and drop or click to select</p>
-              </div>
-            </CardContent>
-          </motion.div>
-        );
-
-      default:
-        return (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-center py-12"
-          >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              We're matching you with verified retailers in your area. You'll receive quotes within 24-48 hours.
-            </p>
-            <div className="space-y-4">
-              <Button asChild>
-                <Link to="/">Return Home</Link>
-              </Button>
-              <p className="text-sm text-gray-500">
-                Want updates? We'll email you when quotes arrive.
-              </p>
-            </div>
-          </motion.div>
-        );
-    }
-  };
-
-  if (currentStep > totalSteps) {
+  if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-8">
-            {renderStep()}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-center py-12"
+            >
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h2>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                We're matching you with verified retailers in your area. You'll receive quotes within 24-48 hours.
+              </p>
+              <div className="space-y-4">
+                <Button asChild>
+                  <Link to="/">Return Home</Link>
+                </Button>
+                <p className="text-sm text-gray-500">
+                  Want updates? We'll email you when quotes arrive.
+                </p>
+              </div>
+            </motion.div>
           </CardContent>
         </Card>
       </div>
@@ -447,7 +228,7 @@ const Quote = () => {
             </Link>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                Step {currentStep} of {totalSteps}
+                {Math.round(calculateProgress())}% Complete
               </div>
               {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -465,43 +246,329 @@ const Quote = () => {
         <motion.div
           className="bg-gradient-to-r from-blue-500 to-purple-500 h-2"
           initial={{ width: 0 }}
-          animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          animate={{ width: `${calculateProgress()}%` }}
           transition={{ duration: 0.5 }}
         />
       </div>
 
-      {/* Form */}
-      <div className="py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Card className="shadow-xl">
-            {renderStep()}
-            
-            {currentStep <= totalSteps && (
-              <div className="p-6 border-t bg-gray-50 flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-                
-                {currentStep === totalSteps ? (
-                  <Button onClick={handleSubmit} className="flex items-center">
-                    Submit Quote Request
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button onClick={nextStep} className="flex items-center">
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                )}
-              </div>
-            )}
-          </Card>
+      {/* Single Page Form */}
+      <div className="py-8 px-4">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8"
+          >
+            <h1 className="text-3xl font-bold mb-4">Get Your Free Flooring Quote</h1>
+            <p className="text-gray-600">Complete the form below to connect with verified flooring retailers in your area</p>
+          </motion.div>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Brand Selection Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Building className="w-5 h-5 text-blue-600" />
+                    Select Your Preferred Brands
+                    {prefilledValues.brand && renderPrefilledBadge()}
+                  </CardTitle>
+                  <p className="text-gray-600">Choose one or more flooring brands you're interested in</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[
+                    "Bruce Hardwood", "Shaw Floors", "Mohawk Flooring", "Daltile", 
+                    "Luxury Vinyl Pro", "Stainmaster", "No preference - show me options"
+                  ].map((brand) => (
+                    <div key={brand} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={brand}
+                        checked={formData.brands.includes(brand)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            updateFormData('brands', [...formData.brands, brand]);
+                          } else {
+                            updateFormData('brands', formData.brands.filter(b => b !== brand));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2">
+                        {brand}
+                        {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
+                          <Badge variant="outline" className="text-xs">Pre-selected</Badge>
+                        )}
+                      </Label>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Project Details Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <Package className="w-5 h-5 text-blue-600" />
+                    Project Details
+                    {prefilledValues.size && renderPrefilledBadge()}
+                  </CardTitle>
+                  <p className="text-gray-600">Tell us about your flooring project</p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label htmlFor="projectSize" className="flex items-center gap-2">
+                      Approximate square footage
+                      {prefilledValues.size && (
+                        <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
+                      )}
+                    </Label>
+                    <Input
+                      id="projectSize"
+                      placeholder="e.g., 500 sq ft"
+                      value={formData.projectSize}
+                      onChange={(e) => updateFormData('projectSize', e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                  <Separator />
+                  <div>
+                    <Label className="font-medium mb-3 block">Room type</Label>
+                    <RadioGroup 
+                      value={formData.roomType} 
+                      onValueChange={(value) => updateFormData('roomType', value)}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      {["Living Room", "Kitchen", "Bedroom", "Bathroom", "Basement", "Whole House", "Other"].map((room) => (
+                        <div key={room} className="flex items-center space-x-2">
+                          <RadioGroupItem value={room} id={room} />
+                          <Label htmlFor={room}>{room}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Installation Preference Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Installation Preference
+                  </CardTitle>
+                  <p className="text-gray-600">Do you need installation services?</p>
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup 
+                    value={formData.installationType} 
+                    onValueChange={(value) => updateFormData('installationType', value)}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                      <RadioGroupItem value="supply-and-install" id="supply-and-install" />
+                      <div>
+                        <Label htmlFor="supply-and-install" className="font-medium">Supply & Install</Label>
+                        <p className="text-sm text-gray-600">Materials and professional installation included</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 p-4 border rounded-lg">
+                      <RadioGroupItem value="supply-only" id="supply-only" />
+                      <div>
+                        <Label htmlFor="supply-only" className="font-medium">Supply Only</Label>
+                        <p className="text-sm text-gray-600">Materials only, I'll handle installation</p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Location & Timeline Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                    Location & Timeline
+                    {prefilledValues.postal && renderPrefilledBadge()}
+                  </CardTitle>
+                  <p className="text-gray-600">Help us find retailers in your area</p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label htmlFor="postalCode" className="flex items-center gap-2">
+                      Postal Code
+                      {prefilledValues.postal && (
+                        <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
+                      )}
+                    </Label>
+                    <Input
+                      id="postalCode"
+                      placeholder="e.g., M5V 3A8"
+                      maxLength={7}
+                      value={formData.postalCode}
+                      onChange={handlePostalCodeChange}
+                      onBlur={handlePostalCodeBlur}
+                      className={`mt-2 ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+                    />
+                    {postalCodeError && (
+                      <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                    )}
+                  </div>
+                  <Separator />
+                  <div>
+                    <Label className="flex items-center gap-2 font-medium mb-3">
+                      <Clock className="w-4 h-4" />
+                      When do you plan to start?
+                    </Label>
+                    <RadioGroup 
+                      value={formData.timeline} 
+                      onValueChange={(value) => updateFormData('timeline', value)}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    >
+                      {[
+                        "As soon as possible",
+                        "Within 1 month", 
+                        "1-3 months",
+                        "3-6 months",
+                        "Just browsing/planning"
+                      ].map((timeline) => (
+                        <div key={timeline} className="flex items-center space-x-2">
+                          <RadioGroupItem value={timeline} id={timeline} />
+                          <Label htmlFor={timeline}>{timeline}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Contact Information Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-blue-600" />
+                    Contact Information
+                  </CardTitle>
+                  <p className="text-gray-600">How should retailers contact you?</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input
+                        id="name"
+                        value={formData.contactInfo.name}
+                        onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.contactInfo.phone}
+                        onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
+                        className="mt-2"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.contactInfo.email}
+                      onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Additional Details Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                    Additional Details
+                  </CardTitle>
+                  <p className="text-gray-600">Any specific requirements or questions?</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="description">Project Description (Optional)</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe your project, any specific requirements, budget range, or questions..."
+                      value={formData.projectDescription}
+                      onChange={(e) => updateFormData('projectDescription', e.target.value)}
+                      rows={4}
+                      className="mt-2"
+                    />
+                  </div>
+                  <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                    <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-600">Upload photos (Optional)</p>
+                    <p className="text-xs text-gray-500">Drag and drop or click to select</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Submit Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="text-center pt-6"
+            >
+              <Button 
+                type="submit" 
+                size="lg" 
+                disabled={!isFormValid()}
+                className="px-12 py-4 text-lg bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit Quote Request
+              </Button>
+              <p className="text-sm text-gray-500 mt-4">
+                You'll receive quotes within 24-48 hours
+              </p>
+            </motion.div>
+          </form>
         </div>
       </div>
     </div>
