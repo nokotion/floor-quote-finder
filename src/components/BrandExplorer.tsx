@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Search } from "lucide-react";
 import { slugify } from "@/utils/slugUtils";
 import FlooringCategories from "@/components/ui/flooring-categories";
 
@@ -24,44 +25,17 @@ const BrandExplorer = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [filteredBrands, setFilteredBrands] = useState<Brand[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   const categories = [
-    { 
-      id: "all", 
-      name: "All", 
-      description: "Browse all flooring brands and options" 
-    },
-    { 
-      id: "tile", 
-      name: "Tile", 
-      description: "Ceramic, porcelain, and natural stone" 
-    },
-    { 
-      id: "vinyl", 
-      name: "Vinyl", 
-      description: "Luxury vinyl plank and sheet options" 
-    },
-    { 
-      id: "hardwood", 
-      name: "Hardwood", 
-      description: "Premium hardwood flooring options" 
-    },
-    { 
-      id: "laminate", 
-      name: "Laminate", 
-      description: "Durable and affordable wood-look floors" 
-    },
-    { 
-      id: "carpet", 
-      name: "Carpet", 
-      description: "Soft and comfortable floor coverings" 
-    },
-    { 
-      id: "sports", 
-      name: "Sports", 
-      description: "Performance flooring for gyms and sports areas" 
-    }
+    { id: "all", name: "All" },
+    { id: "vinyl", name: "Vinyl" },
+    { id: "laminate", name: "Laminate" },
+    { id: "hardwood", name: "Hardwood" },
+    { id: "tile", name: "Tile" },
+    { id: "commercial", name: "Commercial" },
+    { id: "carpet", name: "Carpet" }
   ];
 
   useEffect(() => {
@@ -70,7 +44,7 @@ const BrandExplorer = () => {
 
   useEffect(() => {
     filterBrands();
-  }, [selectedCategory, brands]);
+  }, [selectedCategory, searchQuery, brands]);
 
   const fetchBrands = async () => {
     try {
@@ -89,16 +63,26 @@ const BrandExplorer = () => {
   };
 
   const filterBrands = () => {
-    if (selectedCategory === "all") {
-      setFilteredBrands(brands);
-    } else {
-      const filtered = brands.filter(brand => {
+    let filtered = brands;
+
+    // Filter by category
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(brand => {
         if (!brand.categories) return false;
         const brandCategories = brand.categories.split(',').map(cat => cat.trim().toLowerCase());
         return brandCategories.includes(selectedCategory.toLowerCase());
       });
-      setFilteredBrands(filtered);
     }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(brand =>
+        brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (brand.description && brand.description.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    setFilteredBrands(filtered);
   };
 
   if (loading) {
@@ -117,27 +101,38 @@ const BrandExplorer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Browse Flooring Brands
+            Browse All Flooring Brands
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover top flooring brands and get instant quotes from local retailers
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Explore our network of trusted flooring brands and get instant quotes
           </p>
+          
+          {/* Search Bar */}
+          <div className="max-w-md mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search brands..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full"
+              />
+            </div>
+          </div>
         </motion.div>
 
-        {/* Category Selector - New Flat Design */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-8 text-center">Choose a Category</h2>
-          <FlooringCategories 
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-          />
-        </div>
+        {/* Category Tabs */}
+        <FlooringCategories 
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+        />
 
         {/* Results Header */}
         <div className="flex justify-between items-center mb-8">
@@ -152,7 +147,17 @@ const BrandExplorer = () => {
         {/* Brand Grid */}
         {filteredBrands.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No brands found for this category.</p>
+            <p className="text-gray-500 text-lg">
+              {searchQuery.trim() 
+                ? `No brands found matching "${searchQuery}"`
+                : "No brands found for this category."
+              }
+            </p>
+            {searchQuery.trim() && (
+              <p className="text-gray-400 text-sm mt-2">
+                Try adjusting your search or selecting a different category.
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
