@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Building } from "lucide-react";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuoteFormData {
   brands: string[];
@@ -162,7 +163,7 @@ const Quote = () => {
            formData.contactInfo.phone;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.postalCode && !validatePostalCode(formData.postalCode)) {
@@ -172,9 +173,69 @@ const Quote = () => {
 
     if (!isFormValid()) return;
 
-    // Here you would typically send the data to your backend
-    console.log('Quote submitted:', formData);
-    setIsSubmitted(true);
+    try {
+      // First, save the lead to database
+      const { data: leadData, error: leadError } = await supabase
+        .from('leads')
+        .insert({
+          customer_name: formData.contactInfo.name,
+          customer_email: formData.contactInfo.email,
+          customer_phone: formData.contactInfo.phone,
+          postal_code: formData.postalCode,
+          brand_requested: formData.brands.join(', '),
+          square_footage: parseSquareFootage(formData.projectSize),
+          project_type: formData.roomType,
+          installation_required: formData.installationType === 'supply-and-install',
+          timeline: formData.timeline,
+          notes: formData.projectDescription,
+          status: 'new'
+        })
+        .select()
+        .single();
+
+      if (leadError) {
+        console.error('Error saving lead:', leadError);
+        alert('Error submitting quote. Please try again.');
+        return;
+      }
+
+      console.log('Lead saved:', leadData);
+
+      // Process the lead for distribution
+      const { data: processResult, error: processError } = await supabase.functions.invoke('process-lead-submission', {
+        body: {
+          leadData: {
+            ...leadData,
+            brands: formData.brands,
+            projectSize: formData.projectSize,
+            roomType: formData.roomType,
+            installationType: formData.installationType,
+            postalCode: formData.postalCode,
+            timeline: formData.timeline,
+            contactInfo: formData.contactInfo,
+            projectDescription: formData.projectDescription
+          }
+        }
+      });
+
+      if (processError) {
+        console.error('Error processing lead:', processError);
+        // Still show success to user even if distribution fails
+      } else {
+        console.log('Lead processing result:', processResult);
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting quote:', error);
+      alert('Error submitting quote. Please try again.');
+    }
+  };
+
+  // Helper function to parse square footage
+  const parseSquareFootage = (sizeString: string): number => {
+    const match = sizeString.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 500;
   };
 
   const renderPrefilledBadge = () => (

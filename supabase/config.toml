@@ -1,1 +1,53 @@
 project_id = "syjxtyvsencbmhuprnyu"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lovable.dev", "https://lovable.app"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+template.invite.subject = "You have been invited"
+template.invite.content_path = "./supabase/templates/invite.html"
+template.confirmation.subject = "Confirm your signup"
+template.confirmation.content_path = "./supabase/templates/confirmation.html"
+template.recovery.subject = "Reset your password"
+template.recovery.content_path = "./supabase/templates/recovery.html"
+template.magic_link.subject = "Your Magic Link"
+template.magic_link.content_path = "./supabase/templates/magic_link.html"
+template.email_change.subject = "Confirm your new email"
+template.email_change.content_path = "./supabase/templates/email_change.html"
+
+[db]
+enabled = true
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[functions]
+enabled = true
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
+image_transformation = { enabled = true }

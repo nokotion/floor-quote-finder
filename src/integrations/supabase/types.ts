@@ -216,6 +216,8 @@ export type Database = {
           max_square_footage: number | null
           min_square_footage: number | null
           retailer_id: string | null
+          sqft_tier_max: number | null
+          sqft_tier_min: number | null
           updated_at: string
         }
         Insert: {
@@ -227,6 +229,8 @@ export type Database = {
           max_square_footage?: number | null
           min_square_footage?: number | null
           retailer_id?: string | null
+          sqft_tier_max?: number | null
+          sqft_tier_min?: number | null
           updated_at?: string
         }
         Update: {
@@ -238,6 +242,8 @@ export type Database = {
           max_square_footage?: number | null
           min_square_footage?: number | null
           retailer_id?: string | null
+          sqft_tier_max?: number | null
+          sqft_tier_min?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -322,42 +328,57 @@ export type Database = {
       lead_distributions: {
         Row: {
           brand_matched: string | null
+          charge_amount: number | null
+          delivery_time: string | null
           distance_km: number | null
           distribution_method: string | null
           id: string
           lead_id: string | null
           lead_price: number
+          payment_method: string | null
           responded_at: string | null
           retailer_id: string | null
           sent_at: string
           status: string | null
+          stripe_payment_intent_id: string | null
           viewed_at: string | null
+          was_paid: boolean | null
         }
         Insert: {
           brand_matched?: string | null
+          charge_amount?: number | null
+          delivery_time?: string | null
           distance_km?: number | null
           distribution_method?: string | null
           id?: string
           lead_id?: string | null
           lead_price: number
+          payment_method?: string | null
           responded_at?: string | null
           retailer_id?: string | null
           sent_at?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
           viewed_at?: string | null
+          was_paid?: boolean | null
         }
         Update: {
           brand_matched?: string | null
+          charge_amount?: number | null
+          delivery_time?: string | null
           distance_km?: number | null
           distribution_method?: string | null
           id?: string
           lead_id?: string | null
           lead_price?: number
+          payment_method?: string | null
           responded_at?: string | null
           retailer_id?: string | null
           sent_at?: string
           status?: string | null
+          stripe_payment_intent_id?: string | null
           viewed_at?: string | null
+          was_paid?: boolean | null
         }
         Relationships: [
           {
@@ -820,6 +841,44 @@ export type Database = {
         }
         Relationships: []
       }
+      retailer_lead_credits: {
+        Row: {
+          created_at: string
+          credits_remaining: number
+          credits_used: number
+          id: string
+          last_purchase_date: string | null
+          retailer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits_remaining?: number
+          credits_used?: number
+          id?: string
+          last_purchase_date?: string | null
+          retailer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits_remaining?: number
+          credits_used?: number
+          id?: string
+          last_purchase_date?: string | null
+          retailer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retailer_lead_credits_retailer_id_fkey"
+            columns: ["retailer_id"]
+            isOneToOne: false
+            referencedRelation: "retailers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retailer_leads: {
         Row: {
           created_at: string
@@ -981,6 +1040,7 @@ export type Database = {
           current_balance: number | null
           email: string
           id: string
+          installation_preference: string | null
           insurance_provider: string | null
           last_billing_date: string | null
           lead_types: string[] | null
@@ -990,6 +1050,7 @@ export type Database = {
           partner_id: string | null
           phone: string | null
           postal_code: string | null
+          postal_code_prefixes: string[] | null
           pricing_plan_id: string | null
           province: string | null
           service_areas: string[] | null
@@ -1000,6 +1061,7 @@ export type Database = {
           subscription_tier: string | null
           updated_at: string
           urgency_filter: string | null
+          urgency_preference: string | null
           user_id: string | null
           website: string | null
           years_in_business: number | null
@@ -1021,6 +1083,7 @@ export type Database = {
           current_balance?: number | null
           email: string
           id?: string
+          installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
           lead_types?: string[] | null
@@ -1030,6 +1093,7 @@ export type Database = {
           partner_id?: string | null
           phone?: string | null
           postal_code?: string | null
+          postal_code_prefixes?: string[] | null
           pricing_plan_id?: string | null
           province?: string | null
           service_areas?: string[] | null
@@ -1040,6 +1104,7 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           urgency_filter?: string | null
+          urgency_preference?: string | null
           user_id?: string | null
           website?: string | null
           years_in_business?: number | null
@@ -1061,6 +1126,7 @@ export type Database = {
           current_balance?: number | null
           email?: string
           id?: string
+          installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
           lead_types?: string[] | null
@@ -1070,6 +1136,7 @@ export type Database = {
           partner_id?: string | null
           phone?: string | null
           postal_code?: string | null
+          postal_code_prefixes?: string[] | null
           pricing_plan_id?: string | null
           province?: string | null
           service_areas?: string[] | null
@@ -1080,6 +1147,7 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           urgency_filter?: string | null
+          urgency_preference?: string | null
           user_id?: string | null
           website?: string | null
           years_in_business?: number | null
