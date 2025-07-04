@@ -280,8 +280,8 @@ const Quote = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-sm border-b">
+      {/* Progress Header */}
+      <div className="bg-white/90 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="font-bold text-2xl text-blue-600">
@@ -300,7 +300,7 @@ const Quote = () => {
             </div>
           </div>
         </div>
-      </nav>
+      </div>
 
       {/* Progress Bar */}
       <div className="w-full bg-gray-200 h-2">
