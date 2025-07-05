@@ -36,7 +36,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     const initializeAutocomplete = async () => {
       try {
         const loader = new Loader({
-          apiKey: 'PLACEHOLDER_API_KEY', // Will be replaced with actual key
+          apiKey: 'AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50',
           version: 'weekly',
           libraries: ['places']
         });
