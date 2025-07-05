@@ -80,8 +80,10 @@ const Quote = () => {
     fetchBrands();
   }, []);
 
-  // Handle URL parameter pre-filling
+  // Handle URL parameter pre-filling - run after brands are loaded
   useEffect(() => {
+    if (brands.length === 0) return; // Wait for brands to load
+
     const brandParam = searchParams.get('brand');
     const sizeParam = searchParams.get('size');
     const postalParam = searchParams.get('postal');
@@ -113,7 +115,7 @@ const Quote = () => {
     }
 
     setPrefilledValues(prefilled);
-  }, [searchParams]);
+  }, [searchParams, brands]);
 
   const updateFormData = (field: string, value: any) => {
     if (field.includes('.')) {
