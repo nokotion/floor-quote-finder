@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
@@ -15,7 +15,7 @@ import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalC
 import { supabase } from "@/integrations/supabase/client";
 
 interface QuoteFormData {
-  brands: string[];
+  selectedBrand: string;
   projectSize: string;
   roomType: string;
   installationType: string;
@@ -27,6 +27,11 @@ interface QuoteFormData {
     phone: string;
   };
   projectDescription: string;
+}
+
+interface Brand {
+  id: string;
+  name: string;
 }
 
 interface PrefilledValues {
@@ -41,8 +46,9 @@ const Quote = () => {
   const [prefilledValues, setPrefilledValues] = useState<PrefilledValues>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState("");
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [formData, setFormData] = useState<QuoteFormData>({
-    brands: [],
+    selectedBrand: '',
     projectSize: '',
     roomType: '',
     installationType: '',
@@ -56,6 +62,25 @@ const Quote = () => {
     projectDescription: ''
   });
 
+  // Fetch brands from database
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('flooring_brands')
+          .select('id, name')
+          .order('name');
+        
+        if (error) throw error;
+        setBrands(data || []);
+      } catch (error) {
+        console.error('Error fetching brands:', error);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
   // Handle URL parameter pre-filling
   useEffect(() => {
     const brandParam = searchParams.get('brand');
@@ -68,7 +93,7 @@ const Quote = () => {
       prefilled.brand = brandParam;
       setFormData(prev => ({
         ...prev,
-        brands: brandParam === 'no-preference' ? ['No preference - show me options'] : [brandParam]
+        selectedBrand: brandParam === 'no-preference' ? 'No preference - show me options' : brandParam
       }));
     }
 
@@ -137,7 +162,7 @@ const Quote = () => {
 
   const calculateProgress = () => {
     const requiredFields = [
-      formData.brands.length > 0,
+      formData.selectedBrand,
       formData.projectSize,
       formData.roomType,
       formData.installationType,
@@ -152,7 +177,7 @@ const Quote = () => {
   };
 
   const isFormValid = () => {
-    return formData.brands.length > 0 &&
+    return formData.selectedBrand &&
            formData.projectSize &&
            formData.roomType &&
            formData.installationType &&
@@ -182,7 +207,7 @@ const Quote = () => {
           customer_email: formData.contactInfo.email,
           customer_phone: formData.contactInfo.phone,
           postal_code: formData.postalCode,
-          brand_requested: formData.brands.join(', '),
+          brand_requested: formData.selectedBrand,
           square_footage: parseSquareFootage(formData.projectSize),
           project_type: formData.roomType,
           installation_required: formData.installationType === 'supply-and-install',
@@ -206,7 +231,7 @@ const Quote = () => {
         body: {
           leadData: {
             ...leadData,
-            brands: formData.brands,
+            selectedBrand: formData.selectedBrand,
             projectSize: formData.projectSize,
             roomType: formData.roomType,
             installationType: formData.installationType,
@@ -343,37 +368,35 @@ const Quote = () => {
                 <CardHeader className="p-4">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                     <Building className="w-4 h-4 text-accent" />
-                    Select Your Preferred Brands
+                    Select Your Preferred Brand
                     {prefilledValues.brand && renderPrefilledBadge()}
                   </CardTitle>
-                  <p className="text-sm text-gray-600">Choose one or more flooring brands you're interested in</p>
+                  <p className="text-sm text-gray-600">Choose your preferred flooring brand</p>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {[
-                      "Bruce Hardwood", "Shaw Floors", "Mohawk Flooring", "Daltile", 
-                      "Luxury Vinyl Pro", "Stainmaster", "No preference - show me options"
-                    ].map((brand) => (
-                      <div key={brand} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={brand}
-                          checked={formData.brands.includes(brand)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              updateFormData('brands', [...formData.brands, brand]);
-                            } else {
-                              updateFormData('brands', formData.brands.filter(b => b !== brand));
-                            }
-                          }}
-                        />
-                        <Label htmlFor={brand} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-1">
-                          {brand}
-                          {prefilledValues.brand && (brand === prefilledValues.brand || (prefilledValues.brand === 'no-preference' && brand === 'No preference - show me options')) && (
-                            <Badge variant="outline" className="text-xs">Pre-selected</Badge>
-                          )}
-                        </Label>
-                      </div>
-                    ))}
+                  <div>
+                    <Label htmlFor="brand" className="flex items-center gap-2 text-sm font-semibold">
+                      Preferred Brand
+                      {prefilledValues.brand && (
+                        <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
+                      )}
+                    </Label>
+                    <Select 
+                      value={formData.selectedBrand} 
+                      onValueChange={(value) => updateFormData('selectedBrand', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select your preferred brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="No preference - show me options">No preference - show me options</SelectItem>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand.id} value={brand.name}>
+                            {brand.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
