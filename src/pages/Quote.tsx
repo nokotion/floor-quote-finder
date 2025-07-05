@@ -14,6 +14,7 @@ import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Buildi
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
+import AddressAutocomplete from "@/components/ui/address-autocomplete";
 
 interface QuoteFormData {
   selectedBrand: string;
@@ -25,6 +26,10 @@ interface QuoteFormData {
     name: string;
     email: string;
     phone: string;
+    fullAddress: string;
+    streetAddress: string;
+    city: string;
+    province: string;
   };
   projectDescription: string;
 }
@@ -56,7 +61,11 @@ const Quote = () => {
     contactInfo: {
       name: '',
       email: '',
-      phone: ''
+      phone: '',
+      fullAddress: '',
+      streetAddress: '',
+      city: '',
+      province: ''
     },
     projectDescription: ''
   });
@@ -163,7 +172,8 @@ const Quote = () => {
       formData.timeline,
       formData.contactInfo.name,
       formData.contactInfo.email,
-      formData.contactInfo.phone
+      formData.contactInfo.phone,
+      formData.contactInfo.fullAddress
     ];
     const filledFields = requiredFields.filter(Boolean).length;
     return (filledFields / requiredFields.length) * 100;
@@ -177,7 +187,8 @@ const Quote = () => {
            formData.timeline &&
            formData.contactInfo.name &&
            formData.contactInfo.email &&
-           formData.contactInfo.phone;
+           formData.contactInfo.phone &&
+           formData.contactInfo.fullAddress;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,13 +203,14 @@ const Quote = () => {
 
     try {
       // First, save the lead to database
-      const { data: leadData, error: leadError } = await supabase
+        const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .insert({
           customer_name: formData.contactInfo.name,
           customer_email: formData.contactInfo.email,
           customer_phone: formData.contactInfo.phone,
           postal_code: formData.postalCode,
+          street_address: formData.contactInfo.fullAddress,
           brand_requested: formData.selectedBrand,
           square_footage: parseSquareFootage(formData.projectSize),
           project_type: null,
@@ -443,7 +455,7 @@ const Quote = () => {
               </motion.div>
             </div>
 
-            {/* Installation + Location & Timeline Row */}
+            {/* Installation + Location Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Installation Preference Section */}
               <motion.div
@@ -483,7 +495,7 @@ const Quote = () => {
                 </Card>
               </motion.div>
 
-              {/* Location & Timeline Section */}
+              {/* Location Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -493,11 +505,11 @@ const Quote = () => {
                   <CardHeader className="p-3">
                     <CardTitle className="flex items-center gap-2 text-base font-semibold">
                       <MapPin className="w-4 h-4 text-accent" />
-                      Location & Timeline
+                      Location
                       {prefilledValues.postal && renderPrefilledBadge()}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0 space-y-3">
+                  <CardContent className="p-3 pt-0">
                     <div>
                       <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                         Postal Code
@@ -518,86 +530,119 @@ const Quote = () => {
                         <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
+            {/* Timeline + Contact Information Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {/* Timeline Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="shadow-lg h-full">
+                  <CardHeader className="p-3">
+                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                      <Clock className="w-4 h-4 text-accent" />
+                      Timeline
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0">
+                    <RadioGroup 
+                      value={formData.timeline} 
+                      onValueChange={(value) => updateFormData('timeline', value)}
+                      className="grid grid-cols-1 gap-4"
+                    >
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                        <RadioGroupItem value="As soon as possible" id="asap" />
+                        <Label htmlFor="asap" className="text-sm font-medium">ASAP</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                        <RadioGroupItem value="Within 1 month" id="within-month" />
+                        <Label htmlFor="within-month" className="text-sm font-medium">Within 1 month</Label>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Contact Information Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.35 }}
+              >
+                <Card className="shadow-lg h-full">
+                  <CardHeader className="p-3">
+                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                      <User className="w-4 h-4 text-accent" />
+                      Contact Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 space-y-3">
                     <div>
-                      <Label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-1">
-                        <Clock className="w-4 h-4" />
-                        Timeline
-                      </Label>
-                      <RadioGroup 
-                        value={formData.timeline} 
-                        onValueChange={(value) => updateFormData('timeline', value)}
-                        className="grid grid-cols-1 gap-3"
-                      >
-                        <div className="flex items-center space-x-2 py-1">
-                          <RadioGroupItem value="As soon as possible" id="asap" />
-                          <Label htmlFor="asap" className="text-sm font-medium">ASAP</Label>
-                        </div>
-                        <div className="flex items-center space-x-2 py-1">
-                          <RadioGroupItem value="Within 1 month" id="within-month" />
-                          <Label htmlFor="within-month" className="text-sm font-medium">Within 1 month</Label>
-                        </div>
-                      </RadioGroup>
+                      <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
+                      <AddressAutocomplete
+                        id="fullAddress"
+                        value={formData.contactInfo.fullAddress}
+                        onChange={(address, addressData) => {
+                          updateFormData('contactInfo.fullAddress', address);
+                          if (addressData) {
+                            const streetAddress = `${addressData.street_number || ''} ${addressData.route || ''}`.trim();
+                            updateFormData('contactInfo.streetAddress', streetAddress);
+                            updateFormData('contactInfo.city', addressData.locality || '');
+                            updateFormData('contactInfo.province', addressData.administrative_area_level_1 || '');
+                          }
+                        }}
+                        placeholder="Start typing your address..."
+                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
+                        <Input
+                          id="name"
+                          value={formData.contactInfo.name}
+                          onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
+                          className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.contactInfo.phone}
+                          onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
+                          className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.contactInfo.email}
+                        onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
+                        className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      />
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             </div>
 
-            {/* Contact Information Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <Card className="shadow-lg">
-                <CardHeader className="p-4">
-                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                    <User className="w-4 h-4 text-accent" />
-                    Contact Information
-                  </CardTitle>
-                  <p className="text-sm text-gray-600">How should retailers contact you?</p>
-                </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
-                      <Input
-                        id="name"
-                        value={formData.contactInfo.name}
-                        onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={formData.contactInfo.phone}
-                        onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.contactInfo.email}
-                      onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
-                      className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
 
             {/* Additional Details Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
             >
               <Card className="shadow-lg">
                 <CardHeader className="p-4">
@@ -651,7 +696,7 @@ const Quote = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
               className="text-center pt-6"
             >
               <Button 
