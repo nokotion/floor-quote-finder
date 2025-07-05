@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Browse from "./pages/Browse";
 import Quote from "./pages/Quote";
+import Verify from "./pages/Verify";
 import BrandDetail from "./pages/BrandDetail";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/browse" element={<Browse />} />
               <Route path="/quote" element={<Quote />} />
+              <Route path="/verify" element={<Verify />} />
               <Route path="/brand/:slug" element={<BrandDetail />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/retailer/login" element={<RetailerLogin />} />

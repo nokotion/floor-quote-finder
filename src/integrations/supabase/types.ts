@@ -1185,7 +1185,11 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      verification_status:
+        | "pending_verification"
+        | "verified"
+        | "expired"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1300,6 +1304,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      verification_status: [
+        "pending_verification",
+        "verified",
+        "expired",
+        "failed",
+      ],
+    },
   },
 } as const

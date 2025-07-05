@@ -52,6 +52,7 @@ const Quote = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [postalCodeError, setPostalCodeError] = useState("");
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [verificationMethod, setVerificationMethod] = useState<'email' | 'sms'>('email');
   const [formData, setFormData] = useState<QuoteFormData>({
     selectedBrand: '',
     projectSize: '',
@@ -202,8 +203,8 @@ const Quote = () => {
     if (!isFormValid()) return;
 
     try {
-      // First, save the lead to database
-        const { data: leadData, error: leadError } = await supabase
+      // Save the lead to database with pending verification status
+      const { data: leadData, error: leadError } = await supabase
         .from('leads')
         .insert({
           customer_name: formData.contactInfo.name,
@@ -217,7 +218,8 @@ const Quote = () => {
           installation_required: formData.installationType === 'supply-and-install',
           timeline: formData.timeline,
           notes: formData.projectDescription,
-          status: 'new'
+          status: 'pending_verification',
+          is_verified: false
         })
         .select()
         .single();
@@ -228,32 +230,34 @@ const Quote = () => {
         return;
       }
 
-      console.log('Lead saved:', leadData);
+      console.log('Lead saved for verification:', leadData);
 
-      // Process the lead for distribution
-      const { data: processResult, error: processError } = await supabase.functions.invoke('process-lead-submission', {
+      // Send verification code
+      const contact = verificationMethod === 'email' ? formData.contactInfo.email : formData.contactInfo.phone;
+      const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('send-verification', {
         body: {
-          leadData: {
-            ...leadData,
-            selectedBrand: formData.selectedBrand,
-            projectSize: formData.projectSize,
-            installationType: formData.installationType,
-            postalCode: formData.postalCode,
-            timeline: formData.timeline,
-            contactInfo: formData.contactInfo,
-            projectDescription: formData.projectDescription
-          }
+          leadId: leadData.id,
+          method: verificationMethod,
+          contact: contact
         }
       });
 
-      if (processError) {
-        console.error('Error processing lead:', processError);
-        // Still show success to user even if distribution fails
-      } else {
-        console.log('Lead processing result:', processResult);
+      if (verificationError) {
+        console.error('Error sending verification:', verificationError);
+        alert('Error sending verification code. Please try again.');
+        return;
       }
 
-      setIsSubmitted(true);
+      console.log('Verification sent:', verificationResult);
+
+      // Redirect to verification page
+      const params = new URLSearchParams({
+        leadId: leadData.id,
+        method: verificationMethod,
+        contact: contact
+      });
+      
+      navigate(`/verify?${params.toString()}`);
     } catch (error) {
       console.error('Error submitting quote:', error);
       alert('Error submitting quote. Please try again.');
@@ -569,7 +573,7 @@ const Quote = () => {
                 </Card>
               </motion.div>
 
-              {/* Contact Information Section */}
+            {/* Contact Information Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -631,6 +635,28 @@ const Quote = () => {
                         onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
                         className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
+                    </div>
+                    
+                    {/* Verification Method Selection */}
+                    <div className="pt-2 border-t">
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">How would you like to verify your request?</Label>
+                      <RadioGroup 
+                        value={verificationMethod} 
+                        onValueChange={(value) => setVerificationMethod(value as 'email' | 'sms')}
+                        className="grid grid-cols-2 gap-2"
+                      >
+                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
+                          <RadioGroupItem value="email" id="verify-email" />
+                          <Label htmlFor="verify-email" className="text-sm font-medium">Email</Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
+                          <RadioGroupItem value="sms" id="verify-sms" />
+                          <Label htmlFor="verify-sms" className="text-sm font-medium">SMS</Label>
+                        </div>
+                      </RadioGroup>
+                      <p className="text-xs text-gray-500 mt-1">
+                        We'll send a verification code to confirm your request
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
