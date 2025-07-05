@@ -17,7 +17,6 @@ import { supabase } from "@/integrations/supabase/client";
 interface QuoteFormData {
   selectedBrand: string;
   projectSize: string;
-  roomType: string;
   installationType: string;
   postalCode: string;
   timeline: string;
@@ -50,7 +49,6 @@ const Quote = () => {
   const [formData, setFormData] = useState<QuoteFormData>({
     selectedBrand: '',
     projectSize: '',
-    roomType: '',
     installationType: '',
     postalCode: '',
     timeline: '',
@@ -61,6 +59,13 @@ const Quote = () => {
     },
     projectDescription: ''
   });
+
+  const projectSizes = [
+    { value: "100-500", label: "100-500 sq ft" },
+    { value: "500-1000", label: "500-1,000 sq ft" },
+    { value: "1000-2000", label: "1,000-2,000 sq ft" },
+    { value: "2000+", label: "2,000+ sq ft" }
+  ];
 
   // Fetch brands from database
   useEffect(() => {
@@ -93,22 +98,15 @@ const Quote = () => {
       prefilled.brand = brandParam;
       setFormData(prev => ({
         ...prev,
-        selectedBrand: brandParam === 'no-preference' ? 'No preference - show me options' : brandParam
+        selectedBrand: brandParam
       }));
     }
 
     if (sizeParam) {
       prefilled.size = sizeParam;
-      // Convert size range to approximate square footage for form
-      const sizeMap: { [key: string]: string } = {
-        '100-500': '300 sq ft',
-        '500-1000': '750 sq ft', 
-        '1000-2000': '1500 sq ft',
-        '2000+': '2500 sq ft'
-      };
       setFormData(prev => ({
         ...prev,
-        projectSize: sizeMap[sizeParam] || sizeParam
+        projectSize: sizeParam
       }));
     }
 
@@ -164,7 +162,6 @@ const Quote = () => {
     const requiredFields = [
       formData.selectedBrand,
       formData.projectSize,
-      formData.roomType,
       formData.installationType,
       formData.postalCode && validatePostalCode(formData.postalCode),
       formData.timeline,
@@ -179,7 +176,6 @@ const Quote = () => {
   const isFormValid = () => {
     return formData.selectedBrand &&
            formData.projectSize &&
-           formData.roomType &&
            formData.installationType &&
            formData.postalCode && validatePostalCode(formData.postalCode) &&
            formData.timeline &&
@@ -209,7 +205,7 @@ const Quote = () => {
           postal_code: formData.postalCode,
           brand_requested: formData.selectedBrand,
           square_footage: parseSquareFootage(formData.projectSize),
-          project_type: formData.roomType,
+          project_type: null,
           installation_required: formData.installationType === 'supply-and-install',
           timeline: formData.timeline,
           notes: formData.projectDescription,
@@ -233,7 +229,6 @@ const Quote = () => {
             ...leadData,
             selectedBrand: formData.selectedBrand,
             projectSize: formData.projectSize,
-            roomType: formData.roomType,
             installationType: formData.installationType,
             postalCode: formData.postalCode,
             timeline: formData.timeline,
@@ -259,8 +254,14 @@ const Quote = () => {
 
   // Helper function to parse square footage
   const parseSquareFootage = (sizeString: string): number => {
-    const match = sizeString.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 500;
+    // Extract the first number from the size range
+    const sizeMap: { [key: string]: number } = {
+      '100-500': 300,
+      '500-1000': 750,
+      '1000-2000': 1500,
+      '2000+': 2500
+    };
+    return sizeMap[sizeString] || 500;
   };
 
   const renderPrefilledBadge = () => (
@@ -389,7 +390,6 @@ const Quote = () => {
                         <SelectValue placeholder="Select your preferred brand" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="No preference - show me options">No preference - show me options</SelectItem>
                         {brands.map((brand) => (
                           <SelectItem key={brand.id} value={brand.name}>
                             {brand.name}
@@ -415,39 +415,31 @@ const Quote = () => {
                     Project Details
                     {prefilledValues.size && renderPrefilledBadge()}
                   </CardTitle>
-                  <p className="text-sm text-gray-600">Tell us about your flooring project</p>
+                  <p className="text-sm text-gray-600">Tell us about your flooring project size</p>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-4">
+                <CardContent className="p-4 pt-0">
                   <div>
                     <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-semibold">
-                      Approximate square footage
+                      Project Size (Square Footage)
                       {prefilledValues.size && (
                         <Badge variant="outline" className="text-xs">Pre-filled from quick form</Badge>
                       )}
                     </Label>
-                    <Input
-                      id="projectSize"
-                      placeholder="e.g., 500 sq ft"
-                      value={formData.projectSize}
-                      onChange={(e) => updateFormData('projectSize', e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <Separator />
-                  <div>
-                    <Label className="text-sm font-semibold mb-2 block">Room type</Label>
-                    <RadioGroup 
-                      value={formData.roomType} 
-                      onValueChange={(value) => updateFormData('roomType', value)}
-                      className="grid grid-cols-2 md:grid-cols-3 gap-2"
+                    <Select 
+                      value={formData.projectSize} 
+                      onValueChange={(value) => updateFormData('projectSize', value)}
                     >
-                      {["Living Room", "Kitchen", "Bedroom", "Bathroom", "Basement", "Whole House", "Other"].map((room) => (
-                        <div key={room} className="flex items-center space-x-2">
-                          <RadioGroupItem value={room} id={room} />
-                          <Label htmlFor={room} className="text-sm">{room}</Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select project size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projectSizes.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
@@ -537,20 +529,16 @@ const Quote = () => {
                     <RadioGroup 
                       value={formData.timeline} 
                       onValueChange={(value) => updateFormData('timeline', value)}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                      className="grid grid-cols-1 gap-2"
                     >
-                      {[
-                        "As soon as possible",
-                        "Within 1 month", 
-                        "1-3 months",
-                        "3-6 months",
-                        "Just browsing/planning"
-                      ].map((timeline) => (
-                        <div key={timeline} className="flex items-center space-x-2">
-                          <RadioGroupItem value={timeline} id={timeline} />
-                          <Label htmlFor={timeline} className="text-sm">{timeline}</Label>
-                        </div>
-                      ))}
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="As soon as possible" id="asap" />
+                        <Label htmlFor="asap" className="text-sm">As soon as possible</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="Within 1 month" id="within-month" />
+                        <Label htmlFor="within-month" className="text-sm">Within 1 month</Label>
+                      </div>
                     </RadioGroup>
                   </div>
                 </CardContent>
