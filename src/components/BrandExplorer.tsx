@@ -11,6 +11,15 @@ import { ExternalLink, Search } from "lucide-react";
 import { slugify } from "@/utils/slugUtils";
 import FlooringCategories from "@/components/ui/flooring-categories";
 
+const categoryIcons: Record<string, string> = {
+  vinyl: "📋",
+  laminate: "✨", 
+  hardwood: "🌳",
+  tile: "🔲",
+  carpet: "🧶",
+  commercial: "🏢"
+};
+
 interface Brand {
   id: string;
   name: string;
@@ -160,7 +169,7 @@ const BrandExplorer = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredBrands.map((brand, index) => (
               <motion.div
                 key={brand.id}
@@ -173,15 +182,15 @@ const BrandExplorer = () => {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          {brand.logo_url ? (
+                           {brand.logo_url ? (
                             <img 
                               src={brand.logo_url} 
                               alt={`${brand.name} logo`}
-                              className="h-16 w-auto object-contain mb-2"
+                              className="h-24 w-auto object-contain mb-2"
                             />
                           ) : (
-                            <div className="h-16 w-16 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2">
-                              <span className="text-accent-foreground font-bold text-xl">
+                            <div className="h-24 w-24 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2">
+                              <span className="text-accent-foreground font-bold text-2xl">
                                 {brand.name.charAt(0)}
                               </span>
                             </div>
@@ -199,13 +208,19 @@ const BrandExplorer = () => {
                           <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
                         )}
                       </div>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {brand.categories?.split(',').map((category, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {category.trim()}
-                          </Badge>
-                        ))}
-                      </div>
+                       {brand.categories && brand.categories.trim() && (
+                        <div className="flex gap-1 mb-4">
+                          {brand.categories.split(',')
+                            .map(cat => cat.trim().toLowerCase())
+                            .filter(cat => categoryIcons[cat])
+                            .slice(0, 3)
+                            .map((category, idx) => (
+                              <span key={idx} className="text-lg" title={category}>
+                                {categoryIcons[category]}
+                              </span>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Link>
                   <div className="px-6 pb-6">
