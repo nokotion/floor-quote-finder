@@ -86,7 +86,6 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
                     <SelectValue placeholder="Select brand" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg">
-                    <SelectItem value="no-preference" className="font-medium">No preference</SelectItem>
                     {brands.map((brand) => (
                       <SelectItem key={brand.id} value={brand.name} className="font-medium">
                         {brand.name}

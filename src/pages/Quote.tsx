@@ -372,7 +372,7 @@ const Quote = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
                     <div>
-                      <Label htmlFor="brand" className="flex items-center gap-2 text-sm font-medium">
+                      <Label htmlFor="brand" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                         Select Brand
                         {prefilledValues.brand && (
                           <Badge variant="outline" className="text-xs">Pre-filled</Badge>
@@ -382,12 +382,12 @@ const Quote = () => {
                         value={formData.selectedBrand} 
                         onValueChange={(value) => updateFormData('selectedBrand', value)}
                       >
-                        <SelectTrigger className="mt-1">
+                        <SelectTrigger className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
                           <SelectValue placeholder="Select your preferred brand" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
                           {brands.map((brand) => (
-                            <SelectItem key={brand.id} value={brand.name}>
+                            <SelectItem key={brand.id} value={brand.name} className="font-medium">
                               {brand.name}
                             </SelectItem>
                           ))}
@@ -414,7 +414,7 @@ const Quote = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
                     <div>
-                      <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-medium">
+                      <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                         Square Footage
                         {prefilledValues.size && (
                           <Badge variant="outline" className="text-xs">Pre-filled</Badge>
@@ -424,12 +424,12 @@ const Quote = () => {
                         value={formData.projectSize} 
                         onValueChange={(value) => updateFormData('projectSize', value)}
                       >
-                        <SelectTrigger className="mt-1">
+                        <SelectTrigger className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
                           <SelectValue placeholder="Select project size" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
                           {projectSizes.map((size) => (
-                            <SelectItem key={size.value} value={size.value}>
+                            <SelectItem key={size.value} value={size.value} className="font-medium">
                               {size.label}
                             </SelectItem>
                           ))}
@@ -462,17 +462,17 @@ const Quote = () => {
                       onValueChange={(value) => updateFormData('installationType', value)}
                       className="grid grid-cols-1 gap-2"
                     >
-                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
+                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
                         <RadioGroupItem value="supply-and-install" id="supply-and-install" />
                         <div>
-                          <Label htmlFor="supply-and-install" className="text-sm font-medium">Supply & Install</Label>
+                          <Label htmlFor="supply-and-install" className="text-sm font-semibold text-gray-800">Supply & Install</Label>
                           <p className="text-xs text-gray-600">Materials + installation</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 p-2 border rounded-lg">
                         <RadioGroupItem value="supply-only" id="supply-only" />
                         <div>
-                          <Label htmlFor="supply-only" className="text-sm font-medium">Supply Only</Label>
+                          <Label htmlFor="supply-only" className="text-sm font-semibold text-gray-800">Supply Only</Label>
                           <p className="text-xs text-gray-600">Materials only</p>
                         </div>
                       </div>
@@ -497,7 +497,7 @@ const Quote = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-3">
                     <div>
-                      <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-medium">
+                      <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                         Postal Code
                         {prefilledValues.postal && (
                           <Badge variant="outline" className="text-xs">Pre-filled</Badge>
@@ -510,14 +510,14 @@ const Quote = () => {
                         value={formData.postalCode}
                         onChange={handlePostalCodeChange}
                         onBlur={handlePostalCodeBlur}
-                        className={`mt-1 ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
+                        className={`mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
                       />
                       {postalCodeError && (
-                        <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                        <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
                       )}
                     </div>
                     <div>
-                      <Label className="flex items-center gap-2 text-sm font-medium mb-1">
+                      <Label className="flex items-center gap-2 text-sm font-semibold text-gray-800 mb-1">
                         <Clock className="w-4 h-4" />
                         Timeline
                       </Label>
@@ -528,11 +528,11 @@ const Quote = () => {
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="As soon as possible" id="asap" />
-                          <Label htmlFor="asap" className="text-sm">ASAP</Label>
+                          <Label htmlFor="asap" className="text-sm font-medium">ASAP</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="Within 1 month" id="within-month" />
-                          <Label htmlFor="within-month" className="text-sm">Within 1 month</Label>
+                          <Label htmlFor="within-month" className="text-sm font-medium">Within 1 month</Label>
                         </div>
                       </RadioGroup>
                     </div>
@@ -558,33 +558,33 @@ const Quote = () => {
                 <CardContent className="p-4 pt-0 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
+                      <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
                       <Input
                         id="name"
                         value={formData.contactInfo.name}
                         onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                        className="mt-1"
+                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={formData.contactInfo.phone}
                         onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                        className="mt-1"
+                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
+                    <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.contactInfo.email}
                       onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
-                      className="mt-1"
+                      className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                     />
                   </div>
                 </CardContent>
@@ -607,14 +607,14 @@ const Quote = () => {
                 </CardHeader>
                 <CardContent className="p-4 pt-0 space-y-3">
                   <div>
-                    <Label htmlFor="description" className="text-sm font-semibold">Project Description (Optional)</Label>
+                    <Label htmlFor="description" className="text-sm font-semibold text-gray-800">Project Description (Optional)</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe your project, any specific requirements, budget range, or questions..."
                       value={formData.projectDescription}
                       onChange={(e) => updateFormData('projectDescription', e.target.value)}
                       rows={3}
-                      className="mt-1"
+                      className="mt-1 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                     />
                   </div>
                   <div className="flex flex-col md:flex-row gap-4">
