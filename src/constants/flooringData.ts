@@ -14,9 +14,9 @@ export const flooringTypes = [
 ];
 
 export const projectSizes = [
-  { value: "100-less", label: "0–100" },
-  { value: "100-500", label: "100–500" },
-  { value: "500-1000", label: "500–1,000" },
-  { value: "1000-5000", label: "1,000–5,000" },
-  { value: "5000+", label: "5,000+" }
+  { value: "0-100", label: "0–100 sq ft" },
+  { value: "100-500", label: "100–500 sq ft" },
+  { value: "500-1000", label: "500–1,000 sq ft" },
+  { value: "1000-5000", label: "1,000–5,000 sq ft" },
+  { value: "5000+", label: "5,000+ sq ft" }
 ];

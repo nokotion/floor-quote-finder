@@ -13,6 +13,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Building } from "lucide-react";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { projectSizes } from "@/constants/flooringData";
 
 interface QuoteFormData {
   selectedBrand: string;
@@ -59,13 +60,6 @@ const Quote = () => {
     },
     projectDescription: ''
   });
-
-  const projectSizes = [
-    { value: "100-500", label: "100-500 sq ft" },
-    { value: "500-1000", label: "500-1,000 sq ft" },
-    { value: "1000-2000", label: "1,000-2,000 sq ft" },
-    { value: "2000+", label: "2,000+ sq ft" }
-  ];
 
   // Fetch brands from database
   useEffect(() => {
@@ -256,10 +250,11 @@ const Quote = () => {
   const parseSquareFootage = (sizeString: string): number => {
     // Extract the first number from the size range
     const sizeMap: { [key: string]: number } = {
+      '0-100': 50,
       '100-500': 300,
       '500-1000': 750,
-      '1000-2000': 1500,
-      '2000+': 2500
+      '1000-5000': 3000,
+      '5000+': 7500
     };
     return sizeMap[sizeString] || 500;
   };

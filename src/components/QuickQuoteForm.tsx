@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, ArrowLeft } from "lucide-react";
+import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
+import { projectSizes } from "@/constants/flooringData";
 
 interface Brand {
   id: string;
@@ -25,6 +27,7 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -46,8 +49,33 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
     fetchBrands();
   }, []);
 
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formatted = formatAndValidatePostalCode(inputValue, postalCode);
+    
+    setPostalCode(formatted);
+    
+    if (postalCodeError) {
+      setPostalCodeError("");
+    }
+  };
+
+  const handlePostalCodeBlur = () => {
+    if (postalCode && !validatePostalCode(postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
+    } else {
+      setPostalCodeError("");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (postalCode && !validatePostalCode(postalCode)) {
+      setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
+      return;
+    }
+    
     if (!selectedBrand || !projectSize || !postalCode) return;
 
     setIsLoading(true);
@@ -61,14 +89,7 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
     navigate(`/quote?${params.toString()}`);
   };
 
-  const projectSizes = [
-    { value: "100-500", label: "100-500 sq ft" },
-    { value: "500-1000", label: "500-1,000 sq ft" },
-    { value: "1000-2000", label: "1,000-2,000 sq ft" },
-    { value: "2000+", label: "2,000+ sq ft" }
-  ];
-
-  const isFormValid = selectedBrand && projectSize && postalCode;
+  const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
   return (
     <section className="py-16 px-4 bg-white">
@@ -118,7 +139,6 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                         <SelectValue placeholder="Select brand" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="no-preference">No preference</SelectItem>
                         {brands.map((brand) => (
                           <SelectItem key={brand.id} value={brand.name}>
                             {brand.name}
@@ -148,12 +168,16 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                     <Label htmlFor="postal">Postal Code</Label>
                     <Input
                       id="postal"
-                      placeholder="e.g., L4Y"
+                      placeholder="e.g., M5V 3A8"
                       value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value.toUpperCase())}
-                      maxLength={3}
-                      pattern="[A-Z][0-9][A-Z]"
+                      onChange={handlePostalCodeChange}
+                      onBlur={handlePostalCodeBlur}
+                      maxLength={7}
+                      className={postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}
                     />
+                    {postalCodeError && (
+                      <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                    )}
                   </div>
                 </div>
 
