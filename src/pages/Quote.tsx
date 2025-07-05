@@ -526,13 +526,13 @@ const Quote = () => {
                       <RadioGroup 
                         value={formData.timeline} 
                         onValueChange={(value) => updateFormData('timeline', value)}
-                        className="grid grid-cols-1 gap-1"
+                        className="grid grid-cols-1 gap-3"
                       >
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 py-1">
                           <RadioGroupItem value="As soon as possible" id="asap" />
                           <Label htmlFor="asap" className="text-sm font-medium">ASAP</Label>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 py-1">
                           <RadioGroupItem value="Within 1 month" id="within-month" />
                           <Label htmlFor="within-month" className="text-sm font-medium">Within 1 month</Label>
                         </div>
