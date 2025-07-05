@@ -176,54 +176,59 @@ const BrandExplorer = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="h-full"
               >
-                <Card className="h-full group hover:shadow-xl transition-all duration-300">
-                  <Link to={`/brand/${brand.slug}`} className="block">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                           {brand.logo_url ? (
-                            <img 
-                              src={brand.logo_url} 
-                              alt={`${brand.name} logo`}
-                              className="h-24 w-auto object-contain mb-2"
-                            />
-                          ) : (
-                            <div className="h-24 w-24 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2">
-                              <span className="text-accent-foreground font-bold text-2xl">
-                                {brand.name.charAt(0)}
-                              </span>
-                            </div>
-                          )}
-                          <h3 className="text-xl font-bold group-hover:text-accent transition-colors">
-                            {brand.name}
-                          </h3>
-                          {brand.description && (
-                            <p className="text-gray-600 mt-2 text-sm line-clamp-3">
-                              {brand.description}
-                            </p>
-                          )}
-                        </div>
-                        {brand.website_url && (
-                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
+                <Card className="h-full group hover:shadow-xl transition-all duration-300 flex flex-col">
+                  <Link to={`/brand/${brand.slug}`} className="flex-1 flex flex-col">
+                    <CardContent className="p-4 flex-1 flex flex-col">
+                      {/* Logo Section */}
+                      <div className="flex flex-col items-center text-center mb-4">
+                        {brand.logo_url ? (
+                          <img 
+                            src={brand.logo_url} 
+                            alt={`${brand.name} logo`}
+                            className="h-20 w-auto object-contain mb-3"
+                          />
+                        ) : (
+                          <div className="h-20 w-20 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-3">
+                            <span className="text-accent-foreground font-bold text-2xl">
+                              {brand.name.charAt(0)}
+                            </span>
+                          </div>
                         )}
+                        
+                        {/* Brand Name */}
+                        <h3 className="text-lg font-bold group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] flex items-center">
+                          {brand.name}
+                        </h3>
                       </div>
-                       {brand.categories && brand.categories.trim() && (
-                        <div className="flex gap-1 mb-4">
-                          {brand.categories.split(',')
+                      
+                      {/* Category Icons */}
+                      <div className="flex justify-center gap-2 mb-4 min-h-[1.5rem]">
+                        {brand.categories && brand.categories.trim() && 
+                          brand.categories.split(',')
                             .map(cat => cat.trim().toLowerCase())
                             .filter(cat => categoryIcons[cat])
                             .slice(0, 3)
                             .map((category, idx) => (
-                              <span key={idx} className="text-lg" title={category}>
+                              <span key={idx} className="text-xl" title={category}>
                                 {categoryIcons[category]}
                               </span>
-                          ))}
-                        </div>
-                      )}
+                            ))
+                        }
+                      </div>
+                      
+                      {/* Website Icon */}
+                      <div className="flex justify-center">
+                        {brand.website_url && (
+                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
+                        )}
+                      </div>
                     </CardContent>
                   </Link>
-                  <div className="px-6 pb-6">
+                  
+                  {/* Get Quote Button - Always at bottom */}
+                  <div className="p-4 pt-0 mt-auto">
                     <Button asChild className="w-full">
                       <Link to={`/quote?brand=${encodeURIComponent(brand.name)}`}>
                         Get Quote
