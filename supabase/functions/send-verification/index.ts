@@ -27,15 +27,26 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate 6-digit verification code
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    let result;
+    let verificationToken = null;
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    
+    if (method === 'email') {
+      // For email, we still generate our own token since Twilio Verify doesn't handle email
+      verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+      result = await sendEmailVerification(contact, verificationToken);
+    } else if (method === 'sms') {
+      // For SMS, use Twilio Verify service - no need for our own token
+      result = await sendSMSVerification(contact);
+    } else {
+      throw new Error('Invalid verification method');
+    }
 
     // Update lead with verification details
     const { error: updateError } = await supabase
       .from('leads')
       .update({
-        verification_token: verificationToken,
+        verification_token: verificationToken, // Only set for email
         verification_method: method,
         verification_sent_at: new Date().toISOString(),
         verification_expires_at: expiresAt.toISOString(),
@@ -45,16 +56,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (updateError) {
       throw new Error(`Failed to update lead: ${updateError.message}`);
-    }
-
-    let result;
-    
-    if (method === 'email') {
-      result = await sendEmailVerification(contact, verificationToken);
-    } else if (method === 'sms') {
-      result = await sendSMSVerification(contact, verificationToken);
-    } else {
-      throw new Error('Invalid verification method');
     }
 
     console.log(`Verification sent via ${method} to ${contact}, token: ${verificationToken}`);
@@ -128,12 +129,12 @@ async function sendEmailVerification(email: string, token: string) {
   return await response.json();
 }
 
-async function sendSMSVerification(phone: string, token: string) {
+async function sendSMSVerification(phone: string) {
   const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
-  const twilioPhone = Deno.env.get('TWILIO_PHONE_NUMBER');
+  const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
   
-  if (!twilioSid || !twilioAuth || !twilioPhone) {
+  if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
     throw new Error('Twilio credentials not configured');
   }
 
@@ -141,7 +142,7 @@ async function sendSMSVerification(phone: string, token: string) {
   const formattedPhone = formatCanadianPhone(phone);
 
   const response = await fetch(
-    `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
+    `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/Verifications`,
     {
       method: 'POST',
       headers: {
@@ -149,16 +150,15 @@ async function sendSMSVerification(phone: string, token: string) {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        From: twilioPhone,
         To: formattedPhone,
-        Body: `Your Price My Floor verification code is: ${token}. This code expires in 10 minutes.`,
+        Channel: 'sms',
       }),
     }
   );
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Failed to send SMS: ${error}`);
+    throw new Error(`Failed to send SMS verification: ${error}`);
   }
 
   return await response.json();

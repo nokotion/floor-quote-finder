@@ -64,12 +64,58 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if token matches
-    if (lead.verification_token !== token) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid verification code' }),
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+    // Verify the token based on verification method
+    if (lead.verification_method === 'sms') {
+      // Use Twilio Verify for SMS verification
+      const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+      const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
+      const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
+      
+      if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
+        throw new Error('Twilio credentials not configured');
+      }
+
+      // Format phone number for verification check
+      const formattedPhone = formatCanadianPhone(lead.customer_phone || '');
+
+      const verifyResponse = await fetch(
+        `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/VerificationCheck`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${btoa(`${twilioSid}:${twilioAuth}`)}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            To: formattedPhone,
+            Code: token,
+          }),
+        }
       );
+
+      if (!verifyResponse.ok) {
+        const error = await verifyResponse.text();
+        return new Response(
+          JSON.stringify({ error: 'Failed to verify code with Twilio' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+
+      const verifyResult = await verifyResponse.json();
+      if (verifyResult.status !== 'approved') {
+        return new Response(
+          JSON.stringify({ error: 'Invalid verification code' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    } else {
+      // For email verification, use the stored token
+      if (lead.verification_token !== token) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid verification code' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
     }
 
     // Mark as verified
@@ -136,5 +182,23 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+function formatCanadianPhone(phone: string): string {
+  // Remove all non-digits
+  const digits = phone.replace(/\D/g, '');
+  
+  // If it's 10 digits, assume it's Canadian and add +1
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  
+  // If it's 11 digits and starts with 1, format as North American
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  
+  // Return as-is if already formatted or different format
+  return phone.startsWith('+') ? phone : `+${digits}`;
+}
 
 serve(handler);
