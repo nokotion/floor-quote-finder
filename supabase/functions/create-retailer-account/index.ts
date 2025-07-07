@@ -172,23 +172,30 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // 7. Send welcome email with credentials (call send-retailer-welcome function)
+    console.log('Attempting to send welcome email...');
     try {
-      const { error: emailError } = await supabaseAdmin.functions.invoke('send-retailer-welcome', {
+      const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.lovable.app'}/retailer/login`;
+      
+      const { data: emailData, error: emailError } = await supabaseAdmin.functions.invoke('send-retailer-welcome', {
         body: {
           email: application.email,
           businessName: application.business_name,
           contactName: application.contact_name,
           tempPassword: tempPassword,
-          loginUrl: `${req.headers.get('origin') || 'https://your-domain.com'}/retailer/login`
+          loginUrl: loginUrl
         }
       });
 
       if (emailError) {
         console.error('Email sending error:', emailError);
-        // Don't fail the entire process for email issues
+        // Don't fail the entire process but log the error prominently
+        console.error('CRITICAL: Welcome email failed to send!', emailError);
+      } else {
+        console.log('Welcome email sent successfully:', emailData);
       }
     } catch (emailErr) {
       console.error('Email function error:', emailErr);
+      console.error('CRITICAL: Welcome email function call failed!', emailErr);
     }
 
     console.log('Successfully created retailer account for:', application.email);
