@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, Eye, MoreHorizontal, Plus } from 'lucide-react';
+import { Loader2, Search, Eye, MoreHorizontal, Plus, Tags, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface Retailer {
@@ -241,6 +241,18 @@ const AdminRetailers = () => {
                               <Link to={`/admin/retailers/${retailer.id}`}>
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Details
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/retailers/${retailer.id}?tab=leads`}>
+                                <Users className="w-4 h-4 mr-2" />
+                                View Leads
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/admin/retailers/${retailer.id}?tab=subscriptions`}>
+                                <Tags className="w-4 h-4 mr-2" />
+                                Brand Subscriptions
                               </Link>
                             </DropdownMenuItem>
                             {retailer.status === 'pending' && (

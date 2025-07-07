@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -61,10 +61,23 @@ interface LeadDistribution {
   } | null;
 }
 
+interface BrandSubscription {
+  id: string;
+  brand_name: string;
+  is_active: boolean;
+  lead_price: number | null;
+  min_square_footage: number | null;
+  max_square_footage: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 const AdminRetailerDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const [retailer, setRetailer] = useState<Retailer | null>(null);
   const [leadDistributions, setLeadDistributions] = useState<LeadDistribution[]>([]);
+  const [brandSubscriptions, setBrandSubscriptions] = useState<BrandSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -104,8 +117,18 @@ const AdminRetailerDetail = () => {
 
       if (distributionsError) throw distributionsError;
 
+      // Fetch brand subscriptions
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
+        .from('brand_subscriptions')
+        .select('*')
+        .eq('retailer_id', id)
+        .order('created_at', { ascending: false });
+
+      if (subscriptionsError) throw subscriptionsError;
+
       setRetailer(retailerData);
       setLeadDistributions(distributionsData || []);
+      setBrandSubscriptions(subscriptionsData || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -216,10 +239,11 @@ const AdminRetailerDetail = () => {
           </Alert>
         )}
 
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue={searchParams.get('tab') || 'overview'} className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="leads">Lead History</TabsTrigger>
+            <TabsTrigger value="subscriptions">Brand Subscriptions</TabsTrigger>
             <TabsTrigger value="billing">Billing & Usage</TabsTrigger>
           </TabsList>
 
@@ -423,6 +447,67 @@ const AdminRetailerDetail = () => {
                           </TableCell>
                           <TableCell>
                             {new Date(distribution.sent_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subscriptions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Brand Subscriptions</CardTitle>
+                <CardDescription>
+                  Brands this retailer is subscribed to receive leads for
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {brandSubscriptions.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No brand subscriptions configured</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Brand Name</TableHead>
+                        <TableHead>Lead Price</TableHead>
+                        <TableHead>Square Footage Range</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {brandSubscriptions.map((subscription) => (
+                        <TableRow key={subscription.id}>
+                          <TableCell>
+                            <div className="font-medium">{subscription.brand_name}</div>
+                          </TableCell>
+                          <TableCell>
+                            {subscription.lead_price ? `$${subscription.lead_price}` : 'Not set'}
+                          </TableCell>
+                          <TableCell>
+                            {subscription.min_square_footage || subscription.max_square_footage ? (
+                              <div className="text-sm">
+                                {subscription.min_square_footage || 0} - {subscription.max_square_footage || '∞'} sq ft
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">No restrictions</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={subscription.is_active ? 'default' : 'secondary'}>
+                              {subscription.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(subscription.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(subscription.updated_at).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
                       ))}
