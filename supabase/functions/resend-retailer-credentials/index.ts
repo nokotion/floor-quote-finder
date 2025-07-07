@@ -1,13 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.2";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface ResendCredentialsRequest {
   retailerId: string;
@@ -45,6 +42,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { retailerId }: ResendCredentialsRequest = await req.json();
 
+    console.log('Processing request for retailer:', retailerId);
+
     if (!retailerId) {
       return new Response(JSON.stringify({ error: 'Retailer ID is required' }), {
         status: 400,
@@ -76,6 +75,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Generate new temporary password
     const tempPassword = generateTempPassword();
+    console.log('Generated temp password for:', retailer.email);
+
+    // Check if RESEND_API_KEY exists
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not found in environment');
+      return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Get or create auth user
     let authUser;
@@ -130,56 +140,65 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Profile update error:', profileError);
     }
 
-    // Send welcome email
+    // Send email using fetch to Resend API
     const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.lovable.app'}/retailer/login`;
     
-    const emailContent = {
-      from: 'Price My Floor <onboarding@resend.dev>',
-      to: retailer.email,
-      subject: 'Price My Floor - Your Login Credentials',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Price My Floor - Login Credentials</h2>
-          
-          <p>Dear ${retailer.contact_name},</p>
-          
-          <p>Here are your updated login credentials for <strong>${retailer.business_name}</strong>:</p>
-          
-          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0;">Your Login Credentials:</h3>
-            <p><strong>Email:</strong> ${retailer.email}</p>
-            <p><strong>Temporary Password:</strong> <code style="background-color: #e5e7eb; padding: 4px 8px; border-radius: 4px;">${tempPassword}</code></p>
-          </div>
-          
-          <p><strong>Important:</strong> For security reasons, you will be required to change your password when you log in.</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${loginUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Login to Your Account
-            </a>
-          </div>
-          
-          <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
-          
-          <p>Best regards,</p>
-          <p><strong>The Price My Floor Team</strong></p>
-          
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
-          <p style="font-size: 12px; color: #6b7280;">
-            This email contains sensitive login information. Please keep it secure and delete it after you've changed your password.
-          </p>
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">Price My Floor - Login Credentials</h2>
+        
+        <p>Dear ${retailer.contact_name},</p>
+        
+        <p>Here are your updated login credentials for <strong>${retailer.business_name}</strong>:</p>
+        
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Your Login Credentials:</h3>
+          <p><strong>Email:</strong> ${retailer.email}</p>
+          <p><strong>Temporary Password:</strong> <code style="background-color: #e5e7eb; padding: 4px 8px; border-radius: 4px;">${tempPassword}</code></p>
         </div>
-      `
-    };
+        
+        <p><strong>Important:</strong> For security reasons, you will be required to change your password when you log in.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${loginUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Login to Your Account
+          </a>
+        </div>
+        
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        
+        <p>Best regards,</p>
+        <p><strong>The Price My Floor Team</strong></p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+        <p style="font-size: 12px; color: #6b7280;">
+          This email contains sensitive login information. Please keep it secure and delete it after you've changed your password.
+        </p>
+      </div>
+    `;
 
-    const { data: emailData, error: emailError } = await resend.emails.send(emailContent);
-    
-    if (emailError) {
-      console.error('Resend error:', emailError);
-      throw new Error(`Failed to send email: ${emailError.message}`);
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Price My Floor <onboarding@resend.dev>',
+        to: [retailer.email],
+        subject: 'Price My Floor - Your Login Credentials',
+        html: emailHtml,
+      }),
+    });
+
+    if (!emailResponse.ok) {
+      const errorText = await emailResponse.text();
+      console.error('Resend API error:', errorText);
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
-    console.log('Credentials email sent successfully:', emailData);
+    const emailData = await emailResponse.json();
+    console.log('Email sent successfully:', emailData);
 
     return new Response(JSON.stringify({
       success: true,
