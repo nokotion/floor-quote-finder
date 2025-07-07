@@ -20,6 +20,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRetailers from "./pages/admin/AdminRetailers";
 import AdminRetailerDetail from "./pages/admin/AdminRetailerDetail";
 import AdminApplications from "./pages/admin/AdminApplications";
+import AdminLeads from "./pages/admin/AdminLeads";
+import AdminSettings from "./pages/admin/AdminSettings";
 import RetailerDashboard from "./pages/retailer/RetailerDashboard";
 import RetailerLeads from "./pages/retailer/RetailerLeads";
 import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
@@ -66,6 +68,16 @@ const App = () => (
               <Route path="/admin/applications" element={
                 <ProtectedRoute requireRole="admin">
                   <AdminApplications />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/leads" element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminLeads />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/settings" element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminSettings />
                 </ProtectedRoute>
               } />
               
