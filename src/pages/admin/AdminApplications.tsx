@@ -448,6 +448,18 @@ const AdminApplications = () => {
                               </Button>
                             </>
                           )}
+                          
+                          {application.status === 'approved' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApproveApplication(application.id)}
+                              disabled={loading}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Re-process
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

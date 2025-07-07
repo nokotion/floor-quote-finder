@@ -47,8 +47,29 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Application not found');
     }
 
-    if (application.status !== 'pending') {
-      throw new Error('Application is not in pending status');
+    // Allow processing pending applications or re-processing approved ones
+    if (application.status !== 'pending' && application.status !== 'approved') {
+      throw new Error('Application must be pending or approved status');
+    }
+
+    // Check if retailer already exists
+    const { data: existingRetailer } = await supabaseAdmin
+      .from('retailers')
+      .select('id, user_id')
+      .eq('email', application.email)
+      .single();
+
+    if (existingRetailer) {
+      console.log('Retailer already exists:', existingRetailer.id);
+      return new Response(JSON.stringify({
+        success: true,
+        retailerId: existingRetailer.id,
+        userId: existingRetailer.user_id,
+        message: 'Retailer account already exists'
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // 2. Generate a temporary password
