@@ -27,7 +27,7 @@ import RetailerLeads from "./pages/retailer/RetailerLeads";
 import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
 import RetailerBilling from "./pages/retailer/RetailerBilling";
 import { LayoutWrapper } from "./components/layout/LayoutWrapper";
-import RetailerLayout from "./components/retailer/RetailerLayout";
+
 import RetailerSettings from "./pages/retailer/RetailerSettings";
 
 const queryClient = new QueryClient();
@@ -86,37 +86,27 @@ const App = () => (
               {/* Retailer Routes */}
               <Route path="/retailer" element={
                 <ProtectedRoute>
-                  <RetailerLayout>
-                    <RetailerDashboard />
-                  </RetailerLayout>
+                  <RetailerDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/retailer/leads" element={
                 <ProtectedRoute>
-                  <RetailerLayout>
-                    <RetailerLeads />
-                  </RetailerLayout>
+                  <RetailerLeads />
                 </ProtectedRoute>
               } />
               <Route path="/retailer/subscriptions" element={
                 <ProtectedRoute>
-                  <RetailerLayout>
-                    <RetailerSubscriptions />
-                  </RetailerLayout>
+                  <RetailerSubscriptions />
                 </ProtectedRoute>
               } />
               <Route path="/retailer/billing" element={
                 <ProtectedRoute>
-                  <RetailerLayout>
-                    <RetailerBilling />
-                  </RetailerLayout>
+                  <RetailerBilling />
                 </ProtectedRoute>
               } />
               <Route path="/retailer/settings" element={
                 <ProtectedRoute>
-                  <RetailerLayout>
-                    <RetailerSettings />
-                  </RetailerLayout>
+                  <RetailerSettings />
                 </ProtectedRoute>
               } />
               
