@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Loader2, 
   ArrowLeft, 
@@ -18,7 +19,8 @@ import {
   Building2,
   Globe,
   TrendingUp,
-  CreditCard
+  CreditCard,
+  Send
 } from 'lucide-react';
 
 interface Retailer {
@@ -80,6 +82,8 @@ const AdminRetailerDetail = () => {
   const [brandSubscriptions, setBrandSubscriptions] = useState<BrandSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (id) {
@@ -153,6 +157,33 @@ const AdminRetailerDetail = () => {
     }
   };
 
+  const handleSendCredentials = async () => {
+    if (!retailer) return;
+
+    setSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-retailer-credentials', {
+        body: { retailerId: retailer.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Login credentials sent successfully",
+      });
+    } catch (err: any) {
+      console.error('Error sending credentials:', err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to send login credentials",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -219,9 +250,23 @@ const AdminRetailerDetail = () => {
               </Button>
             )}
             {retailer.status === 'approved' && (
-              <Button variant="outline" onClick={() => handleStatusChange('suspended')}>
-                Suspend
-              </Button>
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={handleSendCredentials}
+                  disabled={sendingEmail}
+                >
+                  {sendingEmail ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  Send Login Credentials
+                </Button>
+                <Button variant="outline" onClick={() => handleStatusChange('suspended')}>
+                  Suspend
+                </Button>
+              </>
             )}
             {retailer.status === 'suspended' && (
               <Button onClick={() => handleStatusChange('approved')}>

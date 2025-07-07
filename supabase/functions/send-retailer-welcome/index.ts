@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface WelcomeEmailRequest {
   email: string;
@@ -31,8 +34,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Sending welcome email to:', email);
 
-    // For now, we'll log the credentials. In production, integrate with email service like Resend
     const emailContent = {
+      from: 'Price My Floor <onboarding@resend.dev>',
       to: email,
       subject: 'Welcome to Price My Floor - Your Account is Approved!',
       html: `
@@ -79,21 +82,34 @@ const handler = async (req: Request): Promise<Response> => {
       `
     };
 
-    // Log the email content for now (in production, send via email service)
-    console.log('EMAIL TO BE SENT:', JSON.stringify(emailContent, null, 2));
+    try {
+      const { data, error } = await resend.emails.send(emailContent);
+      
+      if (error) {
+        console.error('Resend error:', error);
+        throw new Error(`Failed to send email: ${error.message}`);
+      }
 
-    // TODO: Replace with actual email sending service like Resend
-    // const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-    // const { data, error } = await resend.emails.send(emailContent);
+      console.log('Email sent successfully:', data);
 
-    return new Response(JSON.stringify({
-      success: true,
-      message: 'Welcome email sent successfully',
-      emailPreview: emailContent // Remove this in production
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Welcome email sent successfully',
+        emailId: data?.id
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (emailError: any) {
+      console.error('Failed to send email:', emailError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Failed to send welcome email: ${emailError.message}`
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
   } catch (error: any) {
     console.error('Error in send-retailer-welcome function:', error);
