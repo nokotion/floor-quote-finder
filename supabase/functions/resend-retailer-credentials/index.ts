@@ -89,23 +89,37 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Get or create auth user
     let authUser;
-    const { data: existingUser } = await supabase.auth.admin.getUserByEmail(retailer.email);
     
-    if (existingUser.user) {
+    // List all users to find existing user by email
+    const { data: userList, error: listError } = await supabase.auth.admin.listUsers();
+    if (listError) {
+      console.error('Error listing users:', listError);
+      throw new Error(`Failed to list users: ${listError.message}`);
+    }
+    
+    const existingUser = userList.users?.find(user => user.email === retailer.email);
+    
+    if (existingUser) {
+      console.log('Found existing user, updating password');
       // Update existing user with new password
       const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
-        existingUser.user.id,
+        existingUser.id,
         { 
           password: tempPassword,
           user_metadata: { 
+            ...existingUser.user_metadata,
             password_reset_required: true,
             temp_password_generated_at: new Date().toISOString()
           }
         }
       );
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating user:', updateError);
+        throw new Error(`Failed to update user: ${updateError.message}`);
+      }
       authUser = updatedUser.user;
     } else {
+      console.log('Creating new auth user');
       // Create new auth user
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
         email: retailer.email,
@@ -119,7 +133,10 @@ const handler = async (req: Request): Promise<Response> => {
           temp_password_generated_at: new Date().toISOString()
         }
       });
-      if (createError) throw createError;
+      if (createError) {
+        console.error('Error creating user:', createError);
+        throw new Error(`Failed to create user: ${createError.message}`);
+      }
       authUser = newUser.user;
     }
 
