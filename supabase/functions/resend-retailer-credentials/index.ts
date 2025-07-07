@@ -184,7 +184,7 @@ const handler = async (req: Request): Promise<Response> => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'noreply@resend.dev',
+        from: 'Price My Floor <noreply@flooringdeals.ca>',
         to: [retailer.email],
         subject: 'Price My Floor - Your Login Credentials',
         html: emailHtml,

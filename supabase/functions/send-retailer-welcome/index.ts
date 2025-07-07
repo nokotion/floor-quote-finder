@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Sending welcome email to:', email);
 
     const emailContent = {
-      from: 'noreply@resend.dev',
+      from: 'Price My Floor <noreply@flooringdeals.ca>',
       to: email,
       subject: 'Welcome to Price My Floor - Your Account is Approved!',
       html: `
