@@ -27,6 +27,8 @@ import RetailerLeads from "./pages/retailer/RetailerLeads";
 import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
 import RetailerBilling from "./pages/retailer/RetailerBilling";
 import { LayoutWrapper } from "./components/layout/LayoutWrapper";
+import RetailerLayout from "./components/retailer/RetailerLayout";
+import RetailerSettings from "./pages/retailer/RetailerSettings";
 
 const queryClient = new QueryClient();
 
@@ -84,30 +86,37 @@ const App = () => (
               {/* Retailer Routes */}
               <Route path="/retailer" element={
                 <ProtectedRoute>
-                  <RetailerDashboard />
+                  <RetailerLayout>
+                    <RetailerDashboard />
+                  </RetailerLayout>
                 </ProtectedRoute>
               } />
               <Route path="/retailer/leads" element={
                 <ProtectedRoute>
-                  <RetailerLeads />
+                  <RetailerLayout>
+                    <RetailerLeads />
+                  </RetailerLayout>
                 </ProtectedRoute>
               } />
               <Route path="/retailer/subscriptions" element={
                 <ProtectedRoute>
-                  <RetailerSubscriptions />
+                  <RetailerLayout>
+                    <RetailerSubscriptions />
+                  </RetailerLayout>
                 </ProtectedRoute>
               } />
               <Route path="/retailer/billing" element={
                 <ProtectedRoute>
-                  <RetailerBilling />
+                  <RetailerLayout>
+                    <RetailerBilling />
+                  </RetailerLayout>
                 </ProtectedRoute>
               } />
               <Route path="/retailer/settings" element={
                 <ProtectedRoute>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Settings</h1>
-                    <p className="text-gray-600 mt-2">Coming soon...</p>
-                  </div>
+                  <RetailerLayout>
+                    <RetailerSettings />
+                  </RetailerLayout>
                 </ProtectedRoute>
               } />
               
