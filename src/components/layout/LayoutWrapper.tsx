@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { MainLayout } from "./MainLayout";
-import { AdminLayout } from "./AdminLayout";
+import { AdminLayout } from "../admin/AdminLayout";
 import RetailerLayout from "../retailer/RetailerLayout";
 
 interface LayoutWrapperProps {

@@ -17,6 +17,9 @@ import RetailerLogin from "./pages/RetailerLogin";
 import AdminLogin from "./pages/AdminLogin";
 import RetailerApply from "./pages/RetailerApply";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminRetailers from "./pages/admin/AdminRetailers";
+import AdminRetailerDetail from "./pages/admin/AdminRetailerDetail";
+import AdminApplications from "./pages/admin/AdminApplications";
 import RetailerDashboard from "./pages/retailer/RetailerDashboard";
 import RetailerLeads from "./pages/retailer/RetailerLeads";
 import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
@@ -48,6 +51,21 @@ const App = () => (
               <Route path="/admin" element={
                 <ProtectedRoute requireRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/retailers" element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminRetailers />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/retailers/:id" element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminRetailerDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/applications" element={
+                <ProtectedRoute requireRole="admin">
+                  <AdminApplications />
                 </ProtectedRoute>
               } />
               
