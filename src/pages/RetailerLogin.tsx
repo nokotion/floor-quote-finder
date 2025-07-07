@@ -9,12 +9,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 
 const RetailerLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ const RetailerLogin = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('retailer_id')
+        .select('retailer_id, password_reset_required')
         .eq('id', user.id)
         .single();
 
@@ -43,6 +45,12 @@ const RetailerLogin = () => {
           .single();
 
         if (retailer?.status === 'approved') {
+          // Check if password reset is required (first login with temp password)
+          if (profile.password_reset_required) {
+            setShowPasswordReset(true);
+            setError('');
+            return;
+          }
           navigate('/retailer');
         } else {
           setError('Your retailer account is pending approval. Please contact support.');
@@ -73,6 +81,11 @@ const RetailerLogin = () => {
     }
   };
 
+  const handlePasswordResetSuccess = () => {
+    setShowPasswordReset(false);
+    navigate('/retailer');
+  };
+
   return (
     <>
       <Helmet>
@@ -99,8 +112,13 @@ const RetailerLogin = () => {
 
       <div className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Main Auth Card */}
-          <Card className="shadow-xl">
+          {/* Show password reset form if required */}
+          {showPasswordReset ? (
+            <PasswordResetForm onSuccess={handlePasswordResetSuccess} />
+          ) : (
+            <>
+              {/* Main Auth Card */}
+              <Card className="shadow-xl">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Retailer Login</CardTitle>
               <CardDescription>Sign in to your retailer account</CardDescription>
@@ -157,6 +175,8 @@ const RetailerLogin = () => {
               Need help? <Link to="/" className="text-blue-600 hover:underline">Contact support</Link>
             </p>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

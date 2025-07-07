@@ -70,20 +70,44 @@ const AdminApplications = () => {
   const handleApproveApplication = async (applicationId: string) => {
     try {
       setLoading(true);
+      setError('');
       
-      const { error: updateError } = await supabase
-        .from('retailer_applications')
-        .update({ 
-          status: 'approved',
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', applicationId);
+      // Get current user for audit trail
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
 
-      if (updateError) throw updateError;
+      console.log('Approving application:', applicationId);
       
+      // Call the edge function to create the complete retailer account
+      const { data, error } = await supabase.functions.invoke('create-retailer-account', {
+        body: {
+          applicationId: applicationId,
+          adminId: user.id
+        }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to create retailer account');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to create retailer account');
+      }
+
+      console.log('Successfully created retailer account:', data);
+      
+      // Refresh the applications list
       await fetchApplications();
+      
+      // Show success message
+      alert('Application approved successfully! The retailer has been sent their login credentials via email.');
+      
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error approving application:', err);
+      setError(err.message || 'Failed to approve application');
     } finally {
       setLoading(false);
     }
