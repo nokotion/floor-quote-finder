@@ -30,9 +30,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== SEND RETAILER WELCOME START ===');
+    
+    // Validate environment
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not found in environment');
+      throw new Error('Email service not configured');
+    }
+
     const { email, businessName, contactName, tempPassword, loginUrl }: WelcomeEmailRequest = await req.json();
 
-    console.log('Sending welcome email to:', email);
+    // Validate required fields
+    if (!email || !businessName || !contactName || !tempPassword || !loginUrl) {
+      throw new Error('Missing required email parameters');
+    }
+
+    console.log('Sending welcome email to:', email, 'for business:', businessName);
 
     const emailContent = {
       from: 'Price My Floor <noreply@flooringdeals.ca>',
@@ -82,38 +96,29 @@ const handler = async (req: Request): Promise<Response> => {
       `
     };
 
-    try {
-      const { data, error } = await resend.emails.send(emailContent);
-      
-      if (error) {
-        console.error('Resend error:', error);
-        throw new Error(`Failed to send email: ${error.message}`);
-      }
-
-      console.log('Email sent successfully:', data);
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: 'Welcome email sent successfully',
-        emailId: data?.id
-      }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (emailError: any) {
-      console.error('Failed to send email:', emailError);
-      return new Response(JSON.stringify({
-        success: false,
-        error: `Failed to send welcome email: ${emailError.message}`
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    console.log('Attempting to send email via Resend...');
+    const { data, error } = await resend.emails.send(emailContent);
+    
+    if (error) {
+      console.error('Resend API error:', error);
+      throw new Error(`Resend API error: ${error.message}`);
     }
+
+    console.log('Email sent successfully via Resend. Email ID:', data?.id);
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: 'Welcome email sent successfully',
+      emailId: data?.id
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error: any) {
     console.error('Error in send-retailer-welcome function:', error);
     return new Response(JSON.stringify({
+      success: false,
       error: error.message || 'Failed to send welcome email'
     }), {
       status: 500,
