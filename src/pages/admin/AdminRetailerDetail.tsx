@@ -160,11 +160,14 @@ const AdminRetailerDetail = () => {
   const handleSendCredentials = async () => {
     if (!retailer) return;
 
+    console.log('Sending credentials to retailer:', retailer.id, retailer.email);
     setSendingEmail(true);
     try {
       const { data, error } = await supabase.functions.invoke('resend-retailer-credentials', {
         body: { retailerId: retailer.id }
       });
+
+      console.log('Function response:', { data, error });
 
       if (error) throw error;
 
