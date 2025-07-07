@@ -36,14 +36,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log('=== RESEND CREDENTIALS FUNCTION START ===');
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    
+    // Check environment variables first
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      hasResendKey: !!resendApiKey
+    });
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY not found in environment');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     console.log('Supabase client created successfully');
 
     const { retailerId }: ResendCredentialsRequest = await req.json();
-
     console.log('Processing request for retailer:', retailerId);
 
     if (!retailerId) {
@@ -54,21 +70,36 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Get retailer details
+    console.log('Fetching retailer details...');
     const { data: retailer, error: retailerError } = await supabase
       .from('retailers')
       .select('*')
       .eq('id', retailerId)
       .single();
 
-    if (retailerError || !retailer) {
-      console.error('Retailer not found:', retailerError);
+    if (retailerError) {
+      console.error('Retailer query error:', retailerError);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to fetch retailer', 
+        details: retailerError.message 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!retailer) {
+      console.error('Retailer not found for ID:', retailerId);
       return new Response(JSON.stringify({ error: 'Retailer not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    console.log('Found retailer:', retailer.business_name, retailer.email);
+
     if (retailer.status !== 'approved') {
+      console.log('Retailer status not approved:', retailer.status);
       return new Response(JSON.stringify({ error: 'Retailer is not approved' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -79,87 +110,103 @@ const handler = async (req: Request): Promise<Response> => {
     const tempPassword = generateTempPassword();
     console.log('Generated temp password for:', retailer.email);
 
-    // Check if RESEND_API_KEY exists
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not found in environment');
-      return new Response(JSON.stringify({ error: 'Email service not configured' }), {
+    // Handle auth user operations with better error handling
+    console.log('Starting auth user operations...');
+    let authUser;
+    
+    try {
+      // Find existing user by email
+      const { data: userList, error: listError } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 100 // Limit to avoid large responses
+      });
+      
+      if (listError) {
+        console.error('Error listing users:', listError);
+        throw new Error(`Failed to list users: ${listError.message}`);
+      }
+      
+      const existingUser = userList.users?.find(user => user.email === retailer.email);
+      
+      if (existingUser) {
+        console.log('Found existing user, updating password');
+        const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
+          existingUser.id,
+          { 
+            password: tempPassword,
+            user_metadata: { 
+              ...existingUser.user_metadata,
+              password_reset_required: true,
+              temp_password_generated_at: new Date().toISOString()
+            }
+          }
+        );
+        if (updateError) {
+          console.error('Error updating user:', updateError);
+          throw new Error(`Failed to update user: ${updateError.message}`);
+        }
+        authUser = updatedUser.user;
+        console.log('User password updated successfully');
+      } else {
+        console.log('Creating new auth user');
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: retailer.email,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name: retailer.contact_name.split(' ')[0] || retailer.contact_name,
+            last_name: retailer.contact_name.split(' ').slice(1).join(' ') || '',
+            role: 'retailer',
+            password_reset_required: true,
+            temp_password_generated_at: new Date().toISOString()
+          }
+        });
+        if (createError) {
+          console.error('Error creating user:', createError);
+          throw new Error(`Failed to create user: ${createError.message}`);
+        }
+        authUser = newUser.user;
+        console.log('New auth user created successfully');
+      }
+    } catch (authError: any) {
+      console.error('Auth operation failed:', authError);
+      return new Response(JSON.stringify({ 
+        error: 'Auth operation failed', 
+        details: authError.message 
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Get or create auth user
-    let authUser;
-    
-    // List all users to find existing user by email
-    const { data: userList, error: listError } = await supabase.auth.admin.listUsers();
-    if (listError) {
-      console.error('Error listing users:', listError);
-      throw new Error(`Failed to list users: ${listError.message}`);
-    }
-    
-    const existingUser = userList.users?.find(user => user.email === retailer.email);
-    
-    if (existingUser) {
-      console.log('Found existing user, updating password');
-      // Update existing user with new password
-      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
-        existingUser.id,
-        { 
-          password: tempPassword,
-          user_metadata: { 
-            ...existingUser.user_metadata,
-            password_reset_required: true,
-            temp_password_generated_at: new Date().toISOString()
-          }
-        }
-      );
-      if (updateError) {
-        console.error('Error updating user:', updateError);
-        throw new Error(`Failed to update user: ${updateError.message}`);
-      }
-      authUser = updatedUser.user;
-    } else {
-      console.log('Creating new auth user');
-      // Create new auth user
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: retailer.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          first_name: retailer.contact_name.split(' ')[0],
-          last_name: retailer.contact_name.split(' ').slice(1).join(' '),
+    // Update profile with temp password info
+    console.log('Updating profile...');
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: authUser!.id,
+          retailer_id: retailer.id,
+          first_name: retailer.contact_name.split(' ')[0] || retailer.contact_name,
+          last_name: retailer.contact_name.split(' ').slice(1).join(' ') || '',
           role: 'retailer',
           password_reset_required: true,
           temp_password_generated_at: new Date().toISOString()
-        }
-      });
-      if (createError) {
-        console.error('Error creating user:', createError);
-        throw new Error(`Failed to create user: ${createError.message}`);
+        });
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        // Continue with email sending even if profile update fails
+      } else {
+        console.log('Profile updated successfully');
       }
-      authUser = newUser.user;
-    }
-
-    // Update profile with temp password info
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: authUser!.id,
-        retailer_id: retailer.id,
-        first_name: retailer.contact_name.split(' ')[0],
-        last_name: retailer.contact_name.split(' ').slice(1).join(' '),
-        role: 'retailer',
-        password_reset_required: true,
-        temp_password_generated_at: new Date().toISOString()
-      });
-
-    if (profileError) {
-      console.error('Profile update error:', profileError);
+    } catch (profileErr: any) {
+      console.error('Profile update exception:', profileErr);
+      // Continue with email sending even if profile update fails
     }
 
     // Send email using fetch to Resend API
+    console.log('Preparing to send email...');
     const loginUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || 'https://your-app.lovable.app'}/retailer/login`;
     
     const emailHtml = `
@@ -196,6 +243,7 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
+    console.log('Sending email via Resend API...');
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -213,7 +261,13 @@ const handler = async (req: Request): Promise<Response> => {
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
       console.error('Resend API error:', errorText);
-      throw new Error(`Failed to send email: ${errorText}`);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to send email', 
+        details: errorText 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const emailData = await emailResponse.json();
@@ -231,7 +285,8 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error('Error in resend-retailer-credentials function:', error);
     return new Response(JSON.stringify({
-      error: error.message || 'Failed to resend credentials'
+      error: error.message || 'Failed to resend credentials',
+      stack: error.stack
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
