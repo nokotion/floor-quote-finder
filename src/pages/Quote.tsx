@@ -14,7 +14,7 @@ import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Buildi
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
-import AddressAutocomplete from "@/components/ui/address-autocomplete";
+
 
 interface QuoteFormData {
   selectedBrand: string;
@@ -589,19 +589,11 @@ const Quote = () => {
                   <CardContent className="p-3 pt-0 space-y-3">
                     <div>
                       <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
-                      <AddressAutocomplete
+                      <Input
                         id="fullAddress"
                         value={formData.contactInfo.fullAddress}
-                        onChange={(address, addressData) => {
-                          updateFormData('contactInfo.fullAddress', address);
-                          if (addressData) {
-                            const streetAddress = `${addressData.street_number || ''} ${addressData.route || ''}`.trim();
-                            updateFormData('contactInfo.streetAddress', streetAddress);
-                            updateFormData('contactInfo.city', addressData.locality || '');
-                            updateFormData('contactInfo.province', addressData.administrative_area_level_1 || '');
-                          }
-                        }}
-                        placeholder="Start typing your address..."
+                        onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
+                        placeholder="e.g., 123 Main Street, Toronto, ON M5V 3A8"
                         className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
                     </div>
