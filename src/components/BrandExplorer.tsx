@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Search } from "lucide-react";
 import { slugify } from "@/utils/slugUtils";
 import FlooringCategories from "@/components/ui/flooring-categories";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryIcons: Record<string, string> = {
   vinyl: "📋",
@@ -36,6 +37,7 @@ const BrandExplorer = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   const categories = [
     { id: "all", name: "All" },
@@ -169,7 +171,7 @@ const BrandExplorer = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className={isMobile ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"}>
             {filteredBrands.map((brand, index) => (
               <motion.div
                 key={brand.id}
@@ -180,58 +182,62 @@ const BrandExplorer = () => {
               >
                 <Card className="h-full group hover:shadow-xl transition-all duration-300 flex flex-col">
                   <Link to={`/brand/${brand.slug}`} className="flex-1 flex flex-col">
-                    <CardContent className="p-4 flex-1 flex flex-col">
+                    <CardContent className={isMobile ? "p-2 flex-1 flex flex-col" : "p-4 flex-1 flex flex-col"}>
                       {/* Logo Section */}
-                      <div className="flex flex-col items-center text-center mb-4">
+                      <div className={isMobile ? "flex flex-col items-center text-center mb-2" : "flex flex-col items-center text-center mb-4"}>
                         {brand.logo_url ? (
                           <img 
                             src={brand.logo_url} 
                             alt={`${brand.name} logo`}
-                            className="h-20 w-auto object-contain mb-3"
+                            className={isMobile ? "h-12 w-auto object-contain mb-2" : "h-20 w-auto object-contain mb-3"}
                           />
                         ) : (
-                          <div className="h-20 w-20 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-3">
-                            <span className="text-accent-foreground font-bold text-2xl">
+                          <div className={isMobile ? "h-12 w-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2" : "h-20 w-20 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-3"}>
+                            <span className={isMobile ? "text-accent-foreground font-bold text-lg" : "text-accent-foreground font-bold text-2xl"}>
                               {brand.name.charAt(0)}
                             </span>
                           </div>
                         )}
                         
                         {/* Brand Name */}
-                        <h3 className="text-lg font-bold group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] flex items-center">
+                        <h3 className={isMobile ? "text-sm font-bold group-hover:text-accent transition-colors line-clamp-2 text-center leading-tight" : "text-lg font-bold group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] flex items-center"}>
                           {brand.name}
                         </h3>
                       </div>
                       
-                      {/* Category Icons */}
-                      <div className="flex justify-center gap-2 mb-4 min-h-[1.5rem]">
-                        {brand.categories && brand.categories.trim() && 
-                          brand.categories.split(',')
-                            .map(cat => cat.trim().toLowerCase())
-                            .filter(cat => categoryIcons[cat])
-                            .slice(0, 3)
-                            .map((category, idx) => (
-                              <span key={idx} className="text-xl" title={category}>
-                                {categoryIcons[category]}
-                              </span>
-                            ))
-                        }
-                      </div>
+                      {/* Category Icons - Hidden on mobile or simplified */}
+                      {!isMobile && (
+                        <div className="flex justify-center gap-2 mb-4 min-h-[1.5rem]">
+                          {brand.categories && brand.categories.trim() && 
+                            brand.categories.split(',')
+                              .map(cat => cat.trim().toLowerCase())
+                              .filter(cat => categoryIcons[cat])
+                              .slice(0, 3)
+                              .map((category, idx) => (
+                                <span key={idx} className="text-xl" title={category}>
+                                  {categoryIcons[category]}
+                                </span>
+                              ))
+                          }
+                        </div>
+                      )}
                       
-                      {/* Website Icon */}
-                      <div className="flex justify-center">
-                        {brand.website_url && (
-                          <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
-                        )}
-                      </div>
+                      {/* Website Icon - Hidden on mobile */}
+                      {!isMobile && (
+                        <div className="flex justify-center">
+                          {brand.website_url && (
+                            <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Link>
                   
                   {/* Get Quote Button - Always at bottom */}
-                  <div className="p-4 pt-0 mt-auto">
-                    <Button asChild className="w-full">
+                  <div className={isMobile ? "p-2 pt-0 mt-auto" : "p-4 pt-0 mt-auto"}>
+                    <Button asChild className={isMobile ? "w-full text-xs py-1 h-7" : "w-full"}>
                       <Link to={`/quote?brand=${encodeURIComponent(brand.name)}`}>
-                        Get Quote
+                        {isMobile ? "Quote" : "Get Quote"}
                       </Link>
                     </Button>
                   </div>
