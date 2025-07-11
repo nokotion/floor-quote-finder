@@ -242,8 +242,22 @@ async function sendSMSVerification(phone: string) {
       // Try to parse Twilio error for more specific messages
       try {
         const errorData = JSON.parse(errorText);
-        throw new Error(`Twilio error (${response.status}): ${errorData.message || errorText}`);
-      } catch {
+        const errorCode = errorData.code;
+        const errorMessage = errorData.message;
+        
+        console.error('Parsed Twilio error:', { code: errorCode, message: errorMessage });
+        
+        // Provide specific error messages for common issues
+        if (errorCode === 60200) {
+          throw new Error(`Invalid phone number format: ${formattedPhone}. Please ensure the number includes country code (+1 for Canada/US).`);
+        } else if (errorCode === 60203) {
+          throw new Error(`Phone number ${formattedPhone} is not verified. In trial mode, you can only send SMS to verified numbers. Please verify this number in your Twilio Console.`);
+        } else if (errorCode === 20404) {
+          throw new Error('Twilio Verify Service not found. Please check your TWILIO_VERIFY_SERVICE_SID.');
+        } else {
+          throw new Error(`Twilio error (${errorCode}): ${errorMessage}`);
+        }
+      } catch (parseError) {
         throw new Error(`Twilio API returned ${response.status}: ${errorText}`);
       }
     }
