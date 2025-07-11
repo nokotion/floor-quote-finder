@@ -195,6 +195,10 @@ const Quote = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submission started');
+    console.log('Current user:', await supabase.auth.getUser());
+    console.log('Current session:', await supabase.auth.getSession());
+    
     if (formData.postalCode && !validatePostalCode(formData.postalCode)) {
       setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
       return;
@@ -203,29 +207,39 @@ const Quote = () => {
     if (!isFormValid()) return;
 
     try {
+      const leadInsertData = {
+        customer_name: formData.contactInfo.name,
+        customer_email: formData.contactInfo.email,
+        customer_phone: formData.contactInfo.phone,
+        postal_code: formData.postalCode,
+        street_address: formData.contactInfo.fullAddress,
+        brand_requested: formData.selectedBrand,
+        square_footage: parseSquareFootage(formData.projectSize),
+        project_type: null,
+        installation_required: formData.installationType === 'supply-and-install',
+        timeline: formData.timeline,
+        notes: formData.projectDescription,
+        status: 'pending_verification',
+        is_verified: false
+      };
+      
+      console.log('Attempting to insert lead data:', leadInsertData);
+      
       // Save the lead to database with pending verification status
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
-        .insert({
-          customer_name: formData.contactInfo.name,
-          customer_email: formData.contactInfo.email,
-          customer_phone: formData.contactInfo.phone,
-          postal_code: formData.postalCode,
-          street_address: formData.contactInfo.fullAddress,
-          brand_requested: formData.selectedBrand,
-          square_footage: parseSquareFootage(formData.projectSize),
-          project_type: null,
-          installation_required: formData.installationType === 'supply-and-install',
-          timeline: formData.timeline,
-          notes: formData.projectDescription,
-          status: 'pending_verification',
-          is_verified: false
-        })
+        .insert(leadInsertData)
         .select()
         .single();
 
       if (leadError) {
         console.error('Error saving lead:', leadError);
+        console.error('Lead error details:', {
+          code: leadError.code,
+          message: leadError.message,
+          details: leadError.details,
+          hint: leadError.hint
+        });
         alert('Error submitting quote. Please try again.');
         return;
       }
