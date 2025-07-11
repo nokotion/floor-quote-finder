@@ -248,6 +248,8 @@ const Quote = () => {
 
       // Send verification code
       const contact = verificationMethod === 'email' ? formData.contactInfo.email : formData.contactInfo.phone;
+      console.log(`Attempting to send ${verificationMethod} verification to:`, contact);
+      
       const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('send-verification', {
         body: {
           leadId: leadData.id,
@@ -256,13 +258,32 @@ const Quote = () => {
         }
       });
 
+      console.log('Verification function response:', { verificationResult, verificationError });
+
+      // Handle verification response more intelligently
       if (verificationError) {
         console.error('Error sending verification:', verificationError);
-        alert('Error sending verification code. Please try again.');
+        
+        // Check if it's a network error vs API error
+        if (verificationError.message?.includes('fetch')) {
+          alert('Network error sending verification code. Please check your connection and try again.');
+        } else if (verificationError.message?.includes('trial mode')) {
+          alert('SMS verification failed: This phone number needs to be verified in Twilio for trial accounts. Please try email verification instead or contact support.');
+        } else if (verificationError.message?.includes('domain')) {
+          alert('Email verification failed: Email domain not verified. Please try SMS verification instead or contact support.');
+        } else {
+          alert(`Error sending verification code: ${verificationError.message}`);
+        }
         return;
       }
 
-      console.log('Verification sent:', verificationResult);
+      // Check if we have a successful result
+      if (verificationResult && verificationResult.success) {
+        console.log('Verification sent successfully:', verificationResult);
+      } else {
+        console.warn('Unexpected verification response format:', verificationResult);
+        // Don't fail here - the verification might still have been sent
+      }
 
       // Redirect to verification page
       const params = new URLSearchParams({

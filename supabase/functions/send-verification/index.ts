@@ -54,6 +54,7 @@ const handler = async (req: Request): Promise<Response> => {
     let verificationToken = null;
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
+    // Send verification first, then update database
     try {
       if (method === 'email') {
         // For email, we generate our own token
@@ -65,38 +66,69 @@ const handler = async (req: Request): Promise<Response> => {
         // For SMS, use Twilio Verify service
         console.log(`Sending SMS verification to: ${contact}`);
         result = await sendSMSVerification(contact);
-        console.log('SMS verification sent successfully:', result);
+        console.log('SMS verification sent successfully via Twilio:', result);
+        
+        // Log important Twilio response details
+        if (result && result.status) {
+          console.log(`Twilio verification status: ${result.status}, SID: ${result.sid}`);
+        }
       }
     } catch (verificationError) {
-      console.error(`Failed to send ${method} verification:`, verificationError);
+      console.error(`CRITICAL: Failed to send ${method} verification:`, verificationError);
+      console.error('Verification error stack:', verificationError.stack);
       throw new Error(`Failed to send ${method} verification: ${verificationError.message}`);
     }
 
-    // Update lead with verification details
-    console.log('Updating lead in database...');
-    const { error: updateError } = await supabase
+    // Update lead with verification details - this is critical for the verification flow
+    console.log('=== UPDATING LEAD DATABASE RECORD ===');
+    console.log('Lead ID:', leadId);
+    console.log('Verification method:', method);
+    console.log('Verification token (email only):', verificationToken);
+    console.log('Expires at:', expiresAt.toISOString());
+    
+    const updateData = {
+      verification_token: verificationToken, // Only set for email
+      verification_method: method,
+      verification_sent_at: new Date().toISOString(),
+      verification_expires_at: expiresAt.toISOString(),
+      status: 'pending_verification'
+    };
+    
+    console.log('Update data:', JSON.stringify(updateData, null, 2));
+    
+    const { data: updateResult, error: updateError } = await supabase
       .from('leads')
-      .update({
-        verification_token: verificationToken, // Only set for email
-        verification_method: method,
-        verification_sent_at: new Date().toISOString(),
-        verification_expires_at: expiresAt.toISOString(),
-        status: 'pending_verification'
-      })
-      .eq('id', leadId);
+      .update(updateData)
+      .eq('id', leadId)
+      .select(); // Add select to see what was updated
 
     if (updateError) {
-      console.error('Database update error:', updateError);
-      throw new Error(`Failed to update lead: ${updateError.message}`);
+      console.error('CRITICAL: Database update error:', updateError);
+      console.error('Update error details:', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint
+      });
+      
+      // Even if DB update fails, if verification was sent successfully, 
+      // we should inform user and log the issue for manual intervention
+      console.error(`WARNING: ${method} verification was sent successfully but database update failed!`);
+      console.error('Manual intervention may be required for lead:', leadId);
+      
+      throw new Error(`Database update failed after sending verification: ${updateError.message}`);
     }
 
+    console.log('=== DATABASE UPDATE SUCCESSFUL ===');
+    console.log('Updated lead data:', JSON.stringify(updateResult, null, 2));
     console.log(`Verification sent successfully via ${method} to ${contact}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: `Verification code sent via ${method}`,
-        expiresAt: expiresAt.toISOString()
+        expiresAt: expiresAt.toISOString(),
+        verificationMethod: method
       }),
       {
         status: 200,

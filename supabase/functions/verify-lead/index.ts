@@ -18,7 +18,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== VERIFY LEAD REQUEST START ===');
     const { leadId, token }: VerifyRequest = await req.json();
+    console.log('Request data:', { leadId, token: `${token.substring(0, 3)}...` });
 
     // Initialize Supabase client
     const supabase = createClient(
@@ -27,6 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Get the lead with verification details
+    console.log('Fetching lead from database...');
     const { data: lead, error: fetchError } = await supabase
       .from('leads')
       .select('*')
@@ -34,14 +37,26 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     if (fetchError || !lead) {
+      console.error('Lead not found:', { leadId, fetchError });
       return new Response(
         JSON.stringify({ error: 'Lead not found' }),
         { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
+    console.log('Lead found:', {
+      id: lead.id,
+      status: lead.status,
+      is_verified: lead.is_verified,
+      verification_method: lead.verification_method,
+      verification_sent_at: lead.verification_sent_at,
+      verification_expires_at: lead.verification_expires_at,
+      has_verification_token: !!lead.verification_token
+    });
+
     // Check if already verified
     if (lead.is_verified) {
+      console.log('Lead already verified');
       return new Response(
         JSON.stringify({ success: true, message: 'Lead already verified' }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
@@ -51,8 +66,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if verification has expired
     const now = new Date();
     const expiresAt = new Date(lead.verification_expires_at);
+    console.log('Time check:', { now: now.toISOString(), expiresAt: expiresAt.toISOString() });
     
     if (now > expiresAt) {
+      console.log('Verification expired, updating status');
       await supabase
         .from('leads')
         .update({ status: 'expired' })
@@ -64,19 +81,42 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Handle cases where verification_method might be null but we can infer it
+    let verificationMethod = lead.verification_method;
+    if (!verificationMethod) {
+      console.warn('Verification method is null, attempting to infer from contact info');
+      if (lead.customer_phone && !lead.customer_email) {
+        verificationMethod = 'sms';
+        console.log('Inferred verification method as SMS based on phone presence');
+      } else if (lead.customer_email) {
+        verificationMethod = 'email';
+        console.log('Inferred verification method as email based on email presence');
+      } else {
+        console.error('Cannot determine verification method');
+        return new Response(
+          JSON.stringify({ error: 'Verification method not found. Please request a new verification code.' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    }
+
+    console.log(`Processing ${verificationMethod} verification...`);
+
     // Verify the token based on verification method
-    if (lead.verification_method === 'sms') {
+    if (verificationMethod === 'sms') {
       // Use Twilio Verify for SMS verification
       const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
       const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
       const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
       
       if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
+        console.error('Missing Twilio credentials');
         throw new Error('Twilio credentials not configured');
       }
 
       // Format phone number for verification check
       const formattedPhone = formatCanadianPhone(lead.customer_phone || '');
+      console.log(`Verifying SMS code for phone: ${formattedPhone}`);
 
       const verifyResponse = await fetch(
         `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/VerificationCheck`,
@@ -93,8 +133,20 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
 
+      console.log(`Twilio verification check response status: ${verifyResponse.status}`);
+
       if (!verifyResponse.ok) {
-        const error = await verifyResponse.text();
+        const errorText = await verifyResponse.text();
+        console.error('Twilio verification error:', errorText);
+        
+        // Try to parse error for more details
+        try {
+          const errorData = JSON.parse(errorText);
+          console.error('Parsed Twilio error:', errorData);
+        } catch (parseError) {
+          console.error('Could not parse Twilio error response');
+        }
+        
         return new Response(
           JSON.stringify({ error: 'Failed to verify code with Twilio' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
@@ -102,37 +154,55 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const verifyResult = await verifyResponse.json();
+      console.log('Twilio verification check response:', verifyResult);
+      
       if (verifyResult.status !== 'approved') {
+        console.log(`Verification failed - status: ${verifyResult.status}`);
         return new Response(
           JSON.stringify({ error: 'Invalid verification code' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
+      
+      console.log('✅ SMS verification successful!');
     } else {
       // For email verification, use the stored token
+      console.log('Comparing email tokens...');
+      console.log('Stored token:', lead.verification_token ? `${lead.verification_token.substring(0, 3)}...` : 'null');
+      console.log('Provided token:', `${token.substring(0, 3)}...`);
+      
       if (lead.verification_token !== token) {
+        console.log('❌ Email token mismatch');
         return new Response(
           JSON.stringify({ error: 'Invalid verification code' }),
           { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
         );
       }
+      
+      console.log('✅ Email verification successful!');
     }
 
     // Mark as verified
-    const { error: updateError } = await supabase
+    console.log('=== MARKING LEAD AS VERIFIED ===');
+    const { data: updateResult, error: updateError } = await supabase
       .from('leads')
       .update({
         is_verified: true,
         status: 'verified',
         verification_token: null, // Clear the token for security
       })
-      .eq('id', leadId);
+      .eq('id', leadId)
+      .select();
 
     if (updateError) {
+      console.error('Failed to update lead verification status:', updateError);
       throw new Error(`Failed to verify lead: ${updateError.message}`);
     }
 
+    console.log('Lead successfully marked as verified:', updateResult);
+
     // Now process the verified lead by calling the process-lead-submission function
+    console.log('=== PROCESSING VERIFIED LEAD ===');
     try {
       const { data: processResult, error: processError } = await supabase.functions.invoke('process-lead-submission', {
         body: {
@@ -155,6 +225,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Don't return error to user since verification was successful
     }
 
+    console.log(`=== VERIFICATION COMPLETE ===`);
     console.log(`Lead ${leadId} verified successfully and processing initiated`);
 
     return new Response(
