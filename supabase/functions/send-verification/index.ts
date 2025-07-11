@@ -18,31 +18,62 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log('Verification request received:', req.method);
+
   try {
-    const { leadId, method, contact }: VerificationRequest = await req.json();
+    // Validate request body
+    const body = await req.json();
+    console.log('Request body:', JSON.stringify(body, null, 2));
+
+    const { leadId, method, contact }: VerificationRequest = body;
+
+    // Validate required fields
+    if (!leadId || !method || !contact) {
+      throw new Error('Missing required fields: leadId, method, and contact are required');
+    }
+
+    if (!['email', 'sms'].includes(method)) {
+      throw new Error('Invalid verification method. Must be "email" or "sms"');
+    }
+
+    // Validate environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase configuration');
+      throw new Error('Server configuration error');
+    }
+
+    console.log(`Processing ${method} verification for lead ${leadId} to ${contact}`);
 
     // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     let result;
     let verificationToken = null;
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
-    if (method === 'email') {
-      // For email, we still generate our own token since Twilio Verify doesn't handle email
-      verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-      result = await sendEmailVerification(contact, verificationToken);
-    } else if (method === 'sms') {
-      // For SMS, use Twilio Verify service - no need for our own token
-      result = await sendSMSVerification(contact);
-    } else {
-      throw new Error('Invalid verification method');
+    try {
+      if (method === 'email') {
+        // For email, we generate our own token
+        verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log(`Generated email verification token: ${verificationToken}`);
+        result = await sendEmailVerification(contact, verificationToken);
+        console.log('Email verification sent successfully:', result);
+      } else if (method === 'sms') {
+        // For SMS, use Twilio Verify service
+        console.log(`Sending SMS verification to: ${contact}`);
+        result = await sendSMSVerification(contact);
+        console.log('SMS verification sent successfully:', result);
+      }
+    } catch (verificationError) {
+      console.error(`Failed to send ${method} verification:`, verificationError);
+      throw new Error(`Failed to send ${method} verification: ${verificationError.message}`);
     }
 
     // Update lead with verification details
+    console.log('Updating lead in database...');
     const { error: updateError } = await supabase
       .from('leads')
       .update({
@@ -55,10 +86,11 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('id', leadId);
 
     if (updateError) {
+      console.error('Database update error:', updateError);
       throw new Error(`Failed to update lead: ${updateError.message}`);
     }
 
-    console.log(`Verification sent via ${method} to ${contact}, token: ${verificationToken}`);
+    console.log(`Verification sent successfully via ${method} to ${contact}`);
 
     return new Response(
       JSON.stringify({ 
@@ -76,8 +108,13 @@ const handler = async (req: Request): Promise<Response> => {
     );
   } catch (error: any) {
     console.error('Error in send-verification function:', error);
+    console.error('Error stack:', error.stack);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check edge function logs for more information'
+      }),
       {
         status: 500,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -87,81 +124,128 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 async function sendEmailVerification(email: string, token: string) {
+  console.log(`Attempting to send email verification to: ${email}`);
+  
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   if (!resendApiKey) {
+    console.error('RESEND_API_KEY environment variable not found');
     throw new Error('RESEND_API_KEY not configured');
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'Price My Floor <noreply@pricemyfloor.ca>',
-      to: [email],
-      subject: 'Verify Your Quote Request',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Verify Your Quote Request</h2>
-          <p>Thank you for submitting your flooring quote request!</p>
-          <p>To complete your submission, please enter this verification code:</p>
-          <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
-            <h1 style="font-size: 36px; color: #EA580C; margin: 0; letter-spacing: 5px;">${token}</h1>
-          </div>
-          <p>This code will expire in 10 minutes.</p>
-          <p>If you didn't request this quote, you can safely ignore this email.</p>
-          <hr style="margin: 30px 0;">
-          <p style="color: #666; font-size: 14px;">
-            Price My Floor - Connecting you with verified flooring retailers
-          </p>
+  console.log('Resend API key found, sending email...');
+
+  const emailPayload = {
+    from: 'Price My Floor <onboarding@resend.dev>', // Using verified domain
+    to: [email],
+    subject: 'Verify Your Quote Request',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Verify Your Quote Request</h2>
+        <p>Thank you for submitting your flooring quote request!</p>
+        <p>To complete your submission, please enter this verification code:</p>
+        <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+          <h1 style="font-size: 36px; color: #EA580C; margin: 0; letter-spacing: 5px;">${token}</h1>
         </div>
-      `,
-    }),
-  });
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this quote, you can safely ignore this email.</p>
+        <hr style="margin: 30px 0;">
+        <p style="color: #666; font-size: 14px;">
+          Price My Floor - Connecting you with verified flooring retailers
+        </p>
+      </div>
+    `,
+  };
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to send email: ${error}`);
+  console.log('Email payload prepared:', JSON.stringify(emailPayload, null, 2));
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    console.log(`Resend API response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Resend API error response:', errorText);
+      throw new Error(`Resend API returned ${response.status}: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log('Email sent successfully via Resend:', result);
+    return result;
+  } catch (fetchError) {
+    console.error('Error calling Resend API:', fetchError);
+    throw new Error(`Network error sending email: ${fetchError.message}`);
   }
-
-  return await response.json();
 }
 
 async function sendSMSVerification(phone: string) {
+  console.log(`Attempting to send SMS verification to: ${phone}`);
+  
   const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
   
   if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
+    console.error('Missing Twilio credentials:', { 
+      hasSid: !!twilioSid, 
+      hasAuth: !!twilioAuth, 
+      hasServiceSid: !!twilioVerifyServiceSid 
+    });
     throw new Error('Twilio credentials not configured');
   }
 
   // Format phone number for Canadian numbers
   const formattedPhone = formatCanadianPhone(phone);
+  console.log(`Original phone: ${phone}, Formatted phone: ${formattedPhone}`);
 
-  const response = await fetch(
-    `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/Verifications`,
-    {
+  const twilioUrl = `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/Verifications`;
+  const requestBody = new URLSearchParams({
+    To: formattedPhone,
+    Channel: 'sms',
+  });
+
+  console.log(`Calling Twilio API: ${twilioUrl}`);
+  console.log(`Request body: ${requestBody.toString()}`);
+
+  try {
+    const response = await fetch(twilioUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${twilioSid}:${twilioAuth}`)}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        To: formattedPhone,
-        Channel: 'sms',
-      }),
+      body: requestBody,
+    });
+
+    console.log(`Twilio API response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Twilio API error response:', errorText);
+      
+      // Try to parse Twilio error for more specific messages
+      try {
+        const errorData = JSON.parse(errorText);
+        throw new Error(`Twilio error (${response.status}): ${errorData.message || errorText}`);
+      } catch {
+        throw new Error(`Twilio API returned ${response.status}: ${errorText}`);
+      }
     }
-  );
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to send SMS verification: ${error}`);
+    const result = await response.json();
+    console.log('SMS verification sent successfully via Twilio:', result);
+    return result;
+  } catch (fetchError) {
+    console.error('Error calling Twilio API:', fetchError);
+    throw new Error(`Network error sending SMS: ${fetchError.message}`);
   }
-
-  return await response.json();
 }
 
 function formatCanadianPhone(phone: string): string {
