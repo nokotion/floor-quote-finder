@@ -192,13 +192,22 @@ async function sendSMSVerification(phone: string) {
   const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
   
-  if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
-    console.error('Missing Twilio credentials:', { 
-      hasSid: !!twilioSid, 
-      hasAuth: !!twilioAuth, 
-      hasServiceSid: !!twilioVerifyServiceSid 
-    });
-    throw new Error('Twilio credentials not configured');
+  console.log('Twilio environment check:', { 
+    hasSid: !!twilioSid, 
+    hasAuth: !!twilioAuth, 
+    hasServiceSid: !!twilioVerifyServiceSid,
+    sidValue: twilioSid ? `${twilioSid.substring(0, 10)}...` : 'missing',
+    serviceSidValue: twilioVerifyServiceSid ? `${twilioVerifyServiceSid.substring(0, 10)}...` : 'missing'
+  });
+  
+  if (!twilioSid || !twilioAuth) {
+    console.error('Missing basic Twilio credentials');
+    throw new Error('Twilio Account SID and Auth Token must be configured');
+  }
+  
+  if (!twilioVerifyServiceSid) {
+    console.error('Missing Twilio Verify Service SID - this needs to be created in Twilio Console');
+    throw new Error('Twilio Verify Service not configured. Please create a Verify Service in your Twilio Console and add the Service SID to your secrets.');
   }
 
   // Format phone number for Canadian numbers
