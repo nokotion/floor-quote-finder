@@ -280,6 +280,13 @@ const Quote = () => {
       // Check if we have a successful result
       if (verificationResult && verificationResult.success) {
         console.log('Verification sent successfully:', verificationResult);
+        
+        // Handle partial failures gracefully
+        if (verificationResult.partialFailure) {
+          console.warn('Partial failure detected:', verificationResult.warning);
+          // Show a toast warning but still proceed
+          alert(`${verificationResult.message}. ${verificationResult.warning || ''}`);
+        }
       } else {
         console.warn('Unexpected verification response format:', verificationResult);
         // Don't fail here - the verification might still have been sent

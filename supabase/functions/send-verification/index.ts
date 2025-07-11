@@ -116,7 +116,24 @@ const handler = async (req: Request): Promise<Response> => {
       console.error(`WARNING: ${method} verification was sent successfully but database update failed!`);
       console.error('Manual intervention may be required for lead:', leadId);
       
-      throw new Error(`Database update failed after sending verification: ${updateError.message}`);
+      // Return success with partial failure indicator instead of throwing error
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          partialFailure: true,
+          message: `Verification code sent via ${method}, but database update failed`,
+          warning: 'Please retry verification if you do not receive the code',
+          verificationMethod: method,
+          dbError: updateError.message
+        }),
+        {
+          status: 200, // Return 200 because verification was sent successfully
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
     console.log('=== DATABASE UPDATE SUCCESSFUL ===');
