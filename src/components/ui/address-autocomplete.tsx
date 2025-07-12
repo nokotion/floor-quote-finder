@@ -16,6 +16,7 @@ interface AddressData {
 interface AddressAutocompleteProps {
   value: string;
   onChange: (address: string, addressData?: AddressData) => void;
+  onBlur?: () => void;
   placeholder?: string;
   className?: string;
   id?: string;
@@ -24,6 +25,7 @@ interface AddressAutocompleteProps {
 const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value,
   onChange,
+  onBlur,
   placeholder = "Start typing your address...",
   className = "",
   id
@@ -102,6 +104,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       id={id}
       value={value}
       onChange={handleManualChange}
+      onBlur={onBlur}
       placeholder={isLoaded ? placeholder : "Loading address search..."}
       className={className}
       disabled={!isLoaded}
@@ -110,3 +113,5 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 };
 
 export default AddressAutocomplete;
+export { AddressAutocomplete };
+export type { AddressData };

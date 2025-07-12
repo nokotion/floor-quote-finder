@@ -39,11 +39,15 @@ interface Brand {
   name: string;
 }
 
-interface PrefilledValues {
-  brand?: string;
-  size?: string;
-  postal?: string;
-}
+  interface PrefilledValues {
+    brand?: string;
+    size?: string;
+    postal?: string;
+    street?: string;
+    city?: string;
+    province?: string;
+    formatted_address?: string;
+  }
 
 const Quote = () => {
   const [searchParams] = useSearchParams();
@@ -97,6 +101,10 @@ const Quote = () => {
     const brandParam = searchParams.get('brand');
     const sizeParam = searchParams.get('size');
     const postalParam = searchParams.get('postal');
+    const streetParam = searchParams.get('street');
+    const cityParam = searchParams.get('city');
+    const provinceParam = searchParams.get('province');
+    const formattedAddressParam = searchParams.get('formatted_address');
 
     const prefilled: PrefilledValues = {};
 
@@ -121,6 +129,26 @@ const Quote = () => {
       setFormData(prev => ({
         ...prev,
         postalCode: postalParam
+      }));
+    }
+
+    // Store address components for later use
+    if (streetParam) prefilled.street = streetParam;
+    if (cityParam) prefilled.city = cityParam;
+    if (provinceParam) prefilled.province = provinceParam;
+    if (formattedAddressParam) prefilled.formatted_address = formattedAddressParam;
+
+    // Pre-fill address from Google Places selection
+    if (streetParam && cityParam && provinceParam) {
+      const baseAddress = `${streetParam}, ${cityParam}, ${provinceParam}`;
+      setFormData(prev => ({
+        ...prev,
+        streetAddress: baseAddress
+      }));
+    } else if (formattedAddressParam) {
+      setFormData(prev => ({
+        ...prev,
+        streetAddress: formattedAddressParam
       }));
     }
 
@@ -631,13 +659,31 @@ const Quote = () => {
                   <CardContent className="p-3 pt-0 space-y-3">
                     <div>
                       <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
-                      <Input
-                        id="fullAddress"
-                        value={formData.contactInfo.fullAddress}
-                        onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
-                        placeholder="e.g., 123 Main Street, Toronto, ON M5V 3A8"
-                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                      />
+                      {(prefilledValues.street || prefilledValues.formatted_address) ? (
+                        <div className="mt-1">
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
+                            <p className="text-sm text-blue-800 mb-1">
+                              ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
+                            </p>
+                            <p className="text-xs text-blue-600">Please add your house number:</p>
+                          </div>
+                          <Input
+                            id="fullAddress"
+                            value={formData.contactInfo.fullAddress}
+                            onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
+                            placeholder={`Add house number to: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
+                            className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                          />
+                        </div>
+                      ) : (
+                        <Input
+                          id="fullAddress"
+                          value={formData.contactInfo.fullAddress}
+                          onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
+                          placeholder="e.g., 123 Main Street, Toronto, ON M5V 3A8"
+                          className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        />
+                      )}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>

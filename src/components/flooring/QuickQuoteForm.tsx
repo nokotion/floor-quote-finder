@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
+import { AddressAutocomplete, AddressData } from "@/components/ui/address-autocomplete";
 import { projectSizes } from "@/constants/flooringData";
 
 interface Brand {
@@ -22,19 +23,25 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
   const [postalCode, setPostalCode] = useState("");
+  const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const formatted = formatAndValidatePostalCode(inputValue, postalCode);
-    
-    setPostalCode(formatted);
-    
-    // Clear error when user starts typing
-    if (postalCodeError) {
+  const handleAddressChange = (address: string, data?: AddressData) => {
+    if (data) {
+      setAddressData(data);
+      setPostalCode(data.postal_code || "");
       setPostalCodeError("");
+    } else {
+      // Manual entry - treat as postal code
+      const formatted = formatAndValidatePostalCode(address, postalCode);
+      setPostalCode(formatted);
+      setAddressData(null);
+      
+      if (postalCodeError) {
+        setPostalCodeError("");
+      }
     }
   };
 
@@ -64,6 +71,14 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
       size: projectSize,
       postal: postalCode.toUpperCase()
     });
+
+    // Add address components if available from Google Places
+    if (addressData) {
+      if (addressData.route) params.append('street', addressData.route);
+      if (addressData.locality) params.append('city', addressData.locality);
+      if (addressData.administrative_area_level_1) params.append('province', addressData.administrative_area_level_1);
+      if (addressData.formatted_address) params.append('formatted_address', addressData.formatted_address);
+    }
 
     navigate(`/quote?${params.toString()}`);
   };
@@ -115,21 +130,21 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
 
               <div>
                 <Label htmlFor="postal" className="text-sm font-semibold text-gray-800 mb-2 block">
-                  Postal Code
+                  Address or Postal Code
                 </Label>
-                <Input
-                  id="postal"
-                  placeholder="e.g., M5V 3A8"
+                <AddressAutocomplete
                   value={postalCode}
-                  onChange={handlePostalCodeChange}
-                  onBlur={handlePostalCodeBlur}
-                  maxLength={7}
+                  onChange={handleAddressChange}
+                  placeholder="Start typing address or postal code..."
                   className={`h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium ${
                     postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
                   }`}
                 />
                 {postalCodeError && (
                   <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
+                )}
+                {addressData && (
+                  <p className="text-sm text-green-600 mt-1 font-medium">✓ Address selected: {addressData.formatted_address}</p>
                 )}
               </div>
             </div>
