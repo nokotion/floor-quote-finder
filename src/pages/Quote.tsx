@@ -275,7 +275,8 @@ const Quote = () => {
         notes: formData.notes,
         attachment_urls: formData.attachmentUrls,
         status: 'pending_verification',
-        is_verified: false
+        is_verified: false,
+        verification_method: verificationMethod
       };
       
       console.log('Attempting to insert lead data:', leadInsertData);
