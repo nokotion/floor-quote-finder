@@ -52,19 +52,25 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
   }, []);
 
   const handleAddressChange = (address: string, data?: AddressData) => {
-    if (data && data.postal_code && validatePostalCode(data.postal_code)) {
-      // Only set addressData if we have a complete, valid postal code
+    if (data && data.postal_code) {
+      // Full address selected from Google Places
       setAddressData(data);
       setPostalCode(data.postal_code);
       setPostalCodeError("");
-    } else {
-      // Manual entry or incomplete data - treat as postal code
-      const formatted = formatAndValidatePostalCode(address, postalCode);
-      setPostalCode(formatted);
-      setAddressData(null);
-      
-      if (postalCodeError) {
+    } else if (address) {
+      // Manual entry - check if it's a postal code or partial address
+      if (validatePostalCode(address)) {
+        const formatted = formatAndValidatePostalCode(address, postalCode);
+        setPostalCode(formatted);
+        setAddressData(null);
         setPostalCodeError("");
+      } else {
+        // Allow partial addresses but don't validate yet
+        setPostalCode(address);
+        setAddressData(null);
+        if (postalCodeError) {
+          setPostalCodeError("");
+        }
       }
     }
   };
@@ -182,14 +188,13 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                   </div>
 
                   <div>
-                    <Label htmlFor="postal">Address or Postal Code</Label>
+                    <Label htmlFor="postal">Address</Label>
                     <AddressAutocomplete
                       value={postalCode}
                       onChange={handleAddressChange}
                       onBlur={handlePostalCodeBlur}
-                      placeholder="Enter postal code (e.g., L4Y 3Y5)"
+                      placeholder="Enter your address or postal code"
                       className={postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}
-                      usePostalCodeOnly={true}
                     />
                     {postalCodeError && (
                       <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
@@ -199,7 +204,7 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                           <p className="text-sm text-green-700 font-medium">
-                            Address selected: {addressData.formatted_address}
+                            Address confirmed: {addressData.formatted_address}
                           </p>
                         </div>
                       </div>

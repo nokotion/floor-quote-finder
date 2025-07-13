@@ -29,19 +29,25 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
   const navigate = useNavigate();
 
   const handleAddressChange = (address: string, data?: AddressData) => {
-    if (data && data.postal_code && validatePostalCode(data.postal_code)) {
-      // Only set addressData if we have a complete, valid postal code
+    if (data && data.postal_code) {
+      // Full address selected from Google Places
       setAddressData(data);
       setPostalCode(data.postal_code);
       setPostalCodeError("");
-    } else {
-      // Manual entry or incomplete data - treat as postal code
-      const formatted = formatAndValidatePostalCode(address, postalCode);
-      setPostalCode(formatted);
-      setAddressData(null);
-      
-      if (postalCodeError) {
+    } else if (address) {
+      // Manual entry - check if it's a postal code or partial address
+      if (validatePostalCode(address)) {
+        const formatted = formatAndValidatePostalCode(address, postalCode);
+        setPostalCode(formatted);
+        setAddressData(null);
         setPostalCodeError("");
+      } else {
+        // Allow partial addresses but don't validate yet
+        setPostalCode(address);
+        setAddressData(null);
+        if (postalCodeError) {
+          setPostalCodeError("");
+        }
       }
     }
   };
@@ -131,22 +137,21 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
 
               <div>
                 <Label htmlFor="postal" className="text-sm font-semibold text-gray-800 mb-2 block">
-                  Address or Postal Code
+                  Address
                 </Label>
                 <AddressAutocomplete
                   value={postalCode}
                   onChange={handleAddressChange}
-                  placeholder="Enter postal code (e.g., L4Y 3Y5)"
+                  placeholder="Enter your address or postal code"
                   className={`h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium ${
                     postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
                   }`}
-                  usePostalCodeOnly={true}
                 />
                 {postalCodeError && (
                   <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
                 )}
                 {addressData && (
-                  <p className="text-sm text-green-600 mt-1 font-medium">✓ Address selected: {addressData.formatted_address}</p>
+                  <p className="text-sm text-green-600 mt-1 font-medium">✓ Address confirmed: {addressData.formatted_address}</p>
                 )}
               </div>
             </div>
