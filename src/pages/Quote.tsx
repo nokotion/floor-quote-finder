@@ -644,22 +644,23 @@ const Quote = () => {
                 <CardContent className="p-3 pt-0 space-y-4">
                   {/* Address Section */}
                   <div>
-                    <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
+                    <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Your Street Address</Label>
                     {prefilledValues.formatted_address && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
-                        <p className="text-sm text-blue-800 mb-1">
-                          ✓ Service area: <strong>{prefilledValues.formatted_address}</strong>
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-md mb-3">
+                        <p className="text-sm text-green-800 mb-1">
+                          ✓ <strong>Service available in:</strong> {prefilledValues.formatted_address}
                         </p>
-                        <p className="text-xs text-blue-600">Please enter your complete street address below:</p>
                       </div>
                     )}
+                    <p className="text-sm text-gray-600 mb-2">Enter your complete street address for the quote:</p>
                     <AddressAutocomplete
                       id="fullAddress"
-                      value={formData.contactInfo.fullAddress}
+                      value=""
                       onChange={handleAddressChange}
-                      placeholder="Enter your complete address (e.g., 123 Main Street, City)"
+                      placeholder="123 Main Street, Mississauga, ON"
                       className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                     />
+                    <p className="text-xs text-gray-500 mt-1">This address will be used for your flooring quote and installation details.</p>
                   </div>
 
                   {/* Contact Details */}
