@@ -401,23 +401,23 @@ const Quote = () => {
       </div>
 
       {/* Form Container */}
-      <div className="py-16 px-6">
+      <div className="py-8 px-6">
         <div className="max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-8"
           >
             <h1 className="text-3xl font-semibold mb-3 text-slate-900">Get Your Free Flooring Quote</h1>
             <p className="text-slate-600 text-lg">Tell us about your project and we'll connect you with verified retailers</p>
           </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Preferred Brand */}
             <Card className="bg-white border border-neutral-200 shadow-sm">
-              <CardContent className="p-8">
-                <div className="space-y-4">
+              <CardContent className="p-6">
+                <div className="space-y-3">
                   <Label htmlFor="brand" className="text-base font-medium text-slate-900">
                     Preferred Brand
                   </Label>
@@ -440,10 +440,23 @@ const Quote = () => {
               </CardContent>
             </Card>
 
+            {/* Decorative Wave */}
+            <div className="flex justify-center py-2">
+              <svg width="200" height="30" viewBox="0 0 200 30" className="text-accent">
+                <path
+                  d="M0 15 Q50 0 100 15 T200 15"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+
             {/* Project Size */}
             <Card className="bg-white border border-neutral-200 shadow-sm">
-              <CardContent className="p-8">
-                <div className="space-y-4">
+              <CardContent className="p-6">
+                <div className="space-y-3">
                   <Label htmlFor="projectSize" className="text-base font-medium text-slate-900">
                     Project Size
                   </Label>
@@ -466,62 +479,101 @@ const Quote = () => {
               </CardContent>
             </Card>
 
+             {/* Decorative Wave */}
+             <div className="flex justify-center py-2">
+               <svg width="200" height="30" viewBox="0 0 200 30" className="text-accent">
+                 <path
+                   d="M0 15 Q50 30 100 15 T200 15"
+                   stroke="currentColor"
+                   strokeWidth="2"
+                   fill="none"
+                   strokeLinecap="round"
+                 />
+               </svg>
+             </div>
+
             {/* Installation */}
             <Card className="bg-white border border-neutral-200 shadow-sm">
-              <CardContent className="p-8">
-                <div className="space-y-4">
+              <CardContent className="p-6">
+                <div className="space-y-3">
                   <Label className="text-base font-medium text-slate-900">Installation</Label>
                   <RadioGroup 
                     value={formData.installationType} 
                     onValueChange={(value) => updateFormData('installationType', value)}
-                    className="space-y-3"
+                    className="space-y-2"
                   >
-                    <div className="flex items-center space-x-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                    <div className="flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
                       <RadioGroupItem value="supply-and-install" id="supply-and-install" />
                       <div>
                         <Label htmlFor="supply-and-install" className="text-base font-medium text-slate-900">Supply & Install</Label>
                         <p className="text-sm text-slate-600">Materials + installation</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50">
-                      <RadioGroupItem value="supply-only" id="supply-only" />
-                      <div>
-                        <Label htmlFor="supply-only" className="text-base font-medium text-slate-900">Supply Only</Label>
-                        <p className="text-sm text-slate-600">Materials only</p>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </CardContent>
-            </Card>
+                     <div className="flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                       <RadioGroupItem value="supply-only" id="supply-only" />
+                       <div>
+                         <Label htmlFor="supply-only" className="text-base font-medium text-slate-900">Supply Only</Label>
+                         <p className="text-sm text-slate-600">Materials only</p>
+                       </div>
+                     </div>
+                   </RadioGroup>
+                 </div>
+               </CardContent>
+             </Card>
 
-            {/* Timeline */}
-            <Card className="bg-white border border-neutral-200 shadow-sm">
-              <CardContent className="p-8">
-                <div className="space-y-4">
-                  <Label className="text-base font-medium text-slate-900">Timeline</Label>
-                  <RadioGroup 
-                    value={formData.timeline} 
-                    onValueChange={(value) => updateFormData('timeline', value)}
-                    className="space-y-3"
-                  >
-                    <div className="flex items-center space-x-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50">
-                      <RadioGroupItem value="As soon as possible" id="asap" />
-                      <Label htmlFor="asap" className="text-base font-medium text-slate-900">ASAP</Label>
-                    </div>
-                    <div className="flex items-center space-x-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50">
-                      <RadioGroupItem value="Within 1 month" id="within-month" />
-                      <Label htmlFor="within-month" className="text-base font-medium text-slate-900">Within 1 month</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </CardContent>
-            </Card>
+             {/* Decorative Wave */}
+             <div className="flex justify-center py-2">
+               <svg width="200" height="30" viewBox="0 0 200 30" className="text-accent">
+                 <path
+                   d="M0 15 Q50 0 100 15 T200 15"
+                   stroke="currentColor"
+                   strokeWidth="2"
+                   fill="none"
+                   strokeLinecap="round"
+                 />
+               </svg>
+             </div>
 
-            {/* Contact Information */}
-            <Card className="bg-white border border-neutral-200 shadow-sm">
-              <CardContent className="p-8">
-                <div className="space-y-6">
+             {/* Timeline */}
+             <Card className="bg-white border border-neutral-200 shadow-sm">
+               <CardContent className="p-6">
+                 <div className="space-y-3">
+                   <Label className="text-base font-medium text-slate-900">Timeline</Label>
+                   <RadioGroup 
+                     value={formData.timeline} 
+                     onValueChange={(value) => updateFormData('timeline', value)}
+                     className="space-y-2"
+                   >
+                     <div className="flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                       <RadioGroupItem value="As soon as possible" id="asap" />
+                       <Label htmlFor="asap" className="text-base font-medium text-slate-900">ASAP</Label>
+                     </div>
+                     <div className="flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50">
+                       <RadioGroupItem value="Within 1 month" id="within-month" />
+                       <Label htmlFor="within-month" className="text-base font-medium text-slate-900">Within 1 month</Label>
+                     </div>
+                   </RadioGroup>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Decorative Wave */}
+             <div className="flex justify-center py-2">
+               <svg width="200" height="30" viewBox="0 0 200 30" className="text-accent">
+                 <path
+                   d="M0 15 Q50 30 100 15 T200 15"
+                   stroke="currentColor"
+                   strokeWidth="2"
+                   fill="none"
+                   strokeLinecap="round"
+                 />
+               </svg>
+             </div>
+
+             {/* Contact Information */}
+             <Card className="bg-white border border-neutral-200 shadow-sm">
+               <CardContent className="p-6">
+                 <div className="space-y-4">
                   <h3 className="text-base font-medium text-slate-900">Contact Information</h3>
                   
                   {/* Name and Email */}

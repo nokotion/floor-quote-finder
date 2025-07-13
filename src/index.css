@@ -27,9 +27,9 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Yellow from logo for accent/highlights */
-    --accent: 51 100% 50%;
-    --accent-foreground: 0 0% 18%;
+    /* Orange/red gradient colors */
+    --accent: 14 100% 57%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
