@@ -194,7 +194,14 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                       <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
                     )}
                     {addressData && (
-                      <p className="text-sm text-green-600 mt-1">✓ Address selected: {addressData.formatted_address}</p>
+                      <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <p className="text-sm text-green-700 font-medium">
+                            Address selected: {addressData.formatted_address}
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

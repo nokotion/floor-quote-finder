@@ -554,7 +554,7 @@ const Quote = () => {
               </motion.div>
             </div>
 
-            {/* Installation + Location Row */}
+            {/* Installation + Timeline Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Installation Preference Section */}
               <motion.div
@@ -594,53 +594,11 @@ const Quote = () => {
                 </Card>
               </motion.div>
 
-              {/* Location Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.25 }}
-              >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
-                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <MapPin className="w-4 h-4 text-accent" />
-                      Location
-                      {prefilledValues.postal && renderPrefilledBadge()}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
-                    <div>
-                      <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-                        Postal Code
-                        {prefilledValues.postal && (
-                          <Badge variant="outline" className="text-xs">Pre-filled</Badge>
-                        )}
-                      </Label>
-                      <Input
-                        id="postalCode"
-                        placeholder="e.g., M5V 3A8"
-                        maxLength={7}
-                        value={formData.postalCode}
-                        onChange={handlePostalCodeChange}
-                        onBlur={handlePostalCodeBlur}
-                        className={`mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium ${postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}`}
-                      />
-                      {postalCodeError && (
-                        <p className="text-sm text-red-600 mt-1 font-medium">{postalCodeError}</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-
-            {/* Timeline + Contact Information Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Timeline Section */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.6, delay: 0.25 }}
               >
                 <Card className="shadow-lg h-full">
                   <CardHeader className="p-3">
@@ -667,106 +625,127 @@ const Quote = () => {
                   </CardContent>
                 </Card>
               </motion.div>
+            </div>
 
-            {/* Contact Information Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.35 }}
-              >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
-                    <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <User className="w-4 h-4 text-accent" />
-                      Contact Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0 space-y-3">
-                     <div>
-                       <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
-                       {(prefilledValues.street || prefilledValues.formatted_address) ? (
-                         <div className="mt-1">
-                           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
-                             <p className="text-sm text-blue-800 mb-1">
-                               ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
-                             </p>
-                             <p className="text-xs text-blue-600">Please add your house number if needed:</p>
-                           </div>
-                           <AddressAutocomplete
-                             id="fullAddress"
-                             value={formData.contactInfo.fullAddress}
-                             onChange={handleAddressChange}
-                             placeholder={`Add house number if needed: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
-                             className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                           />
-                         </div>
-                       ) : (
-                         <AddressAutocomplete
-                           id="fullAddress"
-                           value={formData.contactInfo.fullAddress}
-                           onChange={handleAddressChange}
-                           placeholder="Start typing your full address..."
-                           className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                         />
-                       )}
-                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
-                        <Input
-                          id="name"
-                          value={formData.contactInfo.name}
-                          onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                          className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+            {/* Contact & Location Information Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Card className="shadow-lg">
+                <CardHeader className="p-3">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                    <MapPin className="w-4 h-4 text-accent" />
+                    Contact & Location Information
+                    {(prefilledValues.postal || prefilledValues.formatted_address) && renderPrefilledBadge()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 space-y-4">
+                  {/* Address Section */}
+                  <div>
+                    <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
+                    {(prefilledValues.street || prefilledValues.formatted_address) ? (
+                      <div className="mt-1">
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
+                          <p className="text-sm text-blue-800 mb-1">
+                            ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
+                          </p>
+                          <p className="text-xs text-blue-600">Please add your house number if needed:</p>
+                        </div>
+                        <AddressAutocomplete
+                          id="fullAddress"
+                          value={formData.contactInfo.fullAddress}
+                          onChange={handleAddressChange}
+                          placeholder={`Add house number if needed: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
+                          className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.contactInfo.phone}
-                          onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                          className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                        />
-                      </div>
-                    </div>
+                    ) : (
+                      <AddressAutocomplete
+                        id="fullAddress"
+                        value={formData.contactInfo.fullAddress}
+                        onChange={handleAddressChange}
+                        placeholder="Start typing your full address..."
+                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      />
+                    )}
+                  </div>
+
+                  {/* Postal Code (read-only when pre-filled) */}
+                  {prefilledValues.postal && (
                     <div>
-                      <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
+                      <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                        Postal Code
+                        <Badge variant="outline" className="text-xs">Pre-filled</Badge>
+                      </Label>
                       <Input
-                        id="email"
-                        type="email"
-                        value={formData.contactInfo.email}
-                        onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
+                        id="postalCode"
+                        value={formData.postalCode}
+                        readOnly
+                        className="mt-1 h-10 text-base bg-gray-50 border-gray-200 font-medium cursor-not-allowed"
+                      />
+                    </div>
+                  )}
+
+                  {/* Contact Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
+                      <Input
+                        id="name"
+                        value={formData.contactInfo.name}
+                        onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
                         className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       />
                     </div>
-                    
-                    {/* Verification Method Selection */}
-                    <div className="pt-2 border-t">
-                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">How would you like to verify your request?</Label>
-                      <RadioGroup 
-                        value={verificationMethod} 
-                        onValueChange={(value) => setVerificationMethod(value as 'email' | 'sms')}
-                        className="grid grid-cols-2 gap-2"
-                      >
-                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                          <RadioGroupItem value="email" id="verify-email" />
-                          <Label htmlFor="verify-email" className="text-sm font-medium">Email</Label>
-                        </div>
-                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                          <RadioGroupItem value="sms" id="verify-sms" />
-                          <Label htmlFor="verify-sms" className="text-sm font-medium">SMS</Label>
-                        </div>
-                      </RadioGroup>
-                      <p className="text-xs text-gray-500 mt-1">
-                        We'll send a verification code to confirm your request
-                      </p>
+                    <div>
+                      <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={formData.contactInfo.phone}
+                        onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
+                        className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.contactInfo.email}
+                      onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
+                      className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                    />
+                  </div>
+                  
+                  {/* Verification Method Selection */}
+                  <div className="pt-2 border-t">
+                    <Label className="text-sm font-semibold text-gray-800 mb-2 block">How would you like to verify your request?</Label>
+                    <RadioGroup 
+                      value={verificationMethod} 
+                      onValueChange={(value) => setVerificationMethod(value as 'email' | 'sms')}
+                      className="grid grid-cols-2 gap-2"
+                    >
+                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
+                        <RadioGroupItem value="email" id="verify-email" />
+                        <Label htmlFor="verify-email" className="text-sm font-medium">Email</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
+                        <RadioGroupItem value="sms" id="verify-sms" />
+                        <Label htmlFor="verify-sms" className="text-sm font-medium">SMS</Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-gray-500 mt-1">
+                      We'll send a verification code to confirm your request
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
 
             {/* Additional Details Section */}
