@@ -14,6 +14,8 @@ import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalC
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
 import AddressAutocomplete, { AddressData } from "@/components/ui/address-autocomplete";
+import { validateAndFormatPhone, formatPhoneDisplay } from "@/utils/phoneValidation";
+import { toast } from "sonner";
 
 interface QuoteFormData {
   brandRequested: string;
@@ -68,6 +70,7 @@ const Quote = () => {
   });
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [phoneError, setPhoneError] = useState<string>('');
 
   // Fetch brands from database
   useEffect(() => {
@@ -239,14 +242,52 @@ const Quote = () => {
     updateFormData('attachmentUrls', newUrls);
   };
 
+  const handlePhoneChange = (value: string) => {
+    updateFormData('customerPhone', value);
+    if (verificationMethod === 'sms' && value.trim() !== '') {
+      const validation = validateAndFormatPhone(value);
+      setPhoneError(validation.isValid ? '' : validation.error || 'Invalid phone number');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handlePhoneBlur = () => {
+    if (verificationMethod === 'sms' && formData.customerPhone) {
+      const validation = validateAndFormatPhone(formData.customerPhone);
+      setPhoneError(validation.isValid ? '' : validation.error || 'Invalid phone number');
+    }
+  };
+
   const isFormValid = () => {
-    return formData.brandRequested &&
-           formData.squareFootage &&
-           formData.postalCode && validatePostalCode(formData.postalCode) &&
-           formData.timeline &&
-           formData.customerName &&
-           formData.customerEmail &&
-           (verificationMethod === 'email' || (verificationMethod === 'sms' && formData.customerPhone));
+    const requiredFields = [
+      'brandRequested',
+      'customerName', 
+      'customerEmail',
+      'postalCode',
+      'timeline'
+    ];
+    
+    const hasRequiredFields = requiredFields.every(field => 
+      formData[field as keyof QuoteFormData] && 
+      String(formData[field as keyof QuoteFormData]).trim() !== ""
+    );
+    
+    const hasValidPostalCode = formData.postalCode && validatePostalCode(formData.postalCode);
+    const hasSquareFootage = formData.squareFootage > 0;
+    
+    // For SMS verification, validate phone number properly
+    let hasValidPhone = true;
+    if (verificationMethod === 'sms') {
+      if (!formData.customerPhone || formData.customerPhone.trim() === '') {
+        hasValidPhone = false;
+      } else {
+        const phoneValidation = validateAndFormatPhone(formData.customerPhone);
+        hasValidPhone = phoneValidation.isValid;
+      }
+    }
+    
+    return hasRequiredFields && hasValidPostalCode && hasSquareFootage && hasValidPhone;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,10 +303,20 @@ const Quote = () => {
     setIsLoading(true);
 
     try {
+      // Format phone number if SMS verification is chosen
+      let formattedPhone = formData.customerPhone;
+      if (verificationMethod === 'sms' && formData.customerPhone) {
+        const phoneValidation = validateAndFormatPhone(formData.customerPhone);
+        if (!phoneValidation.isValid) {
+          throw new Error(phoneValidation.error || 'Invalid phone number');
+        }
+        formattedPhone = phoneValidation.formatted;
+      }
+      
       const leadInsertData = {
         customer_name: formData.customerName,
         customer_email: formData.customerEmail,
-        customer_phone: formData.customerPhone,
+        customer_phone: formattedPhone || null,
         postal_code: formData.postalCode,
         street_address: formData.streetAddress,
         brand_requested: formData.brandRequested,
@@ -305,7 +356,7 @@ const Quote = () => {
       console.log('Lead saved for verification:', leadData);
 
       // Send verification code
-      const contact = verificationMethod === 'email' ? formData.customerEmail : formData.customerPhone;
+      const contact = verificationMethod === 'email' ? formData.customerEmail : formattedPhone;
       console.log(`Attempting to send ${verificationMethod} verification to:`, contact);
       
       const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('send-verification', {
@@ -631,12 +682,20 @@ const Quote = () => {
                             id="phone"
                             type="tel"
                             value={formData.customerPhone || ""}
-                            onChange={(e) => updateFormData('customerPhone', e.target.value)}
-                            placeholder="Enter your phone"
-                            className={`h-12 text-sm ${verificationMethod === 'sms' && !formData.customerPhone ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                            onChange={(e) => handlePhoneChange(e.target.value)}
+                            onBlur={handlePhoneBlur}
+                            placeholder="Enter your phone (e.g., 905-872-6683)"
+                            className={`h-12 text-sm ${
+                              verificationMethod === 'sms' && (phoneError || (!formData.customerPhone && verificationMethod === 'sms'))
+                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                                : ''
+                            }`}
                             required={verificationMethod === 'sms'}
-                         />
-                       </div>
+                          />
+                          {verificationMethod === 'sms' && phoneError && (
+                            <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+                          )}
+                        </div>
 
                        <div>
                          <Label className="text-sm font-medium text-gray-700 mb-2 block">

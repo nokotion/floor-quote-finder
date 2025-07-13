@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
+import { parsePhoneNumber } from "https://esm.sh/libphonenumber-js@1.10.51";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -321,21 +322,39 @@ async function sendSMSVerification(phone: string) {
 }
 
 function formatCanadianPhone(phone: string): string {
-  // Remove all non-digits
-  const digits = phone.replace(/\D/g, '');
-  
-  // If it's 10 digits, assume it's Canadian and add +1
-  if (digits.length === 10) {
-    return `+1${digits}`;
+  try {
+    // Parse the phone number with Canadian default
+    const phoneNumber = parsePhoneNumber(phone, 'CA');
+    
+    if (!phoneNumber) {
+      console.log('Failed to parse phone number:', phone);
+      // Fallback to original logic
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length === 10) {
+        return `+1${digits}`;
+      }
+      if (digits.length === 11 && digits.startsWith('1')) {
+        return `+${digits}`;
+      }
+      return phone;
+    }
+    
+    // Return E.164 format
+    const formatted = phoneNumber.format('E.164');
+    console.log('Formatted phone:', phone, '->', formatted);
+    return formatted;
+  } catch (error) {
+    console.error('Error formatting phone number:', error);
+    // Fallback to original logic
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `+1${digits}`;
+    }
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return `+${digits}`;
+    }
+    return phone;
   }
-  
-  // If it's 11 digits and starts with 1, format as North American
-  if (digits.length === 11 && digits.startsWith('1')) {
-    return `+${digits}`;
-  }
-  
-  // Return as-is if already formatted or different format
-  return phone.startsWith('+') ? phone : `+${digits}`;
 }
 
 serve(handler);
