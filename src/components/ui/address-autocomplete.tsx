@@ -130,12 +130,29 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         disabled={!isLoaded}
       />
       {isLoaded && !hasError && (
-        <div className="flex justify-end">
-          <img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAAAgCAYAAACinX6EAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH4QsXEgc4y3KhBAAABXZJREFUWMPtlk1sHEcVx3/v9cysZ2e9u3bseOPEiRPHjmNCHCdOiBPiJCQhCSFNSEgRKAEOCAEHJC5wQEJc4MCBAwcOHLggceCAhIRAQgKBhEDiA5IQJ3HiOI4d22vH3vXH7Mx0d3U/OOxMb7u36zXkg4NUtXu6X7/3r/d6+tUIN2cWBSIWBSIW/88sIl/xpJVxgKzUMhO1xhAOyQm2yPe9wBB8P/SzaXA7KmwdKhAOxQH/C5XqNMhTz99RfEQ11ItWFdaIjbMnx5vM8v6hAXyxbHO9HvSsG0+nQSI+tVWkWZLxOKIV9Py+YL7Vy2itGDyhlC6Ylu1ffrQhlfKDOhDmOVOKGqINZCygEfTAVQDuFwZSgCqECooQQGwLrJPOeGWOKKJMDdM8fvKJE7c6bU9Kn/wBgJ2BVAp6nL9c4EH5xFRVONODAXI7v0DQGQ/1MpRCQrKpDIMIJm1jZmw0tgV2xHxsLy7ceWrx5bqh2iZsNY4tRJRSbEgbILJGRAjp6O6Ar/U4XfgegQkJdR/aZRxnrCaLxWCHNTSKEDYO6kTvf/6upj4vvfLKyXue/hOEtZAfJQvQQrNGBBHFz/3cKRKNd1CtglqbNALdNPuqTSpZxEqjS5P+8Pfn9HL7TU+v5sBj7aeqh/q1tBDCJ9BNhAkQxocE2DbEKSBUe2Bq8FdxOIq1Q9iUhLaHaGY5JGOU9nBSKmZjgZYWEBBVagYlhcIhCCcvRfKJhPpQDyXJeW1sFBZQnTJ9uxSDNRVUNFFZdX5DggfKDWlX0yNFGF9PqxqOyKoGHKUwJkBWNqmVG9wVCO6v1TG1Gpe2bsNNxAhcFAHCT9gKG/+7e7QlGe8/4DLSLqFLkzidxUmV6OVdZKdMNyLnuKqC5xK6Hi4oD1F2uh1fq8m2Dh1eBaW4MjIC7TpU33qbluu24L+MlGUqP2r/1eFfOKhSNKlSszVbDZsL5T9sGBrvGQ6oFYQlhgxNW0sblKQhhvv8mJ8wHPR7sA39HLt9GNq61F7YrGwtB4Kxr/y4nJD7BhH8fvF8H4w8rJOWgjOZz/0mOaB7fAA/4dCMR7Tcf2LZn8oHwgBvjIwEtW5maNBKlFgKCMj8x9ZtpHMjkTrlsVeV6m+sLj1kU7CdCaZm3JvFTXi8XJcHJ2Z3EgS7QIDbxNZx6xhO1BcVhEKgfvpojhcXO7R+6nOhAE+cO4FjU5oF8V12sn9MrC2z2sKcfYvU8e+gq+fJzf8S55vvwL/7DGrbt1GVbRT/9B/kU7+H3hq8eBrv2aOoPV1s1/O+3d7lnKqvjxM4a0gt7Q6A8O+7u0iNj7zfOgawCm9bWKTQPL5UKNBcKTfmLyaFqMVGtNrEsj6HEUcq7+tKZuRGdLUJN1uQgOkjnYrffXhHVJlYJo6VYT1Eexm6UYL/zOPo8hkT/cOYPfYJp5xbL4J0u4hWF4UPVA4yQWa+rEQ3gBGEKkPW8w5vFJgL8s5PnmDl6mUrr7WDOr0Fq8DQQkSf2bQxBIJRZmQo5ym6C+aRAOgDOgbvJhP9DnSM1oeRAQWcAOgD3jSa/wG6S6jlFQEfgKO8qVl+HxS6HQ6TxGCGYuBJEwPxTRjAhsDeXFgz8cAJ5I9xA2oObJDTlRWnZfwTTr97ZevfPl6Ss8ZA+K3e8dAy9+P9R9gF+Qy78WPG/RNwg/8KlNi2HyNwI9AEtFq4rLQ8LwWDPvxV25Bb1Btp5p7s/3qZP43qb3F0dvEtjrg5s+gDOgw8afOQ8xgAAAAASUVORK5CYII="
-            alt="Powered by Google"
-            className="h-4"
-          />
+        <div className="flex items-center justify-end mt-1 px-1">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span>Powered by</span>
+            <svg 
+              width="44" 
+              height="18" 
+              viewBox="0 0 44 18" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="flex-shrink-0"
+            >
+              <g fill="none" fillRule="evenodd">
+                <path d="M6.734 16.106c2.032 0 3.469-1.18 3.469-2.818 0-1.437-.781-2.262-2.262-2.262H5.445v5.08h1.29zm0-4.23c.937 0 1.575.343 1.575 1.422 0 1.047-.671 1.422-1.575 1.422H6.624v-2.844h.11zm7.344 4.23c1.859 0 3.469-1.016 3.469-2.818 0-1.802-1.61-2.818-3.469-2.818h-2.262v5.636h2.262zm0-4.777c1.047 0 1.859.547 1.859 1.959 0 1.422-.812 1.959-1.859 1.959h-.906v-3.918h.906zm7.453 4.887c1.938 0 3.61-1.422 3.61-2.928 0-1.506-1.672-2.928-3.61-2.928s-3.61 1.422-3.61 2.928c0 1.506 1.672 2.928 3.61 2.928zm0-.859c-1.25 0-2.195-.906-2.195-2.069 0-1.172.945-2.078 2.195-2.078s2.195.906 2.195 2.078c0 1.163-.945 2.069-2.195 2.069zM31.766 16.106V11.32l2.709 4.786h1.172V10.47h-1.172v4.23l-2.543-4.23h-1.438v5.636h1.272zm7.547 0c1.859 0 3.469-1.016 3.469-2.818 0-1.802-1.61-2.818-3.469-2.818h-2.262v5.636h2.262zm0-4.777c1.047 0 1.859.547 1.859 1.959 0 1.422-.812 1.959-1.859 1.959h-.906v-3.918h.906z" 
+                  fill="#737373"
+                />
+                <path d="M17.813 9.812c-.328 0-.594-.266-.594-.594s.266-.594.594-.594.594.266.594.594-.266.594-.594.594zm-5.859 0c-.328 0-.594-.266-.594-.594s.266-.594.594-.594.594.266.594.594-.266.594-.594.594z" 
+                  fill="#4285F4"
+                />
+                <path d="M21.609 12.422c-.89 2.234-3.047 3.828-5.609 3.828-3.328 0-6.015-2.687-6.015-6.015C10 7.359 12.672 4.672 16 4.672c1.641 0 3.125.656 4.203 1.719l-1.797 1.797C17.719 7.594 16.922 7.234 16 7.234c-1.875 0-3.375 1.516-3.375 3.375s1.5 3.375 3.375 3.375c1.453 0 2.672-.781 3.156-1.891h-3.156v-2.25h5.609c.094.469.141.953.141 1.453 0 .328-.016.656-.063.984z" 
+                  fill="#4285F4"
+                />
+              </g>
+            </svg>
+          </div>
         </div>
       )}
       {hasError && errorMessage && (
