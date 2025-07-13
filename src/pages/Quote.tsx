@@ -368,7 +368,18 @@ const Quote = () => {
 
       if (leadError) {
         console.error('Error saving lead:', leadError);
-        alert('Error submitting quote. Please try again.');
+        console.error('Lead insert data was:', leadInsertData);
+        
+        // Provide specific error messages based on the error type
+        if (leadError.message?.includes('row-level security')) {
+          alert('Database security error. Please try again or contact support.');
+        } else if (leadError.message?.includes('duplicate')) {
+          alert('A quote with this information already exists. Please check your email or try again.');
+        } else if (leadError.message?.includes('validation')) {
+          alert('Please check that all fields are filled correctly and try again.');
+        } else {
+          alert(`Error submitting quote: ${leadError.message || 'Please try again.'}`);
+        }
         return;
       }
 
