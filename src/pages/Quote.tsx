@@ -281,6 +281,13 @@ const Quote = () => {
       };
       
       console.log('Attempting to insert lead data:', leadInsertData);
+      console.log('Verification method:', verificationMethod);
+      console.log('Form validation state:', {
+        isFormValid: isFormValid(),
+        verificationMethod,
+        customerPhone: formData.customerPhone,
+        phoneRequired: verificationMethod === 'sms'
+      });
       
       // Save the lead to database with pending verification status
       const { data: leadData, error: leadError } = await supabase
