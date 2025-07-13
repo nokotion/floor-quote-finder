@@ -11,8 +11,8 @@ export const LayoutWrapper = ({ children }: LayoutWrapperProps) => {
   const location = useLocation();
   const path = location.pathname;
 
-  // Auth pages and quote page - no layout (minimal design)
-  const authPaths = ['/retailer/login', '/admin/login', '/retailer/apply', '/auth', '/quote'];
+  // Auth pages - no layout (minimal design)
+  const authPaths = ['/retailer/login', '/admin/login', '/retailer/apply', '/auth'];
   if (authPaths.includes(path)) {
     return <>{children}</>;
   }
