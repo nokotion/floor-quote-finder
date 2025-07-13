@@ -298,7 +298,26 @@ const Quote = () => {
       return;
     }
 
-    if (!isFormValid()) return;
+    console.log('Form validation check:', {
+      isFormValid: isFormValid(),
+      formData,
+      verificationMethod,
+      requiredFields: {
+        brandRequested: formData.brandRequested,
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        postalCode: formData.postalCode,
+        timeline: formData.timeline,
+        squareFootage: formData.squareFootage,
+        customerPhone: formData.customerPhone
+      }
+    });
+    
+    if (!isFormValid()) {
+      console.error('Form validation failed');
+      alert('Please fill in all required fields');
+      return;
+    }
 
     setIsLoading(true);
 
