@@ -8,11 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Upload, X, File } from "lucide-react";
 import sampleFlooringImage from "@/assets/sample-flooring.jpg";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
+import AddressAutocomplete, { AddressData } from "@/components/ui/address-autocomplete";
 
 interface QuoteFormData {
   brandRequested: string;
@@ -25,6 +26,7 @@ interface QuoteFormData {
   customerPhone: string;
   streetAddress: string;
   notes: string;
+  attachmentUrls: string[];
 }
 
 interface Brand {
@@ -61,8 +63,11 @@ const Quote = () => {
     customerEmail: '',
     customerPhone: '',
     streetAddress: '',
-    notes: ''
+    notes: '',
+    attachmentUrls: []
   });
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Fetch brands from database
   useEffect(() => {
@@ -151,23 +156,87 @@ const Quote = () => {
     }));
   };
 
-  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    const formatted = formatAndValidatePostalCode(inputValue, formData.postalCode);
-    
-    updateFormData('postalCode', formatted);
-    
-    if (postalCodeError) {
-      setPostalCodeError("");
+  const handleAddressChange = (address: string, addressData?: AddressData) => {
+    if (addressData) {
+      // Use postal code from Google Places if available
+      if (addressData.postal_code) {
+        updateFormData('postalCode', addressData.postal_code);
+        setPostalCodeError("");
+      }
+      // Set full address
+      updateFormData('streetAddress', addressData.formatted_address);
+    } else {
+      // Manual input - treat as postal code if it looks like one
+      const trimmed = address.trim();
+      if (/^[A-Za-z]\d[A-Za-z][\s-]?\d[A-Za-z]\d$/.test(trimmed.replace(/\s+/g, ' '))) {
+        const formatted = formatAndValidatePostalCode(trimmed, formData.postalCode);
+        updateFormData('postalCode', formatted);
+        if (postalCodeError) setPostalCodeError("");
+      } else {
+        updateFormData('streetAddress', trimmed);
+      }
     }
   };
 
-  const handlePostalCodeBlur = () => {
+  const handleAddressBlur = () => {
     if (formData.postalCode && !validatePostalCode(formData.postalCode)) {
       setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
     } else {
       setPostalCodeError("");
     }
+  };
+
+  const handleFileUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const validFiles = fileArray.filter(file => {
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf';
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
+      return (isImage || isPdf) && isValidSize;
+    });
+
+    if (validFiles.length === 0) {
+      alert('Please select valid image files (JPG, PNG, GIF) or PDF files under 10MB.');
+      return;
+    }
+
+    setIsUploading(true);
+    const newUrls: string[] = [];
+
+    try {
+      for (const file of validFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `lead-attachments/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from('pricemyfloor-files')
+          .upload(filePath, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('pricemyfloor-files')
+          .getPublicUrl(data.path);
+
+        newUrls.push(publicUrl);
+      }
+
+      setUploadedFiles(prev => [...prev, ...validFiles]);
+      updateFormData('attachmentUrls', [...formData.attachmentUrls, ...newUrls]);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      alert('Error uploading files. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    const newUrls = formData.attachmentUrls.filter((_, i) => i !== index);
+    setUploadedFiles(newFiles);
+    updateFormData('attachmentUrls', newUrls);
   };
 
   const isFormValid = () => {
@@ -204,6 +273,7 @@ const Quote = () => {
         installation_required: formData.installationRequired,
         timeline: formData.timeline,
         notes: formData.notes,
+        attachment_urls: formData.attachmentUrls,
         status: 'pending_verification',
         is_verified: false
       };
@@ -443,18 +513,19 @@ const Quote = () => {
                       <Label className="text-sm font-semibold text-gray-800 mb-2 block">
                         Project Address *
                       </Label>
-                      <Input
-                        type="text"
-                        value={formData.postalCode}
-                        onChange={handlePostalCodeChange}
-                        onBlur={handlePostalCodeBlur}
-                        placeholder="Enter postal code"
+                      <AddressAutocomplete
+                        value={formData.streetAddress || formData.postalCode}
+                        onChange={handleAddressChange}
+                        onBlur={handleAddressBlur}
+                        placeholder="Enter your address or postal code"
                         className={`h-12 text-base ${
-                          postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                          postalCodeError 
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                            : 'focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
                         }`}
                       />
                       {postalCodeError && (
-                        <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                        <p className="text-red-500 text-sm mt-1">{postalCodeError}</p>
                       )}
                     </div>
                   )}
@@ -560,22 +631,89 @@ const Quote = () => {
                   </div>
                 </div>
 
-                {/* Additional Details Section with Upload Example */}
+                {/* Additional Details Section with File Upload */}
                 <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <Label htmlFor="description" className="text-lg font-semibold text-gray-800 mb-3 block">
                     Additional Details (Optional)
                   </Label>
                   
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="space-y-4">
                       <Textarea
                         id="description"
-                        value={formData.notes || ""}
+                        value={formData.notes}
                         onChange={(e) => updateFormData('notes', e.target.value)}
-                        placeholder="Tell us more about your project, specific requirements, or any questions you have..."
-                        className="min-h-[80px] text-sm"
-                        rows={3}
+                        placeholder="Describe your project, preferred style, budget range, or any special requirements..."
+                        className="min-h-24 text-sm resize-none"
+                        rows={4}
                       />
+                      
+                      {/* File Upload Area */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold text-gray-800 block">
+                          Upload Photos (Optional)
+                        </Label>
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors cursor-pointer"
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            handleFileUpload(e.dataTransfer.files);
+                          }}
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.multiple = true;
+                            input.accept = 'image/*,application/pdf';
+                            input.onchange = (e) => {
+                              const files = (e.target as HTMLInputElement).files;
+                              if (files) handleFileUpload(files);
+                            };
+                            input.click();
+                          }}
+                        >
+                          {isUploading ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+                              <span className="text-sm text-gray-600">Uploading...</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                              <p className="text-sm text-gray-600 mb-1">
+                                Drag & drop files here or click to browse
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Images (JPG, PNG, GIF) or PDF files, up to 10MB each
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Uploaded Files List */}
+                        {uploadedFiles.length > 0 && (
+                          <div className="space-y-2">
+                            {uploadedFiles.map((file, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                                <div className="flex items-center space-x-2">
+                                  <File className="h-4 w-4 text-gray-500" />
+                                  <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    ({(file.size / 1024 / 1024).toFixed(1)}MB)
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeFile(index)}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -587,7 +725,7 @@ const Quote = () => {
                         />
                         <h4 className="text-sm font-semibold text-gray-800 mb-2">Upload Photos Like This</h4>
                         <p className="text-xs text-gray-600">
-                          Share photos of your space or samples of flooring you like to help retailers understand your project better.
+                          Share photos of your space, existing flooring, or samples you like to help retailers provide accurate quotes.
                         </p>
                       </div>
                     </div>
