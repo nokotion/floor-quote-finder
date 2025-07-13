@@ -20,6 +20,7 @@ interface AddressAutocompleteProps {
   placeholder?: string;
   className?: string;
   id?: string;
+  usePostalCodeOnly?: boolean; // New prop to control postal code vs full address
 }
 
 const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
@@ -28,7 +29,8 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   onBlur,
   placeholder = "Start typing your address...",
   className = "",
-  id
+  id,
+  usePostalCodeOnly = false
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -51,7 +53,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         
         if (inputRef.current && !autocompleteRef.current) {
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-            types: ['address'],
+            types: usePostalCodeOnly ? ['postal_code'] : ['address'],
             componentRestrictions: { country: 'ca' }, // Restrict to Canada
             fields: ['formatted_address', 'address_components', 'geometry']
           });

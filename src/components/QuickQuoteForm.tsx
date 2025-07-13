@@ -186,8 +186,9 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                       value={postalCode}
                       onChange={handleAddressChange}
                       onBlur={handlePostalCodeBlur}
-                      placeholder="Start typing address or postal code..."
+                      placeholder="Enter postal code (e.g., L4Y 3Y5)"
                       className={postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}
+                      usePostalCodeOnly={true}
                     />
                     {postalCodeError && (
                       <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
