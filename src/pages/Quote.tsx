@@ -655,7 +655,7 @@ const Quote = () => {
                     <p className="text-sm text-gray-600 mb-2">Enter your complete street address for the quote:</p>
                     <AddressAutocomplete
                       id="fullAddress"
-                      value=""
+                      value={formData.contactInfo.fullAddress}
                       onChange={handleAddressChange}
                       placeholder="123 Main Street, Mississauga, ON"
                       className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
