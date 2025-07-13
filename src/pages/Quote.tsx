@@ -539,55 +539,59 @@ const Quote = () => {
                 {/* 3-Box Grid Layout */}
                 <div className="grid md:grid-cols-3 gap-6">
                   {/* Box 1 - Installation Type */}
-                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
                     <Label className="text-lg font-semibold text-gray-800 mb-4 block">
                       Installation Required
                     </Label>
-                    <RadioGroup
-                      value={formData.installationRequired ? "yes" : "no"}
-                      onValueChange={(value) => updateFormData('installationRequired', value === "yes")}
-                      className="space-y-3"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="install-yes" />
-                        <Label htmlFor="install-yes" className="text-sm">Yes, I need professional installation</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="install-no" />
-                        <Label htmlFor="install-no" className="text-sm">No, I'll handle installation myself</Label>
-                      </div>
-                    </RadioGroup>
+                    <div className="flex-1 flex flex-col justify-start">
+                      <RadioGroup
+                        value={formData.installationRequired ? "yes" : "no"}
+                        onValueChange={(value) => updateFormData('installationRequired', value === "yes")}
+                        className="space-y-3"
+                      >
+                        <div className="flex items-center space-x-2 h-12">
+                          <RadioGroupItem value="yes" id="install-yes" />
+                          <Label htmlFor="install-yes" className="text-sm">Yes, I need professional installation</Label>
+                        </div>
+                        <div className="flex items-center space-x-2 h-12">
+                          <RadioGroupItem value="no" id="install-no" />
+                          <Label htmlFor="install-no" className="text-sm">No, I'll handle installation myself</Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                   </div>
 
                   {/* Box 2 - Timeline */}
-                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
                     <Label className="text-lg font-semibold text-gray-800 mb-4 block">
                       Project Timeline
                     </Label>
-                    <Select 
-                      value={formData.timeline || ""} 
-                      onValueChange={(value) => updateFormData('timeline', value)}
-                    >
-                      <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                        <SelectValue placeholder="When would you like to start?" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ASAP">ASAP</SelectItem>
-                        <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
-                        <SelectItem value="1-2 months">1-2 months</SelectItem>
-                        <SelectItem value="3-6 months">3-6 months</SelectItem>
-                        <SelectItem value="6+ months">6+ months</SelectItem>
-                        <SelectItem value="Just planning">Just planning</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex-1 flex flex-col justify-start">
+                      <Select 
+                        value={formData.timeline || ""} 
+                        onValueChange={(value) => updateFormData('timeline', value)}
+                      >
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                          <SelectValue placeholder="When would you like to start?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ASAP">ASAP</SelectItem>
+                          <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
+                          <SelectItem value="1-2 months">1-2 months</SelectItem>
+                          <SelectItem value="3-6 months">3-6 months</SelectItem>
+                          <SelectItem value="6+ months">6+ months</SelectItem>
+                          <SelectItem value="Just planning">Just planning</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   {/* Box 3 - Contact Information */}
-                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
                     <Label className="text-lg font-semibold text-gray-800 mb-4 block">
                       Contact Information
                     </Label>
-                    <div className="space-y-3">
+                    <div className="flex-1 flex flex-col justify-start space-y-3">
                       <div>
                         <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name *</Label>
                         <Input
@@ -596,7 +600,7 @@ const Quote = () => {
                           value={formData.customerName}
                           onChange={(e) => updateFormData('customerName', e.target.value)}
                           placeholder="Enter your full name"
-                          className="h-10 text-sm"
+                          className="h-12 text-sm"
                           required
                         />
                       </div>
@@ -609,7 +613,7 @@ const Quote = () => {
                           value={formData.customerEmail}
                           onChange={(e) => updateFormData('customerEmail', e.target.value)}
                           placeholder="Enter your email"
-                          className="h-10 text-sm"
+                          className="h-12 text-sm"
                           required
                         />
                       </div>
@@ -622,7 +626,7 @@ const Quote = () => {
                           value={formData.customerPhone || ""}
                           onChange={(e) => updateFormData('customerPhone', e.target.value)}
                           placeholder="Enter your phone"
-                          className="h-10 text-sm"
+                          className="h-12 text-sm"
                         />
                       </div>
                     </div>
