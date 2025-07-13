@@ -508,27 +508,25 @@ const Quote = () => {
                     </div>
                   )}
 
-                  {!prefilledValues.formatted_address && (
-                    <div className="p-4 bg-white rounded-lg border border-blue-200">
-                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
-                        Project Address *
-                      </Label>
-                      <AddressAutocomplete
-                        value={formData.streetAddress || formData.postalCode}
-                        onChange={handleAddressChange}
-                        onBlur={handleAddressBlur}
-                        placeholder="Enter your address or postal code"
-                        className={`h-12 text-base ${
-                          postalCodeError 
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                            : 'focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
-                        }`}
-                      />
-                      {postalCodeError && (
-                        <p className="text-red-500 text-sm mt-1">{postalCodeError}</p>
-                      )}
-                    </div>
-                  )}
+                  <div className="p-4 bg-white rounded-lg border border-blue-200">
+                    <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                      Project Address *
+                    </Label>
+                    <AddressAutocomplete
+                      value={formData.streetAddress || formData.postalCode}
+                      onChange={handleAddressChange}
+                      onBlur={handleAddressBlur}
+                      placeholder="Enter your address or postal code"
+                      className={`h-12 text-base ${
+                        postalCodeError 
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                          : 'focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
+                      }`}
+                    />
+                    {postalCodeError && (
+                      <p className="text-red-500 text-sm mt-1">{postalCodeError}</p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
