@@ -28,19 +28,19 @@ const formatLeadDetails = (leadData: any, paymentMethod: string, chargeAmount: n
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; width: 150px;">Name:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.contactInfo?.name || 'Not provided'}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.customer_name || 'Not provided'}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Email:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.contactInfo?.email || 'Not provided'}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.customer_email || 'Not provided'}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Phone:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.contactInfo?.phone || 'Not provided'}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.customer_phone || 'Not provided'}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Postal Code:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.postalCode}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.postal_code}</td>
           </tr>
         </table>
       </div>
@@ -49,32 +49,49 @@ const formatLeadDetails = (leadData: any, paymentMethod: string, chargeAmount: n
         <h2 style="color: #2c3e50; margin: 0 0 15px 0;">Project Details</h2>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; width: 150px;">Brands:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.brands?.join(', ') || 'Any brand'}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold; width: 150px;">Brand Requested:</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.brand_requested || 'Any brand'}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Project Size:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.projectSize}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Square Footage:</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.square_footage ? leadData.square_footage.toLocaleString() + ' sq ft' : 'Not specified'}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Room Type:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.roomType}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Installation:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${installationType}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Installation Required:</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.installation_required ? 'Yes' : 'No'}</td>
           </tr>
           <tr>
             <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Timeline:</td>
-            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.timeline}</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.timeline || 'Not specified'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef; font-weight: bold;">Address:</td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e9ecef;">${leadData.street_address || 'Not provided'}</td>
           </tr>
         </table>
       </div>
 
-      ${leadData.projectDescription ? `
+      ${leadData.attachment_urls && leadData.attachment_urls.length > 0 ? `
         <div style="background-color: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 20px;">
-          <h2 style="color: #2c3e50; margin: 0 0 15px 0;">Additional Details</h2>
-          <p style="margin: 0; line-height: 1.6;">${leadData.projectDescription}</p>
+          <h2 style="color: #2c3e50; margin: 0 0 15px 0;">Customer Photos (${leadData.attachment_urls.length})</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            ${leadData.attachment_urls.map((url, index) => `
+              <div style="text-align: center;">
+                <a href="${url}" target="_blank" style="text-decoration: none;">
+                  <img src="${url}" alt="Customer photo ${index + 1}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;" />
+                  <p style="margin: 5px 0 0 0; font-size: 12px; color: #7f8c8d;">Photo ${index + 1}</p>
+                </a>
+              </div>
+            `).join('')}
+          </div>
+          <p style="margin: 15px 0 0 0; font-size: 14px; color: #7f8c8d; font-style: italic;">Click on any photo to view full size</p>
+        </div>
+      ` : ''}
+
+      ${leadData.notes ? `
+        <div style="background-color: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 20px;">
+          <h2 style="color: #2c3e50; margin: 0 0 15px 0;">Additional Notes</h2>
+          <p style="margin: 0; line-height: 1.6;">${leadData.notes}</p>
         </div>
       ` : ''}
 

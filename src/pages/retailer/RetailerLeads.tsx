@@ -5,13 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Lock, Unlock, MapPin, Calendar, DollarSign, Users } from 'lucide-react';
+import { Eye, Lock, Unlock, MapPin, Calendar, DollarSign, Users, Image, Phone, Mail, Home, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Lead {
   id: string;
   customer_name: string;
   customer_email: string;
+  customer_phone: string;
   postal_code: string;
+  street_address: string;
   square_footage: number;
   brand_requested: string;
   budget_range: string;
@@ -19,6 +22,10 @@ interface Lead {
   is_locked: boolean;
   lock_price: number;
   status: string;
+  attachment_urls: string[];
+  installation_required: boolean;
+  timeline: string;
+  notes: string;
 }
 
 const RetailerLeads = () => {
@@ -30,6 +37,7 @@ const RetailerLeads = () => {
     minSqft: '',
     maxSqft: ''
   });
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     fetchLeads();
@@ -56,7 +64,9 @@ const RetailerLeads = () => {
           id,
           customer_name,
           customer_email,
+          customer_phone,
           postal_code,
+          street_address,
           square_footage,
           brand_requested,
           budget_range,
@@ -64,6 +74,10 @@ const RetailerLeads = () => {
           is_locked,
           lock_price,
           status,
+          attachment_urls,
+          installation_required,
+          timeline,
+          notes,
           lead_distributions!inner(retailer_id)
         `)
         .eq('lead_distributions.retailer_id', profile.retailer_id);
@@ -219,6 +233,13 @@ const RetailerLeads = () => {
                 </div>
               )}
 
+              {lead.attachment_urls && lead.attachment_urls.length > 0 && (
+                <div className="flex items-center text-sm text-blue-600">
+                  <Image className="w-4 h-4 mr-1" />
+                  <span>{lead.attachment_urls.length} photo{lead.attachment_urls.length > 1 ? 's' : ''}</span>
+                </div>
+              )}
+
               <div className="pt-3 border-t">
                 {lead.is_locked ? (
                   <Button 
@@ -230,7 +251,10 @@ const RetailerLeads = () => {
                     Buy Lead - ${lead.lock_price}
                   </Button>
                 ) : (
-                  <Button className="w-full">
+                  <Button 
+                    onClick={() => setSelectedLead(lead)}
+                    className="w-full"
+                  >
                     <Eye className="w-4 h-4 mr-2" />
                     View Details
                   </Button>
@@ -252,6 +276,140 @@ const RetailerLeads = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Lead Details Modal */}
+      <Dialog open={!!selectedLead} onOpenChange={() => setSelectedLead(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Lead Details - {selectedLead?.customer_name}</span>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedLead && (
+            <div className="space-y-6">
+              {/* Customer Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="w-5 h-5 mr-2" />
+                    Customer Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>{selectedLead.customer_email}</span>
+                    </div>
+                    {selectedLead.customer_phone && (
+                      <div className="flex items-center">
+                        <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{selectedLead.customer_phone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center">
+                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                      <span>{selectedLead.postal_code}</span>
+                    </div>
+                    {selectedLead.street_address && (
+                      <div className="flex items-center">
+                        <Home className="w-4 h-4 mr-2 text-gray-400" />
+                        <span>{selectedLead.street_address}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Project Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-gray-500 text-sm">Square Footage:</span>
+                      <div className="font-medium">{selectedLead.square_footage?.toLocaleString()} sq ft</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-sm">Brand Requested:</span>
+                      <div className="font-medium">{selectedLead.brand_requested || 'Any brand'}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-sm">Installation Required:</span>
+                      <div className="font-medium">{selectedLead.installation_required ? 'Yes' : 'No'}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-sm">Timeline:</span>
+                      <div className="font-medium">{selectedLead.timeline || 'Not specified'}</div>
+                    </div>
+                  </div>
+                  {selectedLead.notes && (
+                    <div>
+                      <span className="text-gray-500 text-sm">Additional Notes:</span>
+                      <div className="font-medium mt-1">{selectedLead.notes}</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Customer Photos */}
+              {selectedLead.attachment_urls && selectedLead.attachment_urls.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Image className="w-5 h-5 mr-2" />
+                      Customer Photos ({selectedLead.attachment_urls.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {selectedLead.attachment_urls.map((url, index) => (
+                        <div key={index} className="group">
+                          <a href={url} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={url}
+                              alt={`Customer photo ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-colors cursor-pointer"
+                            />
+                          </a>
+                          <p className="text-xs text-gray-500 text-center mt-1">Photo {index + 1}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-4 italic">Click on any photo to view full size</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t">
+                {selectedLead.is_locked ? (
+                  <Button 
+                    onClick={() => handleBuyLead(selectedLead.id, selectedLead.lock_price)}
+                    className="flex-1"
+                  >
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Buy Lead - ${selectedLead.lock_price}
+                  </Button>
+                ) : (
+                  <Button className="flex-1" disabled>
+                    Lead Available
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setSelectedLead(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
