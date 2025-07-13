@@ -576,11 +576,7 @@ const Quote = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="ASAP">ASAP</SelectItem>
-                          <SelectItem value="1-2 weeks">1-2 weeks</SelectItem>
-                          <SelectItem value="1-2 months">1-2 months</SelectItem>
-                          <SelectItem value="3-6 months">3-6 months</SelectItem>
-                          <SelectItem value="6+ months">6+ months</SelectItem>
-                          <SelectItem value="Just planning">Just planning</SelectItem>
+                          <SelectItem value="In a month">In a month</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
