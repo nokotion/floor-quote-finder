@@ -637,9 +637,9 @@ const Quote = () => {
                   </div>
                   
                   <div className="p-6">
-                    <div className="grid lg:grid-cols-2 gap-8">
-                      {/* Left Column - Project Description */}
-                      <div className="space-y-4">
+                    <div className="grid lg:grid-cols-3 gap-6">
+                      {/* Project Description Section */}
+                      <div className="flex flex-col h-full min-h-[400px]">
                         <div className="flex items-center space-x-2 mb-4">
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                             <span className="text-white text-sm font-bold">1</span>
@@ -647,7 +647,7 @@ const Quote = () => {
                           <h4 className="text-lg font-semibold text-gray-800">Project Description</h4>
                         </div>
                         
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100 flex-1 flex flex-col">
                           <Label htmlFor="description" className="text-sm font-medium text-gray-700 mb-3 block">
                             Tell us about your project
                           </Label>
@@ -656,28 +656,13 @@ const Quote = () => {
                             value={formData.notes}
                             onChange={(e) => updateFormData('notes', e.target.value)}
                             placeholder="Describe your project: room size, preferred style, budget range, timeline, or any special requirements..."
-                            className="min-h-32 text-sm resize-none border-white bg-white/70 backdrop-blur-sm focus:bg-white transition-all duration-200"
-                            rows={6}
+                            className="flex-1 min-h-[200px] text-sm resize-none border-white bg-white/70 backdrop-blur-sm focus:bg-white transition-all duration-200"
                           />
-                        </div>
-
-                        <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border border-amber-100">
-                          <div className="flex items-start space-x-3">
-                            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-white text-xs">💡</span>
-                            </div>
-                            <div>
-                              <h5 className="text-sm font-semibold text-amber-800 mb-1">Pro Tip</h5>
-                              <p className="text-xs text-amber-700">
-                                Include details like room dimensions, current flooring condition, installation timeline, and budget range for more accurate quotes.
-                              </p>
-                            </div>
-                          </div>
                         </div>
                       </div>
                       
-                      {/* Right Column - Photo Upload */}
-                      <div className="space-y-4">
+                      {/* Photo Upload Section */}
+                      <div className="flex flex-col h-full min-h-[400px]">
                         <div className="flex items-center space-x-2 mb-4">
                           <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
                             <span className="text-white text-sm font-bold">2</span>
@@ -685,13 +670,13 @@ const Quote = () => {
                           <h4 className="text-lg font-semibold text-gray-800">Upload Photos</h4>
                         </div>
 
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100">
+                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100 flex-1 flex flex-col">
                           <Label className="text-sm font-medium text-gray-700 mb-3 block">
                             Share photos of your space
                           </Label>
                           
                           <div
-                            className="border-2 border-dashed border-green-300 rounded-lg p-8 text-center hover:border-green-400 hover:bg-green-50/50 transition-all duration-200 cursor-pointer bg-white/70 backdrop-blur-sm"
+                            className="border-2 border-dashed border-green-300 rounded-lg p-6 text-center hover:border-green-400 hover:bg-green-50/50 transition-all duration-200 cursor-pointer bg-white/70 backdrop-blur-sm flex-1 flex flex-col justify-center min-h-[140px]"
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) => {
                               e.preventDefault();
@@ -729,15 +714,15 @@ const Quote = () => {
                           
                           {/* Uploaded Files List */}
                           {uploadedFiles.length > 0 && (
-                            <div className="mt-4 space-y-2">
+                            <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
                               {uploadedFiles.map((file, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 shadow-sm">
-                                  <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                      <File className="h-4 w-4 text-green-600" />
+                                <div key={index} className="flex items-center justify-between p-2 bg-white rounded-lg border border-green-200 shadow-sm">
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
+                                      <File className="h-3 w-3 text-green-600" />
                                     </div>
                                     <div>
-                                      <span className="text-sm font-medium text-gray-700 block truncate max-w-32">{file.name}</span>
+                                      <span className="text-xs font-medium text-gray-700 block truncate max-w-20">{file.name}</span>
                                       <span className="text-xs text-gray-500">
                                         {(file.size / 1024 / 1024).toFixed(1)}MB
                                       </span>
@@ -746,27 +731,59 @@ const Quote = () => {
                                   <button
                                     type="button"
                                     onClick={() => removeFile(index)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
+                                    className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
                                   >
-                                    <X className="h-4 w-4" />
+                                    <X className="h-3 w-3" />
                                   </button>
                                 </div>
                               ))}
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Sample Image Guide */}
-                        <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-                          <div className="text-center">
+                      {/* Pro Tip Section */}
+                      <div className="flex flex-col h-full min-h-[400px]">
+                        <div className="flex items-center space-x-2 mb-4">
+                          <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm font-bold">💡</span>
+                          </div>
+                          <h4 className="text-lg font-semibold text-gray-800">Pro Tips</h4>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-100 flex-1 flex flex-col space-y-4">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-white text-xs">📝</span>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-semibold text-amber-800 mb-1">Better Descriptions</h5>
+                              <p className="text-xs text-amber-700">
+                                Include room dimensions, current flooring condition, installation timeline, and budget range for more accurate quotes.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start space-x-3">
+                            <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-white text-xs">📸</span>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-semibold text-amber-800 mb-1">Photo Guidelines</h5>
+                              <p className="text-xs text-amber-700">
+                                Clear room photos, existing flooring, or inspiration samples help retailers provide accurate quotes.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto">
                             <img
                               src={sampleFlooringImage}
                               alt="Sample flooring photo"
-                              className="w-full h-28 object-cover rounded-lg mb-3 border-2 border-white shadow-sm"
+                              className="w-full h-24 object-cover rounded-lg border-2 border-white shadow-sm"
                             />
-                            <h5 className="text-sm font-semibold text-purple-800 mb-1">Upload Photos Like This</h5>
-                            <p className="text-xs text-purple-700">
-                              Clear room photos, existing flooring, or inspiration samples help retailers provide accurate quotes.
+                            <p className="text-xs text-amber-700 mt-2 text-center font-medium">
+                              Example of a good room photo
                             </p>
                           </div>
                         </div>
