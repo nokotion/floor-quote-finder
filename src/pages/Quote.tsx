@@ -623,18 +623,18 @@ const Quote = () => {
                          />
                        </div>
 
-                       <div>
-                         <Label htmlFor="phone" className={`text-sm font-medium text-gray-700 ${verificationMethod === 'sms' ? 'text-red-600' : ''}`}>
-                           Phone Number {verificationMethod === 'sms' ? '*' : ''}
-                         </Label>
-                         <Input
-                           id="phone"
-                           type="tel"
-                           value={formData.customerPhone || ""}
-                           onChange={(e) => updateFormData('customerPhone', e.target.value)}
-                           placeholder="Enter your phone"
-                           className="h-12 text-sm"
-                           required={verificationMethod === 'sms'}
+                        <div>
+                          <Label htmlFor="phone" className={`text-sm font-medium text-gray-700 ${verificationMethod === 'sms' ? 'text-red-600' : ''}`}>
+                            Phone Number {verificationMethod === 'sms' ? '*' : ''}
+                          </Label>
+                          <Input
+                            id="phone"
+                            type="tel"
+                            value={formData.customerPhone || ""}
+                            onChange={(e) => updateFormData('customerPhone', e.target.value)}
+                            placeholder="Enter your phone"
+                            className={`h-12 text-sm ${verificationMethod === 'sms' && !formData.customerPhone ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                            required={verificationMethod === 'sms'}
                          />
                        </div>
 
