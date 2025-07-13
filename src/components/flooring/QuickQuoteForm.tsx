@@ -29,12 +29,13 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
   const navigate = useNavigate();
 
   const handleAddressChange = (address: string, data?: AddressData) => {
-    if (data) {
+    if (data && data.postal_code && validatePostalCode(data.postal_code)) {
+      // Only set addressData if we have a complete, valid postal code
       setAddressData(data);
-      setPostalCode(data.postal_code || "");
+      setPostalCode(data.postal_code);
       setPostalCodeError("");
     } else {
-      // Manual entry - treat as postal code
+      // Manual entry or incomplete data - treat as postal code
       const formatted = formatAndValidatePostalCode(address, postalCode);
       setPostalCode(formatted);
       setAddressData(null);
