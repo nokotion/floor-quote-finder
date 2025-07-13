@@ -245,7 +245,8 @@ const Quote = () => {
            formData.postalCode && validatePostalCode(formData.postalCode) &&
            formData.timeline &&
            formData.customerName &&
-           formData.customerEmail;
+           formData.customerEmail &&
+           (verificationMethod === 'email' || (verificationMethod === 'sms' && formData.customerPhone));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -583,51 +584,74 @@ const Quote = () => {
                     </div>
                   </div>
 
-                  {/* Box 3 - Contact Information */}
-                  <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
-                    <Label className="text-lg font-semibold text-gray-800 mb-4 block">
-                      Contact Information
-                    </Label>
-                    <div className="flex-1 flex flex-col justify-start space-y-3">
-                      <div>
-                        <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name *</Label>
-                        <Input
-                          id="name"
-                          type="text"
-                          value={formData.customerName}
-                          onChange={(e) => updateFormData('customerName', e.target.value)}
-                          placeholder="Enter your full name"
-                          className="h-12 text-sm"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.customerEmail}
-                          onChange={(e) => updateFormData('customerEmail', e.target.value)}
-                          placeholder="Enter your email"
-                          className="h-12 text-sm"
-                          required
-                        />
-                      </div>
+                   {/* Box 3 - Contact Information */}
+                   <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
+                     <Label className="text-lg font-semibold text-gray-800 mb-4 block">
+                       Contact Information
+                     </Label>
+                     <div className="flex-1 flex flex-col justify-start space-y-3">
+                       <div>
+                         <Label htmlFor="name" className="text-sm font-medium text-gray-700">Full Name *</Label>
+                         <Input
+                           id="name"
+                           type="text"
+                           value={formData.customerName}
+                           onChange={(e) => updateFormData('customerName', e.target.value)}
+                           placeholder="Enter your full name"
+                           className="h-12 text-sm"
+                           required
+                         />
+                       </div>
+                       
+                       <div>
+                         <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
+                         <Input
+                           id="email"
+                           type="email"
+                           value={formData.customerEmail}
+                           onChange={(e) => updateFormData('customerEmail', e.target.value)}
+                           placeholder="Enter your email"
+                           className="h-12 text-sm"
+                           required
+                         />
+                       </div>
 
-                      <div>
-                        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.customerPhone || ""}
-                          onChange={(e) => updateFormData('customerPhone', e.target.value)}
-                          placeholder="Enter your phone"
-                          className="h-12 text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                       <div>
+                         <Label htmlFor="phone" className={`text-sm font-medium text-gray-700 ${verificationMethod === 'sms' ? 'text-red-600' : ''}`}>
+                           Phone Number {verificationMethod === 'sms' ? '*' : ''}
+                         </Label>
+                         <Input
+                           id="phone"
+                           type="tel"
+                           value={formData.customerPhone || ""}
+                           onChange={(e) => updateFormData('customerPhone', e.target.value)}
+                           placeholder="Enter your phone"
+                           className="h-12 text-sm"
+                           required={verificationMethod === 'sms'}
+                         />
+                       </div>
+
+                       <div>
+                         <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                           Verification Method *
+                         </Label>
+                         <RadioGroup
+                           value={verificationMethod}
+                           onValueChange={(value: 'email' | 'sms') => setVerificationMethod(value)}
+                           className="flex space-x-4"
+                         >
+                           <div className="flex items-center space-x-2">
+                             <RadioGroupItem value="email" id="verify-email" />
+                             <Label htmlFor="verify-email" className="text-sm">Email</Label>
+                           </div>
+                           <div className="flex items-center space-x-2">
+                             <RadioGroupItem value="sms" id="verify-sms" />
+                             <Label htmlFor="verify-sms" className="text-sm">SMS</Label>
+                           </div>
+                         </RadioGroup>
+                       </div>
+                     </div>
+                   </div>
                 </div>
 
                 {/* Additional Details Section */}
