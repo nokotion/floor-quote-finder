@@ -14,6 +14,7 @@ import { Upload, Check, Sparkles, User, MapPin, Package, Clock, FileText, Buildi
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
+import AddressAutocomplete, { AddressData } from "@/components/ui/address-autocomplete";
 
 
 interface QuoteFormData {
@@ -139,16 +140,26 @@ const Quote = () => {
     if (formattedAddressParam) prefilled.formatted_address = formattedAddressParam;
 
     // Pre-fill address from Google Places selection
-    if (streetParam && cityParam && provinceParam) {
+    if (formattedAddressParam) {
+      setFormData(prev => ({
+        ...prev,
+        contactInfo: {
+          ...prev.contactInfo,
+          fullAddress: formattedAddressParam,
+          city: cityParam || prev.contactInfo.city,
+          province: provinceParam || prev.contactInfo.province
+        }
+      }));
+    } else if (streetParam && cityParam && provinceParam) {
       const baseAddress = `${streetParam}, ${cityParam}, ${provinceParam}`;
       setFormData(prev => ({
         ...prev,
-        streetAddress: baseAddress
-      }));
-    } else if (formattedAddressParam) {
-      setFormData(prev => ({
-        ...prev,
-        streetAddress: formattedAddressParam
+        contactInfo: {
+          ...prev.contactInfo,
+          fullAddress: baseAddress,
+          city: cityParam,
+          province: provinceParam
+        }
       }));
     }
 
@@ -189,6 +200,20 @@ const Quote = () => {
       setPostalCodeError("Please enter a valid Canadian postal code (e.g., M5V 3A8)");
     } else {
       setPostalCodeError("");
+    }
+  };
+
+  const handleAddressChange = (address: string, addressData?: AddressData) => {
+    updateFormData('contactInfo.fullAddress', address);
+    
+    // Extract and update city and province if available from addressData
+    if (addressData) {
+      if (addressData.locality) {
+        updateFormData('contactInfo.city', addressData.locality);
+      }
+      if (addressData.administrative_area_level_1) {
+        updateFormData('contactInfo.province', addressData.administrative_area_level_1);
+      }
     }
   };
 
@@ -657,34 +682,34 @@ const Quote = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-3">
-                    <div>
-                      <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
-                      {(prefilledValues.street || prefilledValues.formatted_address) ? (
-                        <div className="mt-1">
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
-                            <p className="text-sm text-blue-800 mb-1">
-                              ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
-                            </p>
-                            <p className="text-xs text-blue-600">Please add your house number:</p>
-                          </div>
-                          <Input
-                            id="fullAddress"
-                            value={formData.contactInfo.fullAddress}
-                            onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
-                            placeholder={`Add house number to: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
-                            className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                          />
-                        </div>
-                      ) : (
-                        <Input
-                          id="fullAddress"
-                          value={formData.contactInfo.fullAddress}
-                          onChange={(e) => updateFormData('contactInfo.fullAddress', e.target.value)}
-                          placeholder="e.g., 123 Main Street, Toronto, ON M5V 3A8"
-                          className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                        />
-                      )}
-                    </div>
+                     <div>
+                       <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
+                       {(prefilledValues.street || prefilledValues.formatted_address) ? (
+                         <div className="mt-1">
+                           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
+                             <p className="text-sm text-blue-800 mb-1">
+                               ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
+                             </p>
+                             <p className="text-xs text-blue-600">Please add your house number if needed:</p>
+                           </div>
+                           <AddressAutocomplete
+                             id="fullAddress"
+                             value={formData.contactInfo.fullAddress}
+                             onChange={handleAddressChange}
+                             placeholder={`Add house number if needed: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
+                             className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                           />
+                         </div>
+                       ) : (
+                         <AddressAutocomplete
+                           id="fullAddress"
+                           value={formData.contactInfo.fullAddress}
+                           onChange={handleAddressChange}
+                           placeholder="Start typing your full address..."
+                           className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                         />
+                       )}
+                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
