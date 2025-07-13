@@ -649,15 +649,15 @@ const Quote = () => {
                       <div className="mt-1">
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
                           <p className="text-sm text-blue-800 mb-1">
-                            ✓ Address from Quick Quote: <strong>{prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}</strong>
+                            ✓ Location from Quick Quote: <strong>{prefilledValues.formatted_address || `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}`}</strong>
                           </p>
-                          <p className="text-xs text-blue-600">Please add your house number if needed:</p>
+                          <p className="text-xs text-blue-600">Please add your house number to complete your address:</p>
                         </div>
                         <AddressAutocomplete
                           id="fullAddress"
                           value={formData.contactInfo.fullAddress}
                           onChange={handleAddressChange}
-                          placeholder={`Add house number if needed: ${prefilledValues.street ? `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}` : prefilledValues.formatted_address}`}
+                          placeholder="Add house number (e.g., 123 Main Street)"
                           className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                         />
                       </div>
@@ -671,22 +671,6 @@ const Quote = () => {
                       />
                     )}
                   </div>
-
-                  {/* Postal Code (read-only when pre-filled) */}
-                  {prefilledValues.postal && (
-                    <div>
-                      <Label htmlFor="postalCode" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-                        Postal Code
-                        <Badge variant="outline" className="text-xs">Pre-filled</Badge>
-                      </Label>
-                      <Input
-                        id="postalCode"
-                        value={formData.postalCode}
-                        readOnly
-                        className="mt-1 h-10 text-base bg-gray-50 border-gray-200 font-medium cursor-not-allowed"
-                      />
-                    </div>
-                  )}
 
                   {/* Contact Details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
