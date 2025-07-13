@@ -645,31 +645,21 @@ const Quote = () => {
                   {/* Address Section */}
                   <div>
                     <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Full Address</Label>
-                    {(prefilledValues.street || prefilledValues.formatted_address) ? (
-                      <div className="mt-1">
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
-                          <p className="text-sm text-blue-800 mb-1">
-                            ✓ Location from Quick Quote: <strong>{prefilledValues.formatted_address || `${prefilledValues.street}, ${prefilledValues.city}, ${prefilledValues.province}`}</strong>
-                          </p>
-                          <p className="text-xs text-blue-600">Please add your house number to complete your address:</p>
-                        </div>
-                        <AddressAutocomplete
-                          id="fullAddress"
-                          value={formData.contactInfo.fullAddress}
-                          onChange={handleAddressChange}
-                          placeholder="Add house number (e.g., 123 Main Street)"
-                          className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                        />
+                    {prefilledValues.formatted_address && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-2">
+                        <p className="text-sm text-blue-800 mb-1">
+                          ✓ Service area: <strong>{prefilledValues.formatted_address}</strong>
+                        </p>
+                        <p className="text-xs text-blue-600">Please enter your complete street address below:</p>
                       </div>
-                    ) : (
-                      <AddressAutocomplete
-                        id="fullAddress"
-                        value={formData.contactInfo.fullAddress}
-                        onChange={handleAddressChange}
-                        placeholder="Start typing your full address..."
-                        className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
-                      />
                     )}
+                    <AddressAutocomplete
+                      id="fullAddress"
+                      value={formData.contactInfo.fullAddress}
+                      onChange={handleAddressChange}
+                      placeholder="Enter your complete address (e.g., 123 Main Street, City)"
+                      className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                    />
                   </div>
 
                   {/* Contact Details */}
