@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
+import sampleFlooringImage from "@/assets/sample-flooring.jpg";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { projectSizes } from "@/constants/flooringData";
@@ -385,6 +386,83 @@ const Quote = () => {
             </Card>
           )}
 
+          {/* Missing Fields Section - Show when essential fields are not pre-filled */}
+          {(!prefilledValues.brand || !prefilledValues.size || !prefilledValues.formatted_address) && (
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold text-blue-800 mb-4">Complete Your Project Details</h2>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {!prefilledValues.brand && (
+                    <div className="p-4 bg-white rounded-lg border border-blue-200">
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Preferred Brand *
+                      </Label>
+                      <Select 
+                        value={formData.brandRequested || ""} 
+                        onValueChange={(value) => updateFormData('brandRequested', value)}
+                      >
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                          <SelectValue placeholder="Select brand" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brands.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.name}>
+                              {brand.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {!prefilledValues.size && (
+                    <div className="p-4 bg-white rounded-lg border border-blue-200">
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Project Size (sq ft) *
+                      </Label>
+                      <Select 
+                        value={projectSizes.find(p => parseSquareFootage(p.value) === formData.squareFootage)?.value || ""} 
+                        onValueChange={(value) => updateFormData('squareFootage', parseSquareFootage(value))}
+                      >
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projectSizes.map((size) => (
+                            <SelectItem key={size.value} value={size.value}>
+                              {size.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {!prefilledValues.formatted_address && (
+                    <div className="p-4 bg-white rounded-lg border border-blue-200">
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Project Address *
+                      </Label>
+                      <Input
+                        type="text"
+                        value={formData.postalCode}
+                        onChange={handlePostalCodeChange}
+                        onBlur={handlePostalCodeBlur}
+                        placeholder="Enter postal code"
+                        className={`h-12 text-base ${
+                          postalCodeError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                        }`}
+                      />
+                      {postalCodeError && (
+                        <p className="text-sm text-red-600 mt-1">{postalCodeError}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Main Form - 3 Box Layout */}
           <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
             <CardContent className="p-6">
@@ -482,19 +560,38 @@ const Quote = () => {
                   </div>
                 </div>
 
-                {/* Additional Details Section */}
+                {/* Additional Details Section with Upload Example */}
                 <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <Label htmlFor="description" className="text-lg font-semibold text-gray-800 mb-3 block">
                     Additional Details (Optional)
                   </Label>
-                  <Textarea
-                    id="description"
-                    value={formData.notes || ""}
-                    onChange={(e) => updateFormData('notes', e.target.value)}
-                    placeholder="Tell us more about your project, specific requirements, or any questions you have..."
-                    className="min-h-[80px] text-sm"
-                    rows={3}
-                  />
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Textarea
+                        id="description"
+                        value={formData.notes || ""}
+                        onChange={(e) => updateFormData('notes', e.target.value)}
+                        placeholder="Tell us more about your project, specific requirements, or any questions you have..."
+                        className="min-h-[80px] text-sm"
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="text-center">
+                        <img
+                          src={sampleFlooringImage}
+                          alt="Sample flooring photo"
+                          className="w-full h-32 object-cover rounded-lg mb-3"
+                        />
+                        <h4 className="text-sm font-semibold text-gray-800 mb-2">Upload Photos Like This</h4>
+                        <p className="text-xs text-gray-600">
+                          Share photos of your space or samples of flooring you like to help retailers understand your project better.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Submit Button */}
