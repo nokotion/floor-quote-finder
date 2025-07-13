@@ -413,11 +413,11 @@ const Quote = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-white to-purple-50/30">
       {/* Sticky Header Container */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md">
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md border-b-2 border-gradient-to-r from-blue-500 to-purple-500">
         {/* Progress Header */}
-        <div className="border-b">
+        <div className="border-b border-blue-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <Link to="/" className="flex items-center">
@@ -428,11 +428,11 @@ const Quote = () => {
                 />
               </Link>
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
                   {Math.round(calculateProgress())}% Complete
                 </div>
                 {(prefilledValues.brand || prefilledValues.size || prefilledValues.postal) && (
-                  <Badge variant="secondary" className="bg-accent/10 text-accent-foreground">
+                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-emerald-200">
                     <Sparkles className="w-3 h-3 mr-1" />
                     Quick form used
                   </Badge>
@@ -443,9 +443,9 @@ const Quote = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 h-2">
+        <div className="w-full bg-blue-100 h-3">
           <motion.div
-            className="bg-gradient-to-r from-accent to-primary h-2"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-r-full"
             initial={{ width: 0 }}
             animate={{ width: `${calculateProgress()}%` }}
             transition={{ duration: 0.5 }}
@@ -454,53 +454,53 @@ const Quote = () => {
       </div>
 
       {/* Single Page Form */}
-      <div className="py-4 px-4">
+      <div className="py-6 px-4">
         <div className="max-w-[960px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-4"
+            className="text-center mb-6"
           >
-            <h1 className="text-2xl font-bold mb-2">Get Your Free Flooring Quote</h1>
-            <p className="text-sm text-gray-600">Complete the form below to connect with verified flooring retailers in your area</p>
+            <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Get Your Free Flooring Quote</h1>
+            <p className="text-gray-600 max-w-2xl mx-auto">Complete the form below to connect with verified flooring retailers in your area</p>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             {/* Brand Selection + Project Details Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Brand Selection Section */}
-              <motion.div
+               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
+                <Card className="shadow-lg h-full bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200">
+                  <CardHeader className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <Building className="w-4 h-4 text-accent" />
+                      <Building className="w-4 h-4" />
                       Preferred Brand
                       {prefilledValues.brand && renderPrefilledBadge()}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-4">
                     <div>
-                      <Label htmlFor="brand" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                      <Label htmlFor="brand" className="flex items-center gap-2 text-sm font-semibold text-blue-800">
                         Select Brand
                         {prefilledValues.brand && (
-                          <Badge variant="outline" className="text-xs">Pre-filled</Badge>
+                          <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">Pre-filled</Badge>
                         )}
                       </Label>
                       <Select 
                         value={formData.selectedBrand} 
                         onValueChange={(value) => updateFormData('selectedBrand', value)}
                       >
-                        <SelectTrigger className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
+                        <SelectTrigger className="mt-2 h-12 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-blue-200 font-medium bg-white">
                           <SelectValue placeholder="Select your preferred brand" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        <SelectContent className="bg-white border border-blue-200 shadow-lg">
                           {brands.map((brand) => (
-                            <SelectItem key={brand.id} value={brand.name} className="font-medium">
+                            <SelectItem key={brand.id} value={brand.name} className="font-medium hover:bg-blue-50">
                               {brand.name}
                             </SelectItem>
                           ))}
@@ -512,37 +512,37 @@ const Quote = () => {
               </motion.div>
 
               {/* Project Details Section */}
-              <motion.div
+               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.15 }}
               >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
+                <Card className="shadow-lg h-full bg-gradient-to-br from-green-50 to-green-100/50 border-green-200">
+                  <CardHeader className="p-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <Package className="w-4 h-4 text-accent" />
+                      <Package className="w-4 h-4" />
                       Project Size
                       {prefilledValues.size && renderPrefilledBadge()}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-4">
                     <div>
-                      <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                      <Label htmlFor="projectSize" className="flex items-center gap-2 text-sm font-semibold text-green-800">
                         Square Footage
                         {prefilledValues.size && (
-                          <Badge variant="outline" className="text-xs">Pre-filled</Badge>
+                          <Badge variant="outline" className="text-xs border-green-300 text-green-700">Pre-filled</Badge>
                         )}
                       </Label>
                       <Select 
                         value={formData.projectSize} 
                         onValueChange={(value) => updateFormData('projectSize', value)}
                       >
-                        <SelectTrigger className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
+                        <SelectTrigger className="mt-2 h-12 text-base focus:ring-2 focus:ring-green-500 focus:border-green-500 border-green-200 font-medium bg-white">
                           <SelectValue placeholder="Select project size" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                        <SelectContent className="bg-white border border-green-200 shadow-lg">
                           {projectSizes.map((size) => (
-                            <SelectItem key={size.value} value={size.value} className="font-medium">
+                            <SelectItem key={size.value} value={size.value} className="font-medium hover:bg-green-50">
                               {size.label}
                             </SelectItem>
                           ))}
@@ -557,36 +557,36 @@ const Quote = () => {
             {/* Installation + Timeline Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Installation Preference Section */}
-              <motion.div
+               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
+                <Card className="shadow-lg h-full bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200">
+                  <CardHeader className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <User className="w-4 h-4 text-accent" />
+                      <User className="w-4 h-4" />
                       Installation
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-4">
                     <RadioGroup 
                       value={formData.installationType} 
                       onValueChange={(value) => updateFormData('installationType', value)}
-                      className="grid grid-cols-1 gap-2"
+                      className="grid grid-cols-1 gap-3"
                     >
-                        <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                        <RadioGroupItem value="supply-and-install" id="supply-and-install" />
+                      <div className="flex items-center space-x-3 p-3 border-2 border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors">
+                        <RadioGroupItem value="supply-and-install" id="supply-and-install" className="border-orange-500" />
                         <div>
-                          <Label htmlFor="supply-and-install" className="text-sm font-semibold text-gray-800">Supply & Install</Label>
-                          <p className="text-xs text-gray-600">Materials + installation</p>
+                          <Label htmlFor="supply-and-install" className="text-sm font-semibold text-orange-800">Supply & Install</Label>
+                          <p className="text-xs text-orange-600">Materials + installation</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                        <RadioGroupItem value="supply-only" id="supply-only" />
+                      <div className="flex items-center space-x-3 p-3 border-2 border-orange-200 rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-colors">
+                        <RadioGroupItem value="supply-only" id="supply-only" className="border-orange-500" />
                         <div>
-                          <Label htmlFor="supply-only" className="text-sm font-semibold text-gray-800">Supply Only</Label>
-                          <p className="text-xs text-gray-600">Materials only</p>
+                          <Label htmlFor="supply-only" className="text-sm font-semibold text-orange-800">Supply Only</Label>
+                          <p className="text-xs text-orange-600">Materials only</p>
                         </div>
                       </div>
                     </RadioGroup>
@@ -600,26 +600,26 @@ const Quote = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.25 }}
               >
-                <Card className="shadow-lg h-full">
-                  <CardHeader className="p-3">
+                <Card className="shadow-lg h-full bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200">
+                  <CardHeader className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                      <Clock className="w-4 h-4 text-accent" />
+                      <Clock className="w-4 h-4" />
                       Timeline
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-4">
                     <RadioGroup 
                       value={formData.timeline} 
                       onValueChange={(value) => updateFormData('timeline', value)}
-                      className="grid grid-cols-1 gap-4"
+                      className="grid grid-cols-1 gap-3"
                     >
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                        <RadioGroupItem value="As soon as possible" id="asap" />
-                        <Label htmlFor="asap" className="text-sm font-medium">ASAP</Label>
+                      <div className="flex items-center space-x-3 p-3 border-2 border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors">
+                        <RadioGroupItem value="As soon as possible" id="asap" className="border-purple-500" />
+                        <Label htmlFor="asap" className="text-sm font-semibold text-purple-800">ASAP</Label>
                       </div>
-                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                        <RadioGroupItem value="Within 1 month" id="within-month" />
-                        <Label htmlFor="within-month" className="text-sm font-medium">Within 1 month</Label>
+                      <div className="flex items-center space-x-3 p-3 border-2 border-purple-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors">
+                        <RadioGroupItem value="Within 1 month" id="within-month" className="border-purple-500" />
+                        <Label htmlFor="within-month" className="text-sm font-semibold text-purple-800">Within 1 month</Label>
                       </div>
                     </RadioGroup>
                   </CardContent>
@@ -633,88 +633,93 @@ const Quote = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Card className="shadow-lg">
-                <CardHeader className="p-3">
+              <Card className="shadow-lg bg-gradient-to-br from-cyan-50 to-cyan-100/50 border-cyan-200">
+                <CardHeader className="p-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                    <MapPin className="w-4 h-4 text-accent" />
+                    <MapPin className="w-4 h-4" />
                     Contact & Location Information
                     {(prefilledValues.postal || prefilledValues.formatted_address) && renderPrefilledBadge()}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0 space-y-4">
+                <CardContent className="p-4 space-y-4">
                   {/* Address Section */}
                   <div>
-                    <Label htmlFor="fullAddress" className="text-sm font-semibold text-gray-800">Your Street Address</Label>
+                    <Label htmlFor="fullAddress" className="text-sm font-semibold text-cyan-800">Your Street Address</Label>
                     {prefilledValues.formatted_address && (
-                      <div className="p-3 bg-green-50 border border-green-200 rounded-md mb-3">
-                        <p className="text-sm text-green-800 mb-1">
-                          ✓ <strong>Service available in:</strong> {prefilledValues.formatted_address}
-                        </p>
+                      <div className="p-3 bg-emerald-50 border-2 border-emerald-200 rounded-lg mb-3 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <p className="text-sm text-emerald-800 font-medium">
+                            <strong>Address confirmed:</strong> {prefilledValues.formatted_address}
+                          </p>
+                        </div>
                       </div>
                     )}
-                    <p className="text-sm text-gray-600 mb-2">Enter your complete street address for the quote:</p>
+                    <p className="text-sm text-cyan-700 mb-2">Enter your complete street address for the quote:</p>
                     <AddressAutocomplete
                       id="fullAddress"
                       value={formData.contactInfo.fullAddress}
                       onChange={handleAddressChange}
                       placeholder="123 Main Street, Mississauga, ON"
-                      className="mt-1 h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      className="mt-2 h-12 text-base focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 border-cyan-200 font-medium bg-white"
                     />
-                    <p className="text-xs text-gray-500 mt-1">This address will be used for your flooring quote and installation details.</p>
+                    <p className="text-xs text-cyan-600 mt-1">This address will be used for your flooring quote and installation details.</p>
                   </div>
 
                   {/* Contact Details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name" className="text-sm font-semibold text-gray-800">Full Name</Label>
+                      <Label htmlFor="name" className="text-sm font-semibold text-cyan-800">Full Name</Label>
                       <Input
                         id="name"
                         value={formData.contactInfo.name}
                         onChange={(e) => updateFormData('contactInfo.name', e.target.value)}
-                        className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        className="mt-2 h-11 text-base focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 border-cyan-200 font-medium bg-white"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone" className="text-sm font-semibold text-gray-800">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-sm font-semibold text-cyan-800">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={formData.contactInfo.phone}
                         onChange={(e) => updateFormData('contactInfo.phone', e.target.value)}
-                        className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                        className="mt-2 h-11 text-base focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 border-cyan-200 font-medium bg-white"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <Label htmlFor="email" className="text-sm font-semibold text-gray-800">Email Address</Label>
+                    <Label htmlFor="email" className="text-sm font-semibold text-cyan-800">Email Address</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.contactInfo.email}
                       onChange={(e) => updateFormData('contactInfo.email', e.target.value)}
-                      className="mt-1 h-10 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      className="mt-2 h-11 text-base focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 border-cyan-200 font-medium bg-white"
                     />
                   </div>
                   
                   {/* Verification Method Selection */}
-                  <div className="pt-2 border-t">
-                    <Label className="text-sm font-semibold text-gray-800 mb-2 block">How would you like to verify your request?</Label>
+                  <div className="pt-3 border-t-2 border-cyan-200">
+                    <Label className="text-sm font-semibold text-cyan-800 mb-3 block">How would you like to verify your request?</Label>
                     <RadioGroup 
                       value={verificationMethod} 
                       onValueChange={(value) => setVerificationMethod(value as 'email' | 'sms')}
-                      className="grid grid-cols-2 gap-2"
+                      className="grid grid-cols-2 gap-3"
                     >
-                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                        <RadioGroupItem value="email" id="verify-email" />
-                        <Label htmlFor="verify-email" className="text-sm font-medium">Email</Label>
+                      <div className="flex items-center space-x-3 p-3 border-2 border-cyan-200 rounded-lg hover:bg-cyan-50 hover:border-cyan-300 transition-colors">
+                        <RadioGroupItem value="email" id="verify-email" className="border-cyan-500" />
+                        <Label htmlFor="verify-email" className="text-sm font-semibold text-cyan-800">Email</Label>
                       </div>
-                      <div className="flex items-center space-x-2 p-2 border rounded-lg">
-                        <RadioGroupItem value="sms" id="verify-sms" />
-                        <Label htmlFor="verify-sms" className="text-sm font-medium">SMS</Label>
+                      <div className="flex items-center space-x-3 p-3 border-2 border-cyan-200 rounded-lg hover:bg-cyan-50 hover:border-cyan-300 transition-colors">
+                        <RadioGroupItem value="sms" id="verify-sms" className="border-cyan-500" />
+                        <Label htmlFor="verify-sms" className="text-sm font-semibold text-cyan-800">SMS</Label>
                       </div>
                     </RadioGroup>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-cyan-600 mt-2">
                       We'll send a verification code to confirm your request
                     </p>
                   </div>
@@ -729,24 +734,24 @@ const Quote = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card className="shadow-lg">
-                <CardHeader className="p-4">
-                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                    <FileText className="w-4 h-4 text-accent" />
+              <Card className="shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 border-slate-200">
+                <CardHeader className="p-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                    <FileText className="w-4 h-4" />
                     Additional Details
                   </CardTitle>
-                  <p className="text-sm text-gray-600">Any specific requirements or questions?</p>
+                  <p className="text-sm text-slate-100">Any specific requirements or questions?</p>
                 </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-3">
+                <CardContent className="p-4 space-y-4">
                   <div>
-                    <Label htmlFor="description" className="text-sm font-semibold text-gray-800">Project Description (Optional)</Label>
+                    <Label htmlFor="description" className="text-sm font-semibold text-slate-800">Project Description (Optional)</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe your project, any specific requirements, budget range, or questions..."
                       value={formData.projectDescription}
                       onChange={(e) => updateFormData('projectDescription', e.target.value)}
                       rows={3}
-                      className="mt-1 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      className="mt-2 text-base focus:ring-2 focus:ring-slate-500 focus:border-slate-500 border-slate-200 font-medium bg-white"
                     />
                   </div>
                   <div className="flex flex-col md:flex-row gap-4">
@@ -755,24 +760,26 @@ const Quote = () => {
                       <img 
                         src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//batchnumber.png"
                         alt="Example of flooring box edge showing batch number and product information"
-                        className="w-48 h-36 object-cover rounded-lg border border-gray-200"
+                        className="w-48 h-36 object-cover rounded-lg border-2 border-slate-200 shadow-sm"
                       />
                     </div>
                     
                     {/* Upload Area */}
                     <div className="flex-1">
-                      <div className="p-2 border-2 border-dashed border-gray-300 rounded-lg text-center h-20 flex flex-col justify-center">
-                        <Upload className="w-6 h-6 mx-auto mb-1 text-gray-400" />
-                        <p className="text-sm text-gray-600">Upload photos (Optional)</p>
-                        <p className="text-xs text-gray-500">Drag and drop or click to select</p>
+                      <div className="p-4 border-2 border-dashed border-slate-300 rounded-lg text-center h-32 flex flex-col justify-center hover:border-slate-400 transition-colors bg-slate-50/50">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+                        <p className="text-sm text-slate-600 font-medium">Upload photos (Optional)</p>
+                        <p className="text-xs text-slate-500">Drag and drop or click to select</p>
                       </div>
                     </div>
                   </div>
                   
                   {/* Helpful Caption */}
-                  <p className="text-sm text-gray-600 mt-2">
-                    <strong>Tip:</strong> A photo of the short box edge is helpful — it usually shows the batch number, square footage, color name, and production info.
-                  </p>
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>💡 Tip:</strong> A photo of the short box edge is helpful — it usually shows the batch number, square footage, color name, and production info.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -782,19 +789,21 @@ const Quote = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="text-center pt-6"
+              className="text-center pt-8"
             >
-              <Button 
-                type="submit" 
-                size="lg" 
-                disabled={!isFormValid()}
-                className="px-8 py-3 text-base bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Quote Request
-              </Button>
-              <p className="text-sm text-gray-500 mt-3">
-                You'll receive quotes within 24-48 hours
-              </p>
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-xl shadow-lg">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  disabled={!isFormValid()}
+                  className="px-12 py-4 text-lg font-semibold bg-white text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all border-0"
+                >
+                  Submit Quote Request
+                </Button>
+                <p className="text-sm text-white mt-3 font-medium">
+                  You'll receive quotes within 24-48 hours
+                </p>
+              </div>
             </motion.div>
           </form>
         </div>
