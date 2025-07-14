@@ -244,8 +244,9 @@ const Quote = () => {
 
   const handlePhoneChange = (value: string) => {
     updateFormData('customerPhone', value);
+    // Use lenient validation during typing to avoid red errors on valid numbers
     if (verificationMethod === 'sms' && value.trim() !== '') {
-      const validation = validateAndFormatPhone(value);
+      const validation = validateAndFormatPhone(value, false);
       setPhoneError(validation.isValid ? '' : validation.error || 'Invalid phone number');
     } else {
       setPhoneError('');
@@ -254,7 +255,7 @@ const Quote = () => {
 
   const handlePhoneBlur = () => {
     if (verificationMethod === 'sms' && formData.customerPhone) {
-      const validation = validateAndFormatPhone(formData.customerPhone);
+      const validation = validateAndFormatPhone(formData.customerPhone, true);
       setPhoneError(validation.isValid ? '' : validation.error || 'Invalid phone number');
     }
   };
@@ -276,13 +277,13 @@ const Quote = () => {
     const hasValidPostalCode = formData.postalCode && validatePostalCode(formData.postalCode);
     const hasSquareFootage = formData.squareFootage > 0;
     
-    // For SMS verification, validate phone number properly
+    // For SMS verification, validate phone number properly with strict validation
     let hasValidPhone = true;
     if (verificationMethod === 'sms') {
       if (!formData.customerPhone || formData.customerPhone.trim() === '') {
         hasValidPhone = false;
       } else {
-        const phoneValidation = validateAndFormatPhone(formData.customerPhone);
+        const phoneValidation = validateAndFormatPhone(formData.customerPhone, true);
         hasValidPhone = phoneValidation.isValid;
       }
     }
