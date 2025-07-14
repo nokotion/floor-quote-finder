@@ -332,10 +332,15 @@ const Quote = () => {
         formattedPhone = phoneValidation.formatted;
       }
       
+      // Simplify phone handling for debugging
+      const debugPhone = formData.customerPhone || null;
+      console.log("Raw phone input:", formData.customerPhone);
+      console.log("Debug phone output:", debugPhone);
+      
       const leadInsertData = {
         customer_name: formData.customerName,
         customer_email: formData.customerEmail,
-        customer_phone: formattedPhone || null,
+        customer_phone: debugPhone,
         postal_code: formData.postalCode,
         street_address: formData.streetAddress,
         brand_requested: formData.brandRequested,
@@ -350,36 +355,53 @@ const Quote = () => {
         verification_method: verificationMethod
       };
       
-      console.log('Attempting to insert lead data:', leadInsertData);
-      console.log('Verification method:', verificationMethod);
-      console.log('Form validation state:', {
-        isFormValid: isFormValid(),
-        verificationMethod,
-        customerPhone: formData.customerPhone,
-        phoneRequired: verificationMethod === 'sms'
-      });
+      // DEBUGGING: Log complete payload and RLS validation
+      console.log("=== DEBUGGING LEAD INSERT ===");
+      console.log("Complete leadInsertData:", leadInsertData);
+      
+      // Check each RLS policy requirement individually
+      console.log("RLS Policy Validation:");
+      console.log("✓ customer_name:", leadInsertData.customer_name, "IS NOT NULL?", leadInsertData.customer_name !== null && leadInsertData.customer_name !== undefined && leadInsertData.customer_name !== "");
+      console.log("✓ customer_email:", leadInsertData.customer_email, "IS NOT NULL?", leadInsertData.customer_email !== null && leadInsertData.customer_email !== undefined && leadInsertData.customer_email !== "");
+      console.log("✓ postal_code:", leadInsertData.postal_code, "IS NOT NULL?", leadInsertData.postal_code !== null && leadInsertData.postal_code !== undefined && leadInsertData.postal_code !== "");
+      console.log("✓ status:", leadInsertData.status, "= 'pending_verification'?", leadInsertData.status === 'pending_verification');
+      
+      // Pre-insert validation
+      const rlsValidation = {
+        customer_name_valid: leadInsertData.customer_name !== null && leadInsertData.customer_name !== undefined && leadInsertData.customer_name !== "",
+        customer_email_valid: leadInsertData.customer_email !== null && leadInsertData.customer_email !== undefined && leadInsertData.customer_email !== "",
+        postal_code_valid: leadInsertData.postal_code !== null && leadInsertData.postal_code !== undefined && leadInsertData.postal_code !== "",
+        status_valid: leadInsertData.status === 'pending_verification'
+      };
+      
+      console.log("RLS Requirements Met:", rlsValidation);
+      const allRlsValid = Object.values(rlsValidation).every(Boolean);
+      console.log("ALL RLS REQUIREMENTS MET?", allRlsValid);
+      
+      if (!allRlsValid) {
+        console.error("RLS validation failed before insert attempt!");
+        alert("Form validation error - missing required fields for database security policy");
+        return;
+      }
       
       // Save the lead to database with pending verification status
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
-        .insert(leadInsertData)
+        .insert([leadInsertData])
         .select()
         .single();
 
       if (leadError) {
-        console.error('Error saving lead:', leadError);
-        console.error('Lead insert data was:', leadInsertData);
+        console.error("=== SUPABASE INSERT ERROR ===");
+        console.error("Full Supabase error object:", leadError);
+        console.error("Error message:", leadError.message);
+        console.error("Error details:", leadError.details);
+        console.error("Error hint:", leadError.hint);
+        console.error("Error code:", leadError.code);
+        console.error("Insert payload was:", leadInsertData);
         
-        // Provide specific error messages based on the error type
-        if (leadError.message?.includes('row-level security')) {
-          alert('Database security error. Please try again or contact support.');
-        } else if (leadError.message?.includes('duplicate')) {
-          alert('A quote with this information already exists. Please check your email or try again.');
-        } else if (leadError.message?.includes('validation')) {
-          alert('Please check that all fields are filled correctly and try again.');
-        } else {
-          alert(`Error submitting quote: ${leadError.message || 'Please try again.'}`);
-        }
+        // Show the actual Supabase error instead of generic message
+        alert(`Database error: ${leadError.message || 'Unexpected error during quote submission.'}`);
         return;
       }
 
