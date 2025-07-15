@@ -727,27 +727,27 @@ const Quote = () => {
                          />
                        </div>
 
-                        <div>
-                          <Label htmlFor="phone" className={`text-sm font-medium text-gray-700 ${verificationMethod === 'sms' ? 'text-red-600' : ''}`}>
-                            Phone Number {verificationMethod === 'sms' ? '*' : ''}
-                          </Label>
-                          <Input
-                            id="phone"
-                            type="tel"
-                            value={formData.customerPhone || ""}
-                            onChange={(e) => handlePhoneChange(e.target.value)}
-                            onBlur={handlePhoneBlur}
-                            placeholder="Enter your phone (e.g., 905-872-6683)"
-                            className={`h-12 text-sm ${
-                              verificationMethod === 'sms' && (phoneError || (!formData.customerPhone && verificationMethod === 'sms'))
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                                : ''
-                            }`}
-                            required={verificationMethod === 'sms'}
-                          />
-                          {verificationMethod === 'sms' && phoneError && (
-                            <p className="mt-1 text-sm text-red-600">{phoneError}</p>
-                          )}
+                         <div>
+                           <Label htmlFor="phone" className={`text-sm font-medium text-gray-700 ${verificationMethod === 'sms' && phoneError ? 'text-red-600' : ''}`}>
+                             Phone Number {verificationMethod === 'sms' ? '*' : ''}
+                           </Label>
+                           <Input
+                             id="phone"
+                             type="tel"
+                             value={formData.customerPhone || ""}
+                             onChange={(e) => handlePhoneChange(e.target.value)}
+                             onBlur={handlePhoneBlur}
+                             placeholder="Enter your phone (e.g., 905-872-6683)"
+                             className={`h-12 text-sm ${
+                               verificationMethod === 'sms' && phoneError
+                                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                                 : ''
+                             }`}
+                             required={verificationMethod === 'sms'}
+                           />
+                           {verificationMethod === 'sms' && phoneError && (
+                             <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+                           )}
                         </div>
 
                        <div>
