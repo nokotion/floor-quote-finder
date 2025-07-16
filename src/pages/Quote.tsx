@@ -410,8 +410,12 @@ const Quote = () => {
 
       // Send verification code
       const contact = verificationMethod === 'email' ? formData.customerEmail : formattedPhone;
-      console.log(`Attempting to send ${verificationMethod} verification to:`, contact);
+      console.log(`=== SENDING ${verificationMethod.toUpperCase()} VERIFICATION ===`);
+      console.log(`Lead ID: ${leadData.id}`);
+      console.log(`Contact: ${contact}`);
+      console.log(`Method: ${verificationMethod}`);
       
+      console.log('Calling send-verification function...');
       const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('send-verification', {
         body: {
           leadId: leadData.id,
@@ -420,7 +424,11 @@ const Quote = () => {
         }
       });
 
-      console.log('Verification function response:', { verificationResult, verificationError });
+      console.log('=== VERIFICATION FUNCTION RESPONSE ===');
+      console.log('Result:', verificationResult);
+      console.log('Error:', verificationError);
+      console.log('Error details:', verificationError?.details);
+      console.log('Error message:', verificationError?.message);
 
       // Handle verification response more intelligently
       if (verificationError) {
