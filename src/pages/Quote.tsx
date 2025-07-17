@@ -389,20 +389,12 @@ const Quote = () => {
       console.log("=== ATTEMPTING LEAD INSERTION ===");
       console.log("Direct payload:", leadInsertData);
       
-      // Try with more direct approach and explicit status
-      const directPayload = {
-        customer_name: formData.customerName,
-        customer_email: formData.customerEmail,
-        customer_phone: formData.customerPhone || null,
-        postal_code: formData.postalCode,
-        status: 'pending_verification'  // Explicitly set status
-      };
-      
-      console.log("Simplified payload:", directPayload);
+      // Use full payload instead of simplified one to ensure all required fields are present
+      console.log("Using complete payload for insertion");
       
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
-        .insert(directPayload)
+        .insert(leadInsertData)
         .select()
         .single();
 
@@ -414,6 +406,20 @@ const Quote = () => {
         console.error("Error hint:", leadError.hint);
         console.error("Error code:", leadError.code);
         console.error("Insert payload was:", leadInsertData);
+        
+        // Advanced error diagnostics for RLS issues
+        if (leadError.code === '42501' || leadError.message?.includes('policy')) {
+          console.error("RLS POLICY VIOLATION DETECTED!");
+          
+          // Check if it might be an auth issue
+          const { data: { session } } = await supabase.auth.getSession();
+          console.log("Current auth session:", session);
+          console.log("Is user authenticated?", !!session?.user);
+          
+          // Verify policy configuration
+          console.log("Checking if policy exists for anonymous users...");
+          console.log("Make sure you have a policy named 'Allow insert for anonymous lead form' with WITH CHECK (true)");
+        }
         
         // Show the actual Supabase error instead of generic message
         alert(`Database error: ${leadError.message || 'Unexpected error during quote submission.'}`);
