@@ -386,9 +386,23 @@ const Quote = () => {
       }
       
       // Save the lead to database with pending verification status
+      console.log("=== ATTEMPTING LEAD INSERTION ===");
+      console.log("Direct payload:", leadInsertData);
+      
+      // Try with more direct approach and explicit status
+      const directPayload = {
+        customer_name: formData.customerName,
+        customer_email: formData.customerEmail,
+        customer_phone: formData.customerPhone || null,
+        postal_code: formData.postalCode,
+        status: 'pending_verification'  // Explicitly set status
+      };
+      
+      console.log("Simplified payload:", directPayload);
+      
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
-        .insert([leadInsertData])
+        .insert(directPayload)
         .select()
         .single();
 
