@@ -679,18 +679,20 @@ const Quote = () => {
                       Installation Required
                     </Label>
                     <div className="flex-1 flex flex-col justify-start">
-                      <Select 
+                      <RadioGroup 
                         value={formData.installationRequired ? "yes" : "no"} 
                         onValueChange={(value) => updateFormData('installationRequired', value === "yes")}
+                        className="space-y-3"
                       >
-                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                          <SelectValue placeholder="Do you need installation?" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="yes">Yes, I need professional installation</SelectItem>
-                          <SelectItem value="no">No, I'll handle installation myself</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="yes" id="install-yes" />
+                          <Label htmlFor="install-yes" className="text-sm">Yes, I need professional installation</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="no" id="install-no" />
+                          <Label htmlFor="install-no" className="text-sm">No, I'll handle installation myself</Label>
+                        </div>
+                      </RadioGroup>
                     </div>
                   </div>
 
