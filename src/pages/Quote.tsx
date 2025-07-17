@@ -673,26 +673,24 @@ const Quote = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 3-Box Grid Layout */}
                 <div className="grid md:grid-cols-3 gap-6">
-                  {/* Box 1 - Installation Type */}
+                  {/* Box 1 - Installation Required */}
                   <div className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm min-h-[200px] flex flex-col">
                     <Label className="text-lg font-semibold text-gray-800 mb-4 block">
                       Installation Required
                     </Label>
                     <div className="flex-1 flex flex-col justify-start">
-                      <RadioGroup
-                        value={formData.installationRequired ? "yes" : "no"}
+                      <Select 
+                        value={formData.installationRequired ? "yes" : "no"} 
                         onValueChange={(value) => updateFormData('installationRequired', value === "yes")}
-                        className="space-y-3"
                       >
-                        <div className="flex items-center space-x-2 h-12">
-                          <RadioGroupItem value="yes" id="install-yes" />
-                          <Label htmlFor="install-yes" className="text-sm">Yes, I need professional installation</Label>
-                        </div>
-                        <div className="flex items-center space-x-2 h-12">
-                          <RadioGroupItem value="no" id="install-no" />
-                          <Label htmlFor="install-no" className="text-sm">No, I'll handle installation myself</Label>
-                        </div>
-                      </RadioGroup>
+                        <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                          <SelectValue placeholder="Do you need installation?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes, I need professional installation</SelectItem>
+                          <SelectItem value="no">No, I'll handle installation myself</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -712,6 +710,9 @@ const Quote = () => {
                         <SelectContent>
                           <SelectItem value="ASAP">ASAP</SelectItem>
                           <SelectItem value="In a month">In a month</SelectItem>
+                          <SelectItem value="2-3 months">2-3 months</SelectItem>
+                          <SelectItem value="3+ months">3+ months</SelectItem>
+                          <SelectItem value="Just planning">Just planning</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
