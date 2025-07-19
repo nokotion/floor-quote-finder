@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { parsePhoneNumber } from "https://esm.sh/libphonenumber-js@1.10.51";
@@ -19,22 +20,27 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('Verification request received:', req.method);
+  console.log('=== VERIFICATION REQUEST STARTED ===');
+  console.log('Request method:', req.method);
 
   try {
     // Validate request body
     const body = await req.json();
-    console.log('Request body:', JSON.stringify(body, null, 2));
+    console.log('Request body received:', JSON.stringify(body, null, 2));
 
     const { leadId, method, contact }: VerificationRequest = body;
 
     // Validate required fields
     if (!leadId || !method || !contact) {
-      throw new Error('Missing required fields: leadId, method, and contact are required');
+      const error = 'Missing required fields: leadId, method, and contact are required';
+      console.error('VALIDATION ERROR:', error);
+      throw new Error(error);
     }
 
     if (!['email', 'sms'].includes(method)) {
-      throw new Error('Invalid verification method. Must be "email" or "sms"');
+      const error = 'Invalid verification method. Must be "email" or "sms"';
+      console.error('VALIDATION ERROR:', error);
+      throw new Error(error);
     }
 
     // Validate environment variables
@@ -42,11 +48,14 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase configuration');
-      throw new Error('Server configuration error');
+      console.error('CRITICAL: Missing Supabase configuration');
+      throw new Error('Server configuration error - Supabase not configured');
     }
 
-    console.log(`Processing ${method} verification for lead ${leadId} to ${contact}`);
+    console.log(`=== PROCESSING ${method.toUpperCase()} VERIFICATION ===`);
+    console.log('Lead ID:', leadId);
+    console.log('Contact:', contact);
+    console.log('Method:', method);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -55,32 +64,53 @@ const handler = async (req: Request): Promise<Response> => {
     let verificationToken = null;
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
     
-    // Send verification first, then update database
+    // Send verification based on method
     try {
       if (method === 'email') {
-        // For email, we generate our own token
+        console.log('=== SENDING EMAIL VERIFICATION ===');
         verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
         console.log(`Generated email verification token: ${verificationToken}`);
         result = await sendEmailVerification(contact, verificationToken);
         console.log('Email verification sent successfully:', result);
       } else if (method === 'sms') {
-        // For SMS, use Twilio Verify service
-        console.log(`Sending SMS verification to: ${contact}`);
+        console.log('=== SENDING SMS VERIFICATION ===');
+        console.log(`Target phone number: ${contact}`);
         result = await sendSMSVerification(contact);
-        console.log('SMS verification sent successfully via Twilio:', result);
+        console.log('SMS verification sent successfully via Twilio Verify:', result);
         
-        // Log important Twilio response details
         if (result && result.status) {
           console.log(`Twilio verification status: ${result.status}, SID: ${result.sid}`);
         }
       }
     } catch (verificationError) {
       console.error(`CRITICAL: Failed to send ${method} verification:`, verificationError);
-      console.error('Verification error stack:', verificationError.stack);
-      throw new Error(`Failed to send ${method} verification: ${verificationError.message}`);
+      console.error('Verification error details:', {
+        message: verificationError.message,
+        stack: verificationError.stack,
+        cause: verificationError.cause
+      });
+      
+      // Return detailed error to frontend
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: `Failed to send ${method} verification: ${verificationError.message}`,
+          details: verificationError.message.includes('Phone number') ? 
+            'Please check your phone number format and try again.' :
+            'Please try again or contact support if the issue persists.',
+          errorType: 'VERIFICATION_SEND_FAILED'
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
-    // Update lead with verification details - this is critical for the verification flow
+    // Update lead with verification details
     console.log('=== UPDATING LEAD DATABASE RECORD ===');
     console.log('Lead ID:', leadId);
     console.log('Verification method:', method);
@@ -95,13 +125,13 @@ const handler = async (req: Request): Promise<Response> => {
       status: 'pending_verification'
     };
     
-    console.log('Update data:', JSON.stringify(updateData, null, 2));
+    console.log('Database update data:', JSON.stringify(updateData, null, 2));
     
     const { data: updateResult, error: updateError } = await supabase
       .from('leads')
       .update(updateData)
       .eq('id', leadId)
-      .select(); // Add select to see what was updated
+      .select();
 
     if (updateError) {
       console.error('CRITICAL: Database update error:', updateError);
@@ -112,23 +142,21 @@ const handler = async (req: Request): Promise<Response> => {
         hint: updateError.hint
       });
       
-      // Even if DB update fails, if verification was sent successfully, 
-      // we should inform user and log the issue for manual intervention
+      // Return partial success with warning
       console.error(`WARNING: ${method} verification was sent successfully but database update failed!`);
       console.error('Manual intervention may be required for lead:', leadId);
       
-      // Return success with partial failure indicator instead of throwing error
       return new Response(
         JSON.stringify({ 
           success: true,
           partialFailure: true,
-          message: `Verification code sent via ${method}, but database update failed`,
-          warning: 'Please retry verification if you do not receive the code',
+          message: `Verification code sent via ${method}, but there was an issue saving the request`,
+          warning: 'Your verification code was sent successfully. If you encounter issues, please contact support.',
           verificationMethod: method,
-          dbError: updateError.message
+          errorType: 'DATABASE_UPDATE_FAILED'
         }),
         {
-          status: 200, // Return 200 because verification was sent successfully
+          status: 200,
           headers: {
             'Content-Type': 'application/json',
             ...corsHeaders,
@@ -139,6 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('=== DATABASE UPDATE SUCCESSFUL ===');
     console.log('Updated lead data:', JSON.stringify(updateResult, null, 2));
+    console.log(`=== VERIFICATION FLOW COMPLETED SUCCESSFULLY ===`);
     console.log(`Verification sent successfully via ${method} to ${contact}`);
 
     return new Response(
@@ -157,13 +186,20 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
+    console.error('=== VERIFICATION FLOW FAILED ===');
     console.error('Error in send-verification function:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    });
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: 'Check edge function logs for more information'
+        success: false,
+        error: error.message || 'Verification failed',
+        details: 'Please check your information and try again. If the issue persists, contact support.',
+        errorType: 'GENERAL_ERROR'
       }),
       {
         status: 500,
@@ -174,18 +210,19 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 async function sendEmailVerification(email: string, token: string) {
-  console.log(`Attempting to send email verification to: ${email}`);
+  console.log(`=== EMAIL VERIFICATION PROCESS ===`);
+  console.log(`Target email: ${email}`);
   
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   if (!resendApiKey) {
-    console.error('RESEND_API_KEY environment variable not found');
-    throw new Error('RESEND_API_KEY not configured');
+    console.error('CRITICAL: RESEND_API_KEY environment variable not found');
+    throw new Error('Email service not configured - missing API key');
   }
 
-  console.log('Resend API key found, sending email...');
+  console.log('Resend API key found, preparing email...');
 
   const emailPayload = {
-    from: 'Price My Floor <onboarding@resend.dev>', // Using verified domain
+    from: 'Price My Floor <onboarding@resend.dev>',
     to: [email],
     subject: 'Verify Your Quote Request',
     html: `
@@ -206,7 +243,7 @@ async function sendEmailVerification(email: string, token: string) {
     `,
   };
 
-  console.log('Email payload prepared:', JSON.stringify(emailPayload, null, 2));
+  console.log('Email payload prepared, sending via Resend API...');
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -223,7 +260,7 @@ async function sendEmailVerification(email: string, token: string) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Resend API error response:', errorText);
-      throw new Error(`Resend API returned ${response.status}: ${errorText}`);
+      throw new Error(`Email service returned error ${response.status}: ${errorText}`);
     }
 
     const result = await response.json();
@@ -231,47 +268,56 @@ async function sendEmailVerification(email: string, token: string) {
     return result;
   } catch (fetchError) {
     console.error('Error calling Resend API:', fetchError);
-    throw new Error(`Network error sending email: ${fetchError.message}`);
+    throw new Error(`Failed to send email: ${fetchError.message}`);
   }
 }
 
 async function sendSMSVerification(phone: string) {
-  console.log(`Attempting to send SMS verification to: ${phone}`);
+  console.log(`=== SMS VERIFICATION PROCESS ===`);
+  console.log(`Target phone number: ${phone}`);
   
+  // Check Twilio credentials
   const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
   
-  console.log('Twilio environment check:', { 
+  console.log('Twilio credentials check:', { 
     hasSid: !!twilioSid, 
     hasAuth: !!twilioAuth, 
     hasServiceSid: !!twilioVerifyServiceSid,
-    sidValue: twilioSid ? `${twilioSid.substring(0, 10)}...` : 'missing',
-    serviceSidValue: twilioVerifyServiceSid ? `${twilioVerifyServiceSid.substring(0, 10)}...` : 'missing'
+    sidValue: twilioSid ? `${twilioSid.substring(0, 10)}...` : 'MISSING',
+    serviceSidValue: twilioVerifyServiceSid ? `${twilioVerifyServiceSid.substring(0, 10)}...` : 'MISSING'
   });
   
   if (!twilioSid || !twilioAuth) {
-    console.error('Missing basic Twilio credentials');
-    throw new Error('Twilio Account SID and Auth Token must be configured');
+    console.error('CRITICAL: Missing basic Twilio credentials');
+    throw new Error('SMS service not configured - missing Twilio Account SID or Auth Token');
   }
   
   if (!twilioVerifyServiceSid) {
-    console.error('Missing Twilio Verify Service SID - this needs to be created in Twilio Console');
-    throw new Error('Twilio Verify Service not configured. Please create a Verify Service in your Twilio Console and add the Service SID to your secrets.');
+    console.error('CRITICAL: Missing Twilio Verify Service SID');
+    throw new Error('SMS service not configured - missing Twilio Verify Service SID. Please create a Verify Service in your Twilio Console.');
   }
 
-  // Format phone number for Canadian numbers
+  // Format and validate phone number
   const formattedPhone = formatCanadianPhone(phone);
-  console.log(`Original phone: ${phone}, Formatted phone: ${formattedPhone}`);
+  console.log(`Phone formatting: "${phone}" -> "${formattedPhone}"`);
+  
+  if (!formattedPhone || formattedPhone === phone) {
+    console.log('Phone number formatting may have failed, proceeding with original number');
+  }
 
+  // Prepare Twilio API call
   const twilioUrl = `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/Verifications`;
   const requestBody = new URLSearchParams({
     To: formattedPhone,
     Channel: 'sms',
   });
 
-  console.log(`Calling Twilio API: ${twilioUrl}`);
-  console.log(`Request body: ${requestBody.toString()}`);
+  console.log('Twilio API call details:');
+  console.log('URL:', twilioUrl);
+  console.log('Phone number being sent:', formattedPhone);
+  console.log('Service SID:', twilioVerifyServiceSid);
 
   try {
     const response = await fetch(twilioUrl, {
@@ -289,7 +335,7 @@ async function sendSMSVerification(phone: string) {
       const errorText = await response.text();
       console.error('Twilio API error response:', errorText);
       
-      // Try to parse Twilio error for more specific messages
+      // Parse Twilio error for specific messages
       try {
         const errorData = JSON.parse(errorText);
         const errorCode = errorData.code;
@@ -299,62 +345,88 @@ async function sendSMSVerification(phone: string) {
         
         // Provide specific error messages for common issues
         if (errorCode === 60200) {
-          throw new Error(`Invalid phone number format: ${formattedPhone}. Please ensure the number includes country code (+1 for Canada/US).`);
+          throw new Error(`Invalid phone number format: ${formattedPhone}. Please ensure the number includes country code.`);
         } else if (errorCode === 60203) {
-          throw new Error(`Phone number ${formattedPhone} is not verified. In trial mode, you can only send SMS to verified numbers. Please verify this number in your Twilio Console.`);
+          throw new Error(`Phone number ${formattedPhone} is not verified. In Twilio trial mode, you can only send SMS to verified numbers.`);
         } else if (errorCode === 20404) {
-          throw new Error('Twilio Verify Service not found. Please check your TWILIO_VERIFY_SERVICE_SID.');
+          throw new Error('Twilio Verify Service not found. Please check your service configuration.');
+        } else if (errorCode === 20003) {
+          throw new Error('Twilio authentication failed. Please check your Account SID and Auth Token.');
         } else {
           throw new Error(`Twilio error (${errorCode}): ${errorMessage}`);
         }
       } catch (parseError) {
-        throw new Error(`Twilio API returned ${response.status}: ${errorText}`);
+        console.error('Failed to parse Twilio error response:', parseError);
+        throw new Error(`SMS service returned error ${response.status}: ${errorText}`);
       }
     }
 
     const result = await response.json();
     console.log('SMS verification sent successfully via Twilio:', result);
+    console.log('Verification SID:', result.sid);
+    console.log('Verification status:', result.status);
     return result;
   } catch (fetchError) {
-    console.error('Error calling Twilio API:', fetchError);
-    throw new Error(`Network error sending SMS: ${fetchError.message}`);
+    console.error('Network error calling Twilio API:', fetchError);
+    throw new Error(`Failed to send SMS: ${fetchError.message}`);
   }
 }
 
 function formatCanadianPhone(phone: string): string {
+  console.log(`Formatting phone number: "${phone}"`);
+  
   try {
     // Parse the phone number with Canadian default
     const phoneNumber = parsePhoneNumber(phone, 'CA');
     
     if (!phoneNumber) {
-      console.log('Failed to parse phone number:', phone);
-      // Fallback to original logic
-      const digits = phone.replace(/\D/g, '');
-      if (digits.length === 10) {
-        return `+1${digits}`;
-      }
-      if (digits.length === 11 && digits.startsWith('1')) {
-        return `+${digits}`;
-      }
-      return phone;
+      console.log('libphonenumber failed to parse, trying fallback logic');
+      return fallbackPhoneFormat(phone);
+    }
+    
+    if (!phoneNumber.isValid()) {
+      console.log('Phone number is not valid according to libphonenumber');
+      return fallbackPhoneFormat(phone);
     }
     
     // Return E.164 format
     const formatted = phoneNumber.format('E.164');
-    console.log('Formatted phone:', phone, '->', formatted);
+    console.log('Successfully formatted phone:', phone, '->', formatted);
     return formatted;
   } catch (error) {
-    console.error('Error formatting phone number:', error);
-    // Fallback to original logic
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length === 10) {
-      return `+1${digits}`;
-    }
-    if (digits.length === 11 && digits.startsWith('1')) {
-      return `+${digits}`;
-    }
-    return phone;
+    console.error('Error in libphonenumber formatting:', error);
+    return fallbackPhoneFormat(phone);
   }
+}
+
+function fallbackPhoneFormat(phone: string): string {
+  console.log(`Using fallback formatting for: "${phone}"`);
+  
+  // Remove all non-digit characters
+  const digits = phone.replace(/\D/g, '');
+  console.log('Extracted digits:', digits);
+  
+  // Handle different digit lengths
+  if (digits.length === 10) {
+    const formatted = `+1${digits}`;
+    console.log('10-digit number formatted to:', formatted);
+    return formatted;
+  }
+  
+  if (digits.length === 11 && digits.startsWith('1')) {
+    const formatted = `+${digits}`;
+    console.log('11-digit number formatted to:', formatted);
+    return formatted;
+  }
+  
+  if (digits.length === 12 && digits.startsWith('1')) {
+    const formatted = `+${digits}`;
+    console.log('12-digit number formatted to:', formatted);
+    return formatted;
+  }
+  
+  console.log('Unable to format phone number, returning original:', phone);
+  return phone;
 }
 
 serve(handler);
