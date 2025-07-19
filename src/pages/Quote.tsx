@@ -124,7 +124,7 @@ const Quote = () => {
           continue;
         }
 
-        const url = `${supabase.storageUrl}/object/public/${supabase.storageBucket}/${data.path}`;
+        const url = `https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files/${data.path}`;
         urls.push(url);
         setSubmissionProgress((prev) => prev + (100 / files.length));
       } catch (uploadError: any) {
@@ -242,7 +242,7 @@ const Quote = () => {
         toast({
           title: "Warning",
           description: distributionData.error || "Failed to distribute lead to retailers.",
-          variant: "warning",
+          variant: "destructive",
         });
       }
       setSubmissionProgress(100);
@@ -520,11 +520,11 @@ const Quote = () => {
 
                   <div>
                     <Label htmlFor="installation" className="flex items-center space-x-2">
-                      <Input
+                      <input
                         type="checkbox"
                         id="installation"
                         checked={installation}
-                        onCheckedChange={setInstallation}
+                        onChange={(e) => setInstallation(e.target.checked)}
                         className="w-4 h-4"
                       />
                       <span>Do you require installation services?</span>
