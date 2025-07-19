@@ -39,72 +39,13 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const initializeAutocomplete = async () => {
-      try {
-        console.log('Initializing Google Places Autocomplete...');
-        const loader = new Loader({
-          apiKey: 'AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50',
-          version: 'weekly',
-          libraries: ['places']
-        });
-
-        await loader.load();
-        console.log('Google Maps API loaded successfully');
-        
-        if (inputRef.current && !autocompleteRef.current) {
-          autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-            types: usePostalCodeOnly ? ['postal_code'] : ['address'],
-            componentRestrictions: { country: 'ca' }, // Restrict to Canada
-            fields: ['formatted_address', 'address_components', 'geometry']
-          });
-
-          autocompleteRef.current.addListener('place_changed', () => {
-            const place = autocompleteRef.current?.getPlace();
-            if (place && place.formatted_address) {
-              const addressData: AddressData = {
-                formatted_address: place.formatted_address
-              };
-
-              // Parse address components
-              if (place.address_components) {
-                place.address_components.forEach((component) => {
-                  const types = component.types;
-                  if (types.includes('street_number')) {
-                    addressData.street_number = component.long_name;
-                  } else if (types.includes('route')) {
-                    addressData.route = component.long_name;
-                  } else if (types.includes('locality')) {
-                    addressData.locality = component.long_name;
-                  } else if (types.includes('administrative_area_level_1')) {
-                    addressData.administrative_area_level_1 = component.short_name;
-                  } else if (types.includes('postal_code')) {
-                    addressData.postal_code = component.long_name;
-                  } else if (types.includes('country')) {
-                    addressData.country = component.long_name;
-                  }
-                });
-              }
-
-              onChange(place.formatted_address, addressData);
-            }
-          });
-          
-          console.log('Google Places Autocomplete initialized successfully');
-        }
-        setIsLoaded(true);
-        setHasError(false);
-      } catch (error) {
-        console.error('Error loading Google Maps:', error);
-        setHasError(true);
-        setErrorMessage('Google Maps failed to load. You can still enter your address manually.');
-        setIsLoaded(true); // Still set to true so the input is usable as fallback
-      }
-    };
-
-    // Add a small delay to prevent race conditions
-    const timeoutId = setTimeout(initializeAutocomplete, 100);
-    return () => clearTimeout(timeoutId);
-  }, [onChange]);
+    // Skip Google Maps initialization for now due to API key configuration issues
+    // This component will work as a regular input field until Google Maps API is properly configured
+    console.log('Google Maps API disabled - using fallback input mode');
+    setHasError(true);
+    setErrorMessage('Enter your complete address or postal code');
+    setIsLoaded(true);
+  }, []);
 
   // Handle manual input changes when Google Maps is not available
   const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
