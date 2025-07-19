@@ -455,6 +455,9 @@ export type Database = {
       }
       leads: {
         Row: {
+          address_city: string | null
+          address_formatted: string | null
+          address_province: string | null
           assigned_retailer_id: string | null
           attachment_urls: string[] | null
           brand_requested: string | null
@@ -490,6 +493,9 @@ export type Database = {
           verification_token: string | null
         }
         Insert: {
+          address_city?: string | null
+          address_formatted?: string | null
+          address_province?: string | null
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
@@ -525,6 +531,9 @@ export type Database = {
           verification_token?: string | null
         }
         Update: {
+          address_city?: string | null
+          address_formatted?: string | null
+          address_province?: string | null
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
