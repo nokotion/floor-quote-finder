@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AddressData {
   formatted_address: string;
@@ -25,6 +24,9 @@ interface AddressAutocompleteProps {
   usePostalCodeOnly?: boolean;
 }
 
+// Google Maps API key - in production, restrict this key to your domain in Google Cloud Console
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50';
+
 const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value,
   onChange,
@@ -44,18 +46,9 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   useEffect(() => {
     const initializeAutocomplete = async () => {
       try {
-        console.log('Attempting to initialize Google Places Autocomplete...');
+        console.log('Initializing Google Places Autocomplete...');
         
-        // Get Google Maps API key from Supabase edge function
-        console.log('Fetching Google Maps API key from Supabase edge function...');
-        const { data, error } = await supabase.functions.invoke('google-maps-config');
-        
-        if (error) {
-          console.error('Error calling google-maps-config function:', error);
-          throw new Error(`Failed to get API configuration: ${error.message}`);
-        }
-
-        if (!data || !data.apiKey) {
+        if (!GOOGLE_MAPS_API_KEY) {
           console.log('Google Maps API key not configured - using fallback input mode');
           setHasError(true);
           setErrorMessage('Enter your complete address or postal code');
@@ -63,12 +56,9 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           return;
         }
 
-        const apiKey = data.apiKey;
-        console.log('Google Maps API key retrieved successfully');
-
         console.log('Loading Google Maps API...');
         const loader = new Loader({
-          apiKey: apiKey,
+          apiKey: GOOGLE_MAPS_API_KEY,
           version: 'weekly',
           libraries: ['places']
         });
@@ -77,7 +67,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         console.log('Google Maps API loaded successfully');
         
         if (inputRef.current && !autocompleteRef.current) {
-          console.log('Initializing Google Places Autocomplete...');
+          console.log('Creating Google Places Autocomplete instance...');
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
             types: usePostalCodeOnly ? ['postal_code'] : ['address'],
             componentRestrictions: { country: 'ca' },
@@ -120,6 +110,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           console.log('Google Places Autocomplete initialized successfully');
           setGoogleMapsEnabled(true);
         }
+        
         setIsLoaded(true);
         setHasError(false);
         setErrorMessage("");
