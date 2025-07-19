@@ -416,9 +416,17 @@ const Quote = () => {
           console.log("Current auth session:", session);
           console.log("Is user authenticated?", !!session?.user);
           
-          // Verify policy configuration
-          console.log("Checking if policy exists for anonymous users...");
-          console.log("Make sure you have a policy named 'Allow insert for anonymous lead form' with WITH CHECK (true)");
+          // Verify the universal policy requirements
+          console.log("Universal policy requirements check:");
+          console.log("Policy name: 'Universal lead insertion policy'");
+          console.log("Required fields validation:");
+          console.log("- customer_name valid:", rlsValidation.customer_name_valid);
+          console.log("- customer_email valid:", rlsValidation.customer_email_valid);
+          console.log("- postal_code valid:", rlsValidation.postal_code_valid);
+          console.log("- status = 'pending_verification':", rlsValidation.status_valid);
+          
+          alert("Quote submission failed due to security policy. Please ensure all required fields are filled correctly and try again.");
+          return;
         }
         
         // Show the actual Supabase error instead of generic message
