@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { motion } from "framer-motion";
 import { CheckCircle, MapPin, Package, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,7 @@ const Quote = () => {
     formatted_address: formatted_address || ""
   });
   const [notes, setNotes] = useState("");
+  const [installationRequired, setInstallationRequired] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
@@ -178,6 +180,8 @@ const Quote = () => {
       street_address: addressData.street,
       square_footage: parseInt(size || "0"),
       brand_requested: brand,
+      project_type: size,
+      installation_required: installationRequired,
       notes: notes,
       address_formatted: addressData.formatted_address,
       address_city: addressData.city,
@@ -193,80 +197,51 @@ const Quote = () => {
     if (!pendingQuoteData) return;
 
     setIsSubmitting(true);
-    setSubmissionProgress(10);
+    setSubmissionProgress(25);
 
     try {
-      // 1. Create Lead Record
-      const { data: leadData, error: leadError } = await supabase
-        .from('leads')
-        .insert([
-          {
-            customer_name: pendingQuoteData.customer_name,
-            customer_email: pendingQuoteData.customer_email,
-            customer_phone: pendingQuoteData.customer_phone,
-            postal_code: pendingQuoteData.postal_code,
-            street_address: pendingQuoteData.street_address,
-            square_footage: pendingQuoteData.square_footage,
-            brand_requested: pendingQuoteData.brand_requested,
-            notes: pendingQuoteData.notes,
-            address_formatted: pendingQuoteData.address_formatted,
-            address_city: pendingQuoteData.address_city,
-            address_province: pendingQuoteData.address_province,
-            is_verified: true,
-            status: 'verified'
-          }
-        ])
-        .select()
-        .single();
-
-      if (leadError) {
-        console.error("Lead creation error:", leadError);
-        throw leadError;
-      }
-
-      setSubmissionProgress(40);
-
-      // 2. Upload Attachments
+      // 1. Upload Attachments first if any
+      let attachmentUrls: string[] = [];
       if (pendingQuoteData.files && pendingQuoteData.files.length > 0) {
-        const uploadedUrls = await uploadAttachments(pendingQuoteData.files, leadData.id);
-        
-        // Update lead with attachments
-        const { error: updateError } = await supabase
-          .from('leads')
-          .update({ attachment_urls: uploadedUrls })
-          .eq('id', leadData.id);
-
-        if (updateError) {
-          console.error("Attachment update error:", updateError);
-          throw updateError;
-        }
+        attachmentUrls = await uploadAttachments(pendingQuoteData.files, 'temp');
       }
-      setSubmissionProgress(80);
+      setSubmissionProgress(50);
 
-      // 3. Distribute Lead to Retailers
-      const { data: distributionData, error: distributionError } = await supabase.functions.invoke('process-lead-submission', {
-        body: { leadId: leadData.id },
+      // 2. Create verified lead with distribution using edge function
+      const leadData = {
+        customer_name: pendingQuoteData.customer_name,
+        customer_email: pendingQuoteData.customer_email,
+        customer_phone: pendingQuoteData.customer_phone,
+        postal_code: pendingQuoteData.postal_code,
+        street_address: pendingQuoteData.street_address,
+        address_city: pendingQuoteData.address_city,
+        address_province: pendingQuoteData.address_province,
+        address_formatted: pendingQuoteData.address_formatted,
+        brand_requested: pendingQuoteData.brand_requested,
+        project_type: pendingQuoteData.project_type,
+        square_footage: pendingQuoteData.square_footage,
+        installation_required: pendingQuoteData.installation_required,
+        notes: pendingQuoteData.notes,
+        attachment_urls: attachmentUrls.length > 0 ? attachmentUrls : null
+      };
+
+      const { data: result, error: leadError } = await supabase.functions.invoke('create-verified-lead', {
+        body: leadData
       });
 
-      if (distributionError) {
-        console.error("Lead distribution error:", distributionError);
-        throw distributionError;
+      if (leadError) {
+        console.error('Error creating verified lead:', leadError);
+        throw new Error('Failed to create lead');
       }
 
-      if (distributionData.success) {
-        console.log('Lead distributed successfully:', distributionData.message);
-      } else {
-        console.warn('Lead distribution failed:', distributionData.error);
-        toast({
-          title: "Warning",
-          description: distributionData.error || "Failed to distribute lead to retailers.",
-          variant: "destructive",
-        });
-      }
-      
       setSubmissionProgress(100);
       setIsSubmitted(true);
       setIsVerified(true);
+      
+      toast({
+        title: "Quote submitted successfully!",
+        description: `We've matched you with ${result.matched_retailers || 0} qualified installers in your area.`,
+      });
 
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -441,6 +416,17 @@ const Quote = () => {
                       onChange={(e) => setNotes(e.target.value)}
                       className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="installation"
+                      checked={installationRequired}
+                      onCheckedChange={(checked) => setInstallationRequired(checked as boolean)}
+                    />
+                    <Label htmlFor="installation" className="text-sm font-normal">
+                      I require professional installation
+                    </Label>
                   </div>
 
                   <div>
