@@ -81,6 +81,34 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate and format phone number for SMS
+    let formattedContact = contact;
+    if (method === 'sms') {
+      // Remove all non-digits
+      const digitsOnly = contact.replace(/\D/g, '');
+      
+      // Validate North American 10-digit number
+      if (digitsOnly.length !== 10) {
+        console.error(`[${requestId}] Invalid phone number format:`, contact, 'Digits only:', digitsOnly);
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: 'Invalid phone number. Please enter a 10-digit North American phone number',
+            details: `Received: ${contact}, Expected: 10 digits, Got: ${digitsOnly.length}`,
+            errorType: 'VALIDATION_ERROR'
+          }),
+          { 
+            status: 400, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+      
+      // Format as +1XXXXXXXXXX for Twilio
+      formattedContact = `+1${digitsOnly}`;
+      console.log(`[${requestId}] Formatted phone number for Twilio:`, formattedContact);
+    }
+
     // Validate environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -121,12 +149,20 @@ const handler = async (req: Request): Promise<Response> => {
         );
         console.log(`[${requestId}] Email verification sent successfully`);
       } else if (method === 'sms') {
-        console.log(`[${requestId}] Sending SMS verification`);
-        result = await withTimeout(
-          sendSMSVerification(contact, requestId),
-          15000,
-          'SMS verification timed out'
-        );
+        console.log(`[${requestId}] Sending SMS verification to ${formattedContact}`);
+        
+        // Check for TEST_MODE
+        const testMode = Deno.env.get('TEST_MODE') === 'true';
+        if (testMode) {
+          console.log(`[${requestId}] TEST_MODE: SMS would be sent to ${formattedContact} with Twilio Verify`);
+          result = { status: 'pending', sid: 'test-verification-sid' };
+        } else {
+          result = await withTimeout(
+            sendSMSVerification(formattedContact, requestId),
+            15000,
+            'SMS verification timed out'
+          );
+        }
         console.log(`[${requestId}] SMS verification sent successfully`);
       }
     } catch (verificationError) {

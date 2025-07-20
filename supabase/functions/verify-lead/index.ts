@@ -104,67 +104,80 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Verify the token based on verification method
     if (verificationMethod === 'sms') {
-      // Use Twilio Verify for SMS verification
-      const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
-      const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
-      const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
-      
-      if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
-        console.error('Missing Twilio credentials');
-        throw new Error('Twilio credentials not configured');
-      }
-
-      // Format phone number for verification check
-      const formattedPhone = formatCanadianPhone(lead.customer_phone || '');
-      console.log(`Verifying SMS code for phone: ${formattedPhone}`);
-
-      const verifyResponse = await fetch(
-        `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/VerificationCheck`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Basic ${btoa(`${twilioSid}:${twilioAuth}`)}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            To: formattedPhone,
-            Code: token,
-          }),
+      // Check for TEST_MODE
+      const testMode = Deno.env.get('TEST_MODE') === 'true';
+      if (testMode) {
+        console.log('TEST_MODE: Accepting any 6-digit code for SMS verification');
+        if (!/^\d{6}$/.test(token)) {
+          return new Response(
+            JSON.stringify({ error: 'Invalid verification code format. Must be 6 digits.' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
         }
-      );
-
-      console.log(`Twilio verification check response status: ${verifyResponse.status}`);
-
-      if (!verifyResponse.ok) {
-        const errorText = await verifyResponse.text();
-        console.error('Twilio verification error:', errorText);
+        console.log('✅ TEST_MODE SMS verification successful!');
+      } else {
+        // Use Twilio Verify for SMS verification
+        const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+        const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
+        const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
         
-        // Try to parse error for more details
-        try {
-          const errorData = JSON.parse(errorText);
-          console.error('Parsed Twilio error:', errorData);
-        } catch (parseError) {
-          console.error('Could not parse Twilio error response');
+        if (!twilioSid || !twilioAuth || !twilioVerifyServiceSid) {
+          console.error('Missing Twilio credentials');
+          throw new Error('Twilio credentials not configured');
+        }
+
+        // Format phone number for verification check
+        const formattedPhone = formatCanadianPhone(lead.customer_phone || '');
+        console.log(`Verifying SMS code for phone: ${formattedPhone}`);
+
+        const verifyResponse = await fetch(
+          `https://verify.twilio.com/v2/Services/${twilioVerifyServiceSid}/VerificationCheck`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Basic ${btoa(`${twilioSid}:${twilioAuth}`)}`,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              To: formattedPhone,
+              Code: token,
+            }),
+          }
+        );
+
+        console.log(`Twilio verification check response status: ${verifyResponse.status}`);
+
+        if (!verifyResponse.ok) {
+          const errorText = await verifyResponse.text();
+          console.error('Twilio verification error:', errorText);
+          
+          // Try to parse error for more details
+          try {
+            const errorData = JSON.parse(errorText);
+            console.error('Parsed Twilio error:', errorData);
+          } catch (parseError) {
+            console.error('Could not parse Twilio error response');
+          }
+          
+          return new Response(
+            JSON.stringify({ error: 'Failed to verify code with Twilio' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+
+        const verifyResult = await verifyResponse.json();
+        console.log('Twilio verification check response:', verifyResult);
+        
+        if (verifyResult.status !== 'approved') {
+          console.log(`Verification failed - status: ${verifyResult.status}`);
+          return new Response(
+            JSON.stringify({ error: 'Invalid verification code' }),
+            { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
         }
         
-        return new Response(
-          JSON.stringify({ error: 'Failed to verify code with Twilio' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
+        console.log('✅ SMS verification successful!');
       }
-
-      const verifyResult = await verifyResponse.json();
-      console.log('Twilio verification check response:', verifyResult);
-      
-      if (verifyResult.status !== 'approved') {
-        console.log(`Verification failed - status: ${verifyResult.status}`);
-        return new Response(
-          JSON.stringify({ error: 'Invalid verification code' }),
-          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-        );
-      }
-      
-      console.log('✅ SMS verification successful!');
     } else {
       // For email verification, use the stored token
       console.log('Comparing email tokens...');
