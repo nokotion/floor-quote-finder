@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -52,45 +53,37 @@ export const VerificationModal = ({
     setIsLoading(true);
 
     try {
-      console.log("Creating temporary lead for verification:", {
-        customer_name: 'TEMP_VERIFICATION',
-        customer_email: email,
-        customer_phone: phone,
-        postal_code: 'TEMP',
-        status: 'pending_verification',
-        is_verified: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+      console.log("Creating temporary lead via edge function:", {
+        email,
+        phone,
+        method: selectedMethod
       });
 
-      // Create a temporary lead record for verification
-      const { data: leadData, error: leadError } = await supabase
-        .from('leads')
-        .insert([{
-          customer_name: 'TEMP_VERIFICATION',
-          customer_email: email,
-          customer_phone: phone,
-          postal_code: 'TEMP',
-          status: 'pending_verification',
-          is_verified: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
-        .select()
-        .single();
+      // Create temporary lead using edge function (bypasses RLS)
+      const { data: tempLeadResponse, error: tempLeadError } = await supabase.functions.invoke('insert-temp-lead', {
+        body: {
+          email,
+          phone,
+          method: selectedMethod
+        }
+      });
 
-      if (leadError) {
-        console.error('Lead creation error:', leadError);
-        throw leadError;
+      if (tempLeadError) {
+        console.error('Temp lead creation error:', tempLeadError);
+        throw tempLeadError;
       }
 
-      console.log('Temporary lead created successfully:', leadData.id);
-      setTempLeadId(leadData.id);
+      if (!tempLeadResponse.success) {
+        throw new Error(tempLeadResponse.error || 'Failed to create temporary lead');
+      }
+
+      console.log('Temporary lead created successfully:', tempLeadResponse.leadId);
+      setTempLeadId(tempLeadResponse.leadId);
 
       // Send verification code
       const { data, error } = await supabase.functions.invoke('send-verification', {
         body: {
-          leadId: leadData.id,
+          leadId: tempLeadResponse.leadId,
           method: selectedMethod,
           contact: selectedMethod === 'email' ? email : phone,
         },
