@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -68,6 +67,8 @@ export const VerificationModal = ({
         }
       });
 
+      console.log('insert-temp-lead result:', { tempLeadResponse, tempLeadError });
+
       if (tempLeadError) {
         console.error('Temp lead creation error:', tempLeadError);
         throw tempLeadError;
@@ -89,9 +90,26 @@ export const VerificationModal = ({
         },
       });
 
-      if (error) throw error;
+      console.log('send-verification result:', { data, error });
 
-      if (data.success) {
+      // Handle edge function errors first
+      if (error) {
+        console.error('Edge function error:', error);
+        toast({
+          title: "Verification Failed",
+          description: `Edge function error: ${error.message}`,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      // Check for success in response - handle both response structures
+      const success = data?.success || data?.body?.success;
+      const responseError = data?.error || data?.body?.error;
+
+      console.log('Parsed response:', { success, responseError });
+
+      if (success) {
         toast({
           title: "Verification Sent",
           description: `A verification code has been sent to your ${selectedMethod === 'email' ? 'email' : 'phone'}.`,
@@ -99,13 +117,34 @@ export const VerificationModal = ({
         setStep('code');
         setCountdown(60);
       } else {
-        throw new Error(data.error || 'Failed to send verification');
+        const errorMessage = responseError || 'Failed to send verification';
+        console.error('Verification failed:', errorMessage);
+        toast({
+          title: "Verification Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
-      console.error('Verification send error:', error);
+      console.error('Full verification send error:', error);
+      
+      // Extract the most meaningful error message
+      let errorMessage = 'Failed to send verification code. Please try again.';
+      
+      if (error.message) {
+        if (error.message.includes('Authentication Error')) {
+          errorMessage = 'SMS service configuration error. Please try email verification instead.';
+        } else if (error.message.includes('Invalid phone number')) {
+          errorMessage = 'Invalid phone number format. Please check your phone number.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Verification Failed",
-        description: error.message || "Failed to send verification code. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
 import { parsePhoneNumber } from "https://esm.sh/libphonenumber-js@1.10.51";
@@ -168,14 +167,28 @@ const handler = async (req: Request): Promise<Response> => {
     } catch (verificationError) {
       console.error(`[${requestId}] Verification send failed:`, verificationError.message);
       
+      // Provide more specific error messages based on the error type
+      let userFriendlyError = `Failed to send ${method} verification`;
+      let details = 'Please check your information and try again.';
+      
+      if (verificationError.message.includes('Authentication Error')) {
+        userFriendlyError = `${method.toUpperCase()} service is currently unavailable`;
+        details = method === 'sms' ? 'Please try email verification instead.' : 'Please try SMS verification instead.';
+      } else if (verificationError.message.includes('Invalid phone number')) {
+        userFriendlyError = 'Invalid phone number format';
+        details = 'Please check your phone number and try again.';
+      } else if (verificationError.message.includes('timed out')) {
+        userFriendlyError = 'Request timed out';
+        details = 'Please try again in a moment.';
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: `Failed to send ${method} verification: ${verificationError.message}`,
-          details: verificationError.message.includes('timed out') ? 
-            'Request timed out. Please try again.' :
-            'Please check your information and try again.',
-          errorType: 'VERIFICATION_SEND_FAILED'
+          error: userFriendlyError,
+          details: details,
+          errorType: 'VERIFICATION_SEND_FAILED',
+          originalError: verificationError.message // For debugging
         }),
         {
           status: 400,
