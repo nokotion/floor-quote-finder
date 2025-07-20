@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import PostalCodeCoverage from '@/components/retailer/PostalCodeCoverage';
@@ -23,13 +24,22 @@ interface BrandSubscription {
   id: string;
   brand_name: string;
   is_active: boolean;
-  min_square_footage: number;
-  max_square_footage: number;
+  sqft_tier: string;
   lead_price: number;
+  accepts_installation: boolean;
+  installation_surcharge: number;
 }
 
+const SQFT_TIERS = [
+  { value: '0-100', label: '0–100 sq ft', basePrice: 1.00 },
+  { value: '100-500', label: '100–500 sq ft', basePrice: 1.25 },
+  { value: '500-1000', label: '500–1,000 sq ft', basePrice: 2.50 },
+  { value: '1000-5000', label: '1,000–5,000 sq ft', basePrice: 3.50 },
+  { value: '5000+', label: '5,000+ sq ft', basePrice: 5.00 }
+];
+
 // Custom hook for debounced auto-save
-const useAutoSave = (callback: Function, delay: number = 500) => {
+const useAutoSave = (callback: (...args: any[]) => Promise<void>, delay: number = 500) => {
   const debouncedCallback = useDebounce(callback, delay);
   return debouncedCallback;
 };
@@ -87,13 +97,15 @@ const RetailerSubscriptions = () => {
     setSavingStates(prev => ({ ...prev, [subscriptionId]: saving }));
   };
 
-  const autoSaveSubscription = useCallback(async (subscriptionId: string, updates: Partial<BrandSubscription>) => {
+  const autoSaveSubscription = useCallback(async (subscriptionId: string, updates: Partial<BrandSubscription>): Promise<void> => {
     setSavingState(subscriptionId, true);
     try {
-      await supabase
+      const { error } = await supabase
         .from('brand_subscriptions')
         .update(updates)
         .eq('id', subscriptionId);
+
+      if (error) throw error;
 
       // Update local state
       setSubscriptions(prev => 
@@ -120,7 +132,7 @@ const RetailerSubscriptions = () => {
 
   const debouncedAutoSave = useAutoSave(autoSaveSubscription);
 
-  const toggleBrandSubscription = async (brandName: string, isActive: boolean) => {
+  const toggleBrandSubscription = async (brandName: string, tier: string, isActive: boolean) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -133,22 +145,11 @@ const RetailerSubscriptions = () => {
 
       if (!profile?.retailer_id) return;
 
-      const existingSubscription = subscriptions.find(s => s.brand_name === brandName);
+      const existingSubscription = subscriptions.find(s => 
+        s.brand_name === brandName && s.sqft_tier === tier
+      );
 
       if (existingSubscription) {
-        // Validate before toggling ON
-        if (isActive) {
-          const isValid = validateSubscription(existingSubscription);
-          if (!isValid) {
-            toast({
-              title: "Validation Error",
-              description: "Please set valid square footage and lead price before activating.",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-
         // Update existing subscription
         await supabase
           .from('brand_subscriptions')
@@ -161,15 +162,17 @@ const RetailerSubscriptions = () => {
             sub.id === existingSubscription.id ? { ...sub, is_active: isActive } : sub
           )
         );
-      } else {
-        // Create new subscription with default values
+      } else if (isActive) {
+        // Create new subscription
+        const tierInfo = SQFT_TIERS.find(t => t.value === tier);
         const newSubscription = {
           retailer_id: profile.retailer_id,
           brand_name: brandName,
-          is_active: isActive,
-          min_square_footage: 0,
-          max_square_footage: 999999,
-          lead_price: 5.00
+          sqft_tier: tier,
+          is_active: true,
+          lead_price: tierInfo?.basePrice || 0,
+          accepts_installation: false,
+          installation_surcharge: 0.50
         };
 
         const { data } = await supabase
@@ -185,7 +188,7 @@ const RetailerSubscriptions = () => {
 
       toast({
         title: isActive ? "Subscription Activated" : "Subscription Deactivated",
-        description: `${brandName} subscription has been ${isActive ? 'activated' : 'deactivated'}.`,
+        description: `${brandName} - ${tier} subscription has been ${isActive ? 'activated' : 'deactivated'}.`,
       });
     } catch (error) {
       console.error('Error updating subscription:', error);
@@ -195,12 +198,6 @@ const RetailerSubscriptions = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const validateSubscription = (subscription: BrandSubscription): boolean => {
-    return subscription.min_square_footage >= 0 && 
-           subscription.max_square_footage > subscription.min_square_footage &&
-           subscription.lead_price > 0;
   };
 
   const handleSubscriptionChange = (subscriptionId: string, field: keyof BrandSubscription, value: any) => {
@@ -215,8 +212,8 @@ const RetailerSubscriptions = () => {
     debouncedAutoSave(subscriptionId, { [field]: value });
   };
 
-  const getSubscriptionForBrand = (brandName: string) => {
-    return subscriptions.find(s => s.brand_name === brandName);
+  const getSubscriptionsForBrand = (brandName: string) => {
+    return subscriptions.filter(s => s.brand_name === brandName);
   };
 
   if (loading) {
@@ -257,9 +254,8 @@ const RetailerSubscriptions = () => {
       {/* Brand Subscriptions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {brands.map((brand) => {
-          const subscription = getSubscriptionForBrand(brand.name);
-          const isSubscribed = subscription?.is_active || false;
-          const isSaving = subscription ? savingStates[subscription.id] : false;
+          const brandSubscriptions = getSubscriptionsForBrand(brand.name);
+          const hasActiveSubscriptions = brandSubscriptions.some(s => s.is_active);
 
           return (
             <Card key={brand.id} className="hover:shadow-md transition-shadow">
@@ -279,10 +275,8 @@ const RetailerSubscriptions = () => {
                     {brand.featured && (
                       <Badge variant="secondary">Featured</Badge>
                     )}
-                    {isSaving && (
-                      <Badge variant="outline" className="text-xs">
-                        Saving...
-                      </Badge>
+                    {hasActiveSubscriptions && (
+                      <Badge variant="default">Active</Badge>
                     )}
                   </div>
                 </div>
@@ -291,66 +285,70 @@ const RetailerSubscriptions = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor={`subscription-${brand.id}`}>
-                    Subscribe to leads
-                  </Label>
-                  <Switch
-                    id={`subscription-${brand.id}`}
-                    checked={isSubscribed}
-                    onCheckedChange={(checked) => toggleBrandSubscription(brand.name, checked)}
-                  />
-                </div>
+                {/* Project Size Tiers */}
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Project Size Tiers</Label>
+                  <div className="space-y-2">
+                    {SQFT_TIERS.map((tier) => {
+                      const subscription = brandSubscriptions.find(s => s.sqft_tier === tier.value);
+                      const isActive = subscription?.is_active || false;
+                      const isSaving = subscription ? savingStates[subscription.id] : false;
 
-                {subscription && isSubscribed && (
-                  <div className="space-y-3 pt-3 border-t">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs">Min Sq Ft</Label>
-                        <Input
-                          type="number"
-                          value={subscription.min_square_footage}
-                          onChange={(e) => handleSubscriptionChange(
-                            subscription.id, 
-                            'min_square_footage', 
-                            parseInt(e.target.value) || 0
+                      return (
+                        <div key={tier.value} className="border rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={isActive}
+                                onCheckedChange={(checked) => 
+                                  toggleBrandSubscription(brand.name, tier.value, checked as boolean)
+                                }
+                              />
+                              <span className="text-sm font-medium">{tier.label}</span>
+                              <span className="text-xs text-gray-500">(${tier.basePrice.toFixed(2)})</span>
+                            </div>
+                            {isSaving && (
+                              <Badge variant="outline" className="text-xs">
+                                Saving...
+                              </Badge>
+                            )}
+                          </div>
+
+                          {subscription && isActive && (
+                            <div className="pl-6 space-y-2">
+                              <div>
+                                <Label className="text-xs">Lead Price ($CAD)</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={subscription.lead_price}
+                                  onChange={(e) => handleSubscriptionChange(
+                                    subscription.id, 
+                                    'lead_price', 
+                                    parseFloat(e.target.value) || 0
+                                  )}
+                                  className="h-8"
+                                  min="0.01"
+                                />
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={subscription.accepts_installation}
+                                  onCheckedChange={(checked) => handleSubscriptionChange(
+                                    subscription.id, 
+                                    'accepts_installation', 
+                                    checked as boolean
+                                  )}
+                                />
+                                <Label className="text-xs">Accept installation leads (+$0.50)</Label>
+                              </div>
+                            </div>
                           )}
-                          className="h-8"
-                          min="0"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Max Sq Ft</Label>
-                        <Input
-                          type="number"
-                          value={subscription.max_square_footage}
-                          onChange={(e) => handleSubscriptionChange(
-                            subscription.id, 
-                            'max_square_footage', 
-                            parseInt(e.target.value) || 999999
-                          )}
-                          className="h-8"
-                          min="1"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Lead Price ($CAD)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={subscription.lead_price}
-                        onChange={(e) => handleSubscriptionChange(
-                          subscription.id, 
-                          'lead_price', 
-                          parseFloat(e.target.value) || 0
-                        )}
-                        className="h-8"
-                        min="0.01"
-                      />
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           );
