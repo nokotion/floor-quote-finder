@@ -470,10 +470,12 @@ export type Database = {
           assigned_retailer_id: string | null
           attachment_urls: string[] | null
           brand_requested: string | null
+          budget_range: string | null
           created_at: string
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          flooring_type: string | null
           id: string
           installation_required: boolean | null
           is_locked: boolean | null
@@ -505,10 +507,12 @@ export type Database = {
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
+          budget_range?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          flooring_type?: string | null
           id?: string
           installation_required?: boolean | null
           is_locked?: boolean | null
@@ -540,10 +544,12 @@ export type Database = {
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
+          budget_range?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          flooring_type?: string | null
           id?: string
           installation_required?: boolean | null
           is_locked?: boolean | null

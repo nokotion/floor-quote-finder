@@ -19,7 +19,6 @@ interface Lead {
   flooring_type: string | null;
   square_footage: number | null;
   brand_requested: string | null;
-  budget_range: string | null;
   timeline: string | null;
   status: string;
   is_verified: boolean;
@@ -46,20 +45,7 @@ const AdminLeads = () => {
       const { data, error } = await supabase
         .from('leads')
         .select(`
-          id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          postal_code,
-          flooring_type,
-          square_footage,
-          brand_requested,
-          budget_range,
-          timeline,
-          status,
-          is_verified,
-          created_at,
-          assigned_retailer_id,
+          *,
           retailers:assigned_retailer_id (
             business_name
           )
@@ -225,13 +211,10 @@ const AdminLeads = () => {
                           {lead.square_footage && (
                             <div><strong>Size:</strong> {lead.square_footage} sq ft</div>
                           )}
-                          {lead.brand_requested && (
-                            <div><strong>Brand:</strong> {lead.brand_requested}</div>
-                          )}
-                          {lead.budget_range && (
-                            <div><strong>Budget:</strong> {lead.budget_range}</div>
-                          )}
-                          {lead.timeline && (
+                           {lead.brand_requested && (
+                             <div><strong>Brand:</strong> {lead.brand_requested}</div>
+                           )}
+                           {lead.timeline && (
                             <div><strong>Timeline:</strong> {lead.timeline}</div>
                           )}
                         </div>

@@ -1,0 +1,3 @@
+
+ALTER TABLE leads 
+ADD COLUMN IF NOT EXISTS flooring_type TEXT;

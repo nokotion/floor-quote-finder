@@ -58,7 +58,7 @@ interface LeadDistribution {
     customer_name: string;
     customer_email: string;
     postal_code: string;
-    flooring_type: string | null;
+    flooring_type?: string;
     square_footage: number | null;
   } | null;
 }
@@ -106,19 +106,13 @@ const AdminRetailerDetail = () => {
       const { data: distributionsData, error: distributionsError } = await supabase
         .from('lead_distributions')
         .select(`
-          id,
-          lead_price,
-          sent_at,
-          status,
-          brand_matched,
-          distance_km,
-          lead_id,
+          *,
           leads!lead_distributions_lead_id_fkey (
             customer_name,
             customer_email,
             postal_code,
-            flooring_type,
-            square_footage
+            square_footage,
+            flooring_type
           )
         `)
         .eq('retailer_id', id)
