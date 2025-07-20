@@ -169,25 +169,29 @@ const handler = async (req: Request): Promise<Response> => {
       
       // Provide more specific error messages based on the error type
       let userFriendlyError = `Failed to send ${method} verification`;
-      let details = 'Please check your information and try again.';
+      let errorType = 'VERIFICATION_SEND_FAILED';
       
-      if (verificationError.message.includes('Authentication Error')) {
-        userFriendlyError = `${method.toUpperCase()} service is currently unavailable`;
-        details = method === 'sms' ? 'Please try email verification instead.' : 'Please try SMS verification instead.';
+      if (verificationError.message.includes('Authentication Error') || 
+          verificationError.message.includes('authentication failed') ||
+          verificationError.message.includes('20003')) {
+        userFriendlyError = 'SMS service authentication failed. Please try email verification instead.';
+        errorType = 'SMS_AUTH_FAILED';
       } else if (verificationError.message.includes('Invalid phone number')) {
-        userFriendlyError = 'Invalid phone number format';
-        details = 'Please check your phone number and try again.';
+        userFriendlyError = 'Invalid phone number format. Please check your phone number.';
+        errorType = 'INVALID_PHONE';
       } else if (verificationError.message.includes('timed out')) {
-        userFriendlyError = 'Request timed out';
-        details = 'Please try again in a moment.';
+        userFriendlyError = 'Request timed out. Please try again in a moment.';
+        errorType = 'TIMEOUT';
+      } else if (verificationError.message.includes('Email service returned error')) {
+        userFriendlyError = 'Email service is currently unavailable. Please try SMS verification instead.';
+        errorType = 'EMAIL_SERVICE_FAILED';
       }
       
       return new Response(
         JSON.stringify({ 
           success: false,
           error: userFriendlyError,
-          details: details,
-          errorType: 'VERIFICATION_SEND_FAILED',
+          errorType: errorType,
           originalError: verificationError.message // For debugging
         }),
         {
@@ -277,9 +281,6 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: false,
         error: error.message || 'Verification failed',
-        details: error.message?.includes('timed out') ? 
-          'Request timed out. Please try again.' :
-          'Please check your information and try again.',
         errorType: 'GENERAL_ERROR'
       }),
       {
@@ -352,11 +353,11 @@ async function sendSMSVerification(phone: string, requestId: string) {
   const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
   
   if (!twilioSid || !twilioAuth) {
-    throw new Error('SMS service not configured - missing Twilio credentials');
+    throw new Error('Authentication Error: SMS service credentials not configured');
   }
   
   if (!twilioVerifyServiceSid) {
-    throw new Error('SMS service not configured - missing Twilio Verify Service SID');
+    throw new Error('Authentication Error: Twilio Verify Service not configured');
   }
 
   const formattedPhone = formatCanadianPhone(phone);
@@ -397,11 +398,15 @@ async function sendSMSVerification(phone: string, requestId: string) {
       } else if (errorCode === 20404) {
         throw new Error('Twilio Verify Service not found');
       } else if (errorCode === 20003) {
-        throw new Error('Twilio authentication failed');
+        throw new Error('Authentication Error: Twilio authentication failed - please check credentials');
       } else {
         throw new Error(`Twilio error (${errorCode}): ${errorMessage}`);
       }
     } catch (parseError) {
+      // If we can't parse the error, it might be an auth issue
+      if (response.status === 401) {
+        throw new Error('Authentication Error: Invalid Twilio credentials');
+      }
       throw new Error(`SMS service returned error ${response.status}: ${errorText}`);
     }
   }

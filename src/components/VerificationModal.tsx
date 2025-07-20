@@ -82,6 +82,12 @@ export const VerificationModal = ({
       setTempLeadId(tempLeadResponse.leadId);
 
       // Send verification code
+      console.log('Calling send-verification with:', {
+        leadId: tempLeadResponse.leadId,
+        method: selectedMethod,
+        contact: selectedMethod === 'email' ? email : phone,
+      });
+
       const { data, error } = await supabase.functions.invoke('send-verification', {
         body: {
           leadId: tempLeadResponse.leadId,
@@ -94,22 +100,58 @@ export const VerificationModal = ({
 
       // Handle edge function errors first
       if (error) {
-        console.error('Edge function error:', error);
+        console.error('Edge function invocation error:', error);
         toast({
           title: "Verification Failed",
-          description: `Edge function error: ${error.message}`,
+          description: `Service error: ${error.message}`,
           variant: "destructive",
         });
         throw error;
       }
 
-      // Check for success in response - handle both response structures
+      // Check for errors in the response data
+      if (data?.error) {
+        console.error('Edge function returned error:', data.error);
+        
+        // Show specific error message based on error type
+        let errorMessage = data.error;
+        let errorTitle = "Verification Failed";
+        
+        if (data.errorType === 'VERIFICATION_SEND_FAILED' && selectedMethod === 'sms') {
+          errorTitle = "SMS Service Unavailable";
+          errorMessage = data.error;
+          
+          // Suggest email as fallback for SMS issues
+          toast({
+            title: errorTitle,
+            description: `${errorMessage} Would you like to try email verification instead?`,
+            variant: "destructive",
+          });
+          
+          // Auto-switch to email if SMS fails due to auth issues
+          if (data.error.includes('Authentication Error') || data.error.includes('authentication failed')) {
+            setSelectedMethod('email');
+            toast({
+              title: "Switched to Email",
+              description: "SMS service is unavailable. Please try email verification.",
+            });
+          }
+          throw new Error(data.error);
+        }
+        
+        toast({
+          title: errorTitle,
+          description: errorMessage,
+          variant: "destructive",
+        });
+        throw new Error(data.error);
+      }
+
+      // Check for success - handle both direct and nested response structures
       const success = data?.success || data?.body?.success;
-      const responseError = data?.error || data?.body?.error;
-
-      console.log('Parsed response:', { success, responseError });
-
+      
       if (success) {
+        console.log('✅ Verification sent successfully');
         toast({
           title: "Verification Sent",
           description: `A verification code has been sent to your ${selectedMethod === 'email' ? 'email' : 'phone'}.`,
@@ -117,36 +159,25 @@ export const VerificationModal = ({
         setStep('code');
         setCountdown(60);
       } else {
-        const errorMessage = responseError || 'Failed to send verification';
-        console.error('Verification failed:', errorMessage);
+        console.error('Unexpected response structure:', data);
         toast({
           title: "Verification Failed",
-          description: errorMessage,
+          description: "Unexpected response from server. Please try again.",
           variant: "destructive",
         });
-        throw new Error(errorMessage);
+        throw new Error('Unexpected response structure');
       }
     } catch (error: any) {
       console.error('Full verification send error:', error);
       
-      // Extract the most meaningful error message
-      let errorMessage = 'Failed to send verification code. Please try again.';
-      
-      if (error.message) {
-        if (error.message.includes('Authentication Error')) {
-          errorMessage = 'SMS service configuration error. Please try email verification instead.';
-        } else if (error.message.includes('Invalid phone number')) {
-          errorMessage = 'Invalid phone number format. Please check your phone number.';
-        } else {
-          errorMessage = error.message;
-        }
+      // Don't show toast again if we already showed one above
+      if (!error.message?.includes('Service error:') && !error.message?.includes('Unexpected response')) {
+        toast({
+          title: "Verification Failed",
+          description: error.message || 'Failed to send verification code. Please try again.',
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "Verification Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
