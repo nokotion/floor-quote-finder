@@ -83,17 +83,26 @@ const handler = async (req: Request): Promise<Response> => {
     // Validate and format phone number for SMS
     let formattedContact = contact;
     if (method === 'sms') {
-      // Remove all non-digits
+      // Remove all non-digits and log the process
       const digitsOnly = contact.replace(/\D/g, '');
+      console.log(`[${requestId}] Phone validation - Original: "${contact}", Digits only: "${digitsOnly}", Length: ${digitsOnly.length}`);
       
-      // Validate North American 10-digit number
-      if (digitsOnly.length !== 10) {
-        console.error(`[${requestId}] Invalid phone number format:`, contact, 'Digits only:', digitsOnly);
+      // Validate 10-digit or 11-digit (with country code) numbers
+      if (digitsOnly.length === 10) {
+        // 10-digit Canadian/US number
+        formattedContact = `+1${digitsOnly}`;
+        console.log(`[${requestId}] Formatted 10-digit number: ${formattedContact}`);
+      } else if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+        // 11-digit number with country code
+        formattedContact = `+${digitsOnly}`;
+        console.log(`[${requestId}] Formatted 11-digit number: ${formattedContact}`);
+      } else {
+        console.error(`[${requestId}] Invalid phone number format - Original: "${contact}", Digits: "${digitsOnly}", Length: ${digitsOnly.length}`);
         return new Response(
           JSON.stringify({ 
             success: false,
-            error: 'Invalid phone number. Please enter a 10-digit North American phone number',
-            details: `Received: ${contact}, Expected: 10 digits, Got: ${digitsOnly.length}`,
+            error: 'Invalid phone number. Please enter a valid 10-digit North American phone number',
+            details: `Received: ${contact}, Digits extracted: ${digitsOnly}, Length: ${digitsOnly.length}`,
             errorType: 'VALIDATION_ERROR'
           }),
           { 
@@ -102,22 +111,20 @@ const handler = async (req: Request): Promise<Response> => {
           }
         );
       }
-      
-      // Format as +1XXXXXXXXXX for Twilio
-      formattedContact = `+1${digitsOnly}`;
-      console.log(`[${requestId}] Formatted phone number for Twilio:`, formattedContact);
     }
 
     // Validate environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
+    console.log(`[${requestId}] Environment check - SUPABASE_URL: ${supabaseUrl ? 'Set' : 'Missing'}, SERVICE_ROLE_KEY: ${supabaseKey ? 'Set' : 'Missing'}`);
+    
     if (!supabaseUrl || !supabaseKey) {
       console.error(`[${requestId}] Missing Supabase configuration`);
       return new Response(
         JSON.stringify({ 
           success: false,
-          error: 'Server configuration error',
+          error: 'Server configuration error - missing Supabase credentials',
           errorType: 'CONFIG_ERROR'
         }),
         {
@@ -351,6 +358,8 @@ async function sendSMSVerification(phone: string, requestId: string) {
   const twilioSid = Deno.env.get('TWILIO_ACCOUNT_SID');
   const twilioAuth = Deno.env.get('TWILIO_AUTH_TOKEN');
   const twilioVerifyServiceSid = Deno.env.get('TWILIO_VERIFY_SERVICE_SID');
+  
+  console.log(`[${requestId}] Twilio credentials check - SID: ${twilioSid ? 'Set' : 'Missing'}, Auth: ${twilioAuth ? 'Set' : 'Missing'}, Service: ${twilioVerifyServiceSid ? 'Set' : 'Missing'}`);
   
   if (!twilioSid || !twilioAuth) {
     throw new Error('Authentication Error: SMS service credentials not configured');
