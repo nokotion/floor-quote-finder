@@ -1,13 +1,15 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Package, Plus, Settings } from 'lucide-react';
+import { Package } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import PostalCodeCoverage from '@/components/retailer/PostalCodeCoverage';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface FlooringBrand {
   id: string;
@@ -26,10 +28,18 @@ interface BrandSubscription {
   lead_price: number;
 }
 
+// Custom hook for debounced auto-save
+const useAutoSave = (callback: Function, delay: number = 500) => {
+  const debouncedCallback = useDebounce(callback, delay);
+  return debouncedCallback;
+};
+
 const RetailerSubscriptions = () => {
   const [brands, setBrands] = useState<FlooringBrand[]>([]);
   const [subscriptions, setSubscriptions] = useState<BrandSubscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retailerId, setRetailerId] = useState<string>('');
+  const [savingStates, setSavingStates] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     fetchData();
@@ -48,6 +58,8 @@ const RetailerSubscriptions = () => {
         .single();
 
       if (!profile?.retailer_id) return;
+
+      setRetailerId(profile.retailer_id);
 
       // Fetch available brands
       const { data: brandsData } = await supabase
@@ -71,6 +83,43 @@ const RetailerSubscriptions = () => {
     }
   };
 
+  const setSavingState = (subscriptionId: string, saving: boolean) => {
+    setSavingStates(prev => ({ ...prev, [subscriptionId]: saving }));
+  };
+
+  const autoSaveSubscription = useCallback(async (subscriptionId: string, updates: Partial<BrandSubscription>) => {
+    setSavingState(subscriptionId, true);
+    try {
+      await supabase
+        .from('brand_subscriptions')
+        .update(updates)
+        .eq('id', subscriptionId);
+
+      // Update local state
+      setSubscriptions(prev => 
+        prev.map(sub => 
+          sub.id === subscriptionId ? { ...sub, ...updates } : sub
+        )
+      );
+
+      toast({
+        title: "Saved",
+        description: "Subscription settings updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update subscription settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingState(subscriptionId, false);
+    }
+  }, []);
+
+  const debouncedAutoSave = useAutoSave(autoSaveSubscription);
+
   const toggleBrandSubscription = async (brandName: string, isActive: boolean) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -87,43 +136,83 @@ const RetailerSubscriptions = () => {
       const existingSubscription = subscriptions.find(s => s.brand_name === brandName);
 
       if (existingSubscription) {
+        // Validate before toggling ON
+        if (isActive) {
+          const isValid = validateSubscription(existingSubscription);
+          if (!isValid) {
+            toast({
+              title: "Validation Error",
+              description: "Please set valid square footage and lead price before activating.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
         // Update existing subscription
         await supabase
           .from('brand_subscriptions')
           .update({ is_active: isActive })
           .eq('id', existingSubscription.id);
+
+        // Update local state
+        setSubscriptions(prev => 
+          prev.map(sub => 
+            sub.id === existingSubscription.id ? { ...sub, is_active: isActive } : sub
+          )
+        );
       } else {
-        // Create new subscription
-        await supabase
+        // Create new subscription with default values
+        const newSubscription = {
+          retailer_id: profile.retailer_id,
+          brand_name: brandName,
+          is_active: isActive,
+          min_square_footage: 0,
+          max_square_footage: 999999,
+          lead_price: 5.00
+        };
+
+        const { data } = await supabase
           .from('brand_subscriptions')
-          .insert({
-            retailer_id: profile.retailer_id,
-            brand_name: brandName,
-            is_active: isActive,
-            min_square_footage: 0,
-            max_square_footage: 999999,
-            lead_price: 0
-          });
+          .insert(newSubscription)
+          .select()
+          .single();
+
+        if (data) {
+          setSubscriptions(prev => [...prev, data]);
+        }
       }
 
-      // Refresh data
-      fetchData();
+      toast({
+        title: isActive ? "Subscription Activated" : "Subscription Deactivated",
+        description: `${brandName} subscription has been ${isActive ? 'activated' : 'deactivated'}.`,
+      });
     } catch (error) {
       console.error('Error updating subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update subscription.",
+        variant: "destructive",
+      });
     }
   };
 
-  const updateSubscriptionSettings = async (subscriptionId: string, settings: Partial<BrandSubscription>) => {
-    try {
-      await supabase
-        .from('brand_subscriptions')
-        .update(settings)
-        .eq('id', subscriptionId);
+  const validateSubscription = (subscription: BrandSubscription): boolean => {
+    return subscription.min_square_footage >= 0 && 
+           subscription.max_square_footage > subscription.min_square_footage &&
+           subscription.lead_price > 0;
+  };
 
-      fetchData();
-    } catch (error) {
-      console.error('Error updating subscription settings:', error);
-    }
+  const handleSubscriptionChange = (subscriptionId: string, field: keyof BrandSubscription, value: any) => {
+    // Update local state immediately for responsive UI
+    setSubscriptions(prev => 
+      prev.map(sub => 
+        sub.id === subscriptionId ? { ...sub, [field]: value } : sub
+      )
+    );
+
+    // Trigger debounced auto-save
+    debouncedAutoSave(subscriptionId, { [field]: value });
   };
 
   const getSubscriptionForBrand = (brandName: string) => {
@@ -162,10 +251,15 @@ const RetailerSubscriptions = () => {
         </Badge>
       </div>
 
+      {/* Postal Code Coverage Section */}
+      <PostalCodeCoverage retailerId={retailerId} />
+
+      {/* Brand Subscriptions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {brands.map((brand) => {
           const subscription = getSubscriptionForBrand(brand.name);
           const isSubscribed = subscription?.is_active || false;
+          const isSaving = subscription ? savingStates[subscription.id] : false;
 
           return (
             <Card key={brand.id} className="hover:shadow-md transition-shadow">
@@ -181,9 +275,16 @@ const RetailerSubscriptions = () => {
                     )}
                     {brand.name}
                   </CardTitle>
-                  {brand.featured && (
-                    <Badge variant="secondary">Featured</Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {brand.featured && (
+                      <Badge variant="secondary">Featured</Badge>
+                    )}
+                    {isSaving && (
+                      <Badge variant="outline" className="text-xs">
+                        Saving...
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="text-sm text-gray-500">
                   {brand.categories}
@@ -209,10 +310,13 @@ const RetailerSubscriptions = () => {
                         <Input
                           type="number"
                           value={subscription.min_square_footage}
-                          onChange={(e) => updateSubscriptionSettings(subscription.id, {
-                            min_square_footage: parseInt(e.target.value) || 0
-                          })}
+                          onChange={(e) => handleSubscriptionChange(
+                            subscription.id, 
+                            'min_square_footage', 
+                            parseInt(e.target.value) || 0
+                          )}
                           className="h-8"
+                          min="0"
                         />
                       </div>
                       <div>
@@ -220,10 +324,13 @@ const RetailerSubscriptions = () => {
                         <Input
                           type="number"
                           value={subscription.max_square_footage}
-                          onChange={(e) => updateSubscriptionSettings(subscription.id, {
-                            max_square_footage: parseInt(e.target.value) || 999999
-                          })}
+                          onChange={(e) => handleSubscriptionChange(
+                            subscription.id, 
+                            'max_square_footage', 
+                            parseInt(e.target.value) || 999999
+                          )}
                           className="h-8"
+                          min="1"
                         />
                       </div>
                     </div>
@@ -233,10 +340,13 @@ const RetailerSubscriptions = () => {
                         type="number"
                         step="0.01"
                         value={subscription.lead_price}
-                        onChange={(e) => updateSubscriptionSettings(subscription.id, {
-                          lead_price: parseFloat(e.target.value) || 0
-                        })}
+                        onChange={(e) => handleSubscriptionChange(
+                          subscription.id, 
+                          'lead_price', 
+                          parseFloat(e.target.value) || 0
+                        )}
                         className="h-8"
+                        min="0.01"
                       />
                     </div>
                   </div>
