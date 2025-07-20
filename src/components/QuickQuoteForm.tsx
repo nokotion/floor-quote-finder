@@ -23,21 +23,10 @@ interface QuickQuoteFormProps {
   showBackButton?: boolean;
 }
 
-const flooringTypes = [
-  { value: 'hardwood', label: 'Hardwood' },
-  { value: 'laminate', label: 'Laminate' },
-  { value: 'vinyl', label: 'Vinyl/LVP' },
-  { value: 'tile', label: 'Tile' },
-  { value: 'carpet', label: 'Carpet' },
-  { value: 'engineered', label: 'Engineered Wood' },
-  { value: 'other', label: 'Other' }
-];
-
 const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
-  const [flooringType, setFlooringType] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [postalCodeError, setPostalCodeError] = useState("");
@@ -102,14 +91,13 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
       return;
     }
     
-    if (!selectedBrand || !projectSize || !flooringType || !postalCode) return;
+    if (!selectedBrand || !projectSize || !postalCode) return;
 
     setIsLoading(true);
     
     const params = new URLSearchParams({
       brand: selectedBrand,
       size: projectSize,
-      flooring_type: flooringType,
       postal: postalCode.toUpperCase()
     });
 
@@ -124,7 +112,7 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
     navigate(`/quote?${params.toString()}`);
   };
 
-  const isFormValid = selectedBrand && projectSize && flooringType && postalCode && validatePostalCode(postalCode);
+  const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
   return (
     <section className="py-16 px-4 bg-white">
@@ -166,7 +154,7 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
                     <Label htmlFor="brand">Preferred Brand</Label>
                     <Select value={selectedBrand} onValueChange={setSelectedBrand}>
@@ -177,22 +165,6 @@ const QuickQuoteForm = ({ onBack, showBackButton = true }: QuickQuoteFormProps) 
                         {brands.map((brand) => (
                           <SelectItem key={brand.id} value={brand.name}>
                             {brand.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="flooring-type">Flooring Type</Label>
-                    <Select value={flooringType} onValueChange={setFlooringType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {flooringTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
                           </SelectItem>
                         ))}
                       </SelectContent>

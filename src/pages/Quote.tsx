@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { CheckCircle, MapPin, Package, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,16 +21,6 @@ interface AddressData {
   postal_code?: string;
   formatted_address?: string;
 }
-
-const flooringTypes = [
-  { value: 'hardwood', label: 'Hardwood' },
-  { value: 'laminate', label: 'Laminate' },
-  { value: 'vinyl', label: 'Vinyl/LVP' },
-  { value: 'tile', label: 'Tile' },
-  { value: 'carpet', label: 'Carpet' },
-  { value: 'engineered', label: 'Engineered Wood' },
-  { value: 'other', label: 'Other' }
-];
 
 const Quote = () => {
   const [searchParams] = useSearchParams();
@@ -49,7 +38,6 @@ const Quote = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [flooringType, setFlooringType] = useState("");
   const [addressData, setAddressData] = useState<AddressData>({
     street: street || "",
     city: city || "",
@@ -155,10 +143,10 @@ const Quote = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!customerName || !customerEmail || !customerPhone || !flooringType) {
+    if (!customerName || !customerEmail || !customerPhone) {
       toast({
         title: "Missing Information",
-        description: "Please fill out all required fields including flooring type.",
+        description: "Please fill out all required fields.",
         variant: "destructive",
       });
       return;
@@ -193,7 +181,6 @@ const Quote = () => {
       square_footage: parseInt(size?.split('-')[0] || "500"),
       brand_requested: brand,
       project_type: size,
-      flooring_type: flooringType,
       installation_required: installationRequired,
       notes: notes,
       address_formatted: addressData.formatted_address,
@@ -232,7 +219,6 @@ const Quote = () => {
         address_formatted: pendingQuoteData.address_formatted,
         brand_requested: pendingQuoteData.brand_requested,
         project_type: pendingQuoteData.project_type,
-        flooring_type: pendingQuoteData.flooring_type,
         square_footage: pendingQuoteData.square_footage,
         installation_required: pendingQuoteData.installation_required,
         notes: pendingQuoteData.notes,
@@ -420,22 +406,6 @@ const Quote = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="flooring-type">Flooring Type *</Label>
-                    <Select value={flooringType} onValueChange={setFlooringType}>
-                      <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
-                        <SelectValue placeholder="Select flooring type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {flooringTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
                     <Label htmlFor="notes">
                       Additional Notes (Optional)
                     </Label>
@@ -455,7 +425,7 @@ const Quote = () => {
                       onCheckedChange={(checked) => setInstallationRequired(checked as boolean)}
                     />
                     <Label htmlFor="installation" className="text-sm font-normal">
-                      I require professional installation (+$0.50 fee)
+                      I require professional installation
                     </Label>
                   </div>
 
