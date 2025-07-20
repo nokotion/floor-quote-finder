@@ -213,40 +213,49 @@ export type Database = {
       }
       brand_subscriptions: {
         Row: {
+          accepts_installation: boolean | null
           brand_name: string
           created_at: string
           id: string
+          installation_surcharge: number | null
           is_active: boolean | null
           lead_price: number | null
           max_square_footage: number | null
           min_square_footage: number | null
           retailer_id: string | null
+          sqft_tier: Database["public"]["Enums"]["sqft_tier_enum"]
           sqft_tier_max: number | null
           sqft_tier_min: number | null
           updated_at: string
         }
         Insert: {
+          accepts_installation?: boolean | null
           brand_name: string
           created_at?: string
           id?: string
+          installation_surcharge?: number | null
           is_active?: boolean | null
           lead_price?: number | null
           max_square_footage?: number | null
           min_square_footage?: number | null
           retailer_id?: string | null
+          sqft_tier: Database["public"]["Enums"]["sqft_tier_enum"]
           sqft_tier_max?: number | null
           sqft_tier_min?: number | null
           updated_at?: string
         }
         Update: {
+          accepts_installation?: boolean | null
           brand_name?: string
           created_at?: string
           id?: string
+          installation_surcharge?: number | null
           is_active?: boolean | null
           lead_price?: number | null
           max_square_footage?: number | null
           min_square_footage?: number | null
           retailer_id?: string | null
+          sqft_tier?: Database["public"]["Enums"]["sqft_tier_enum"]
           sqft_tier_max?: number | null
           sqft_tier_min?: number | null
           updated_at?: string
@@ -461,12 +470,10 @@ export type Database = {
           assigned_retailer_id: string | null
           attachment_urls: string[] | null
           brand_requested: string | null
-          budget_range: string | null
           created_at: string
           customer_email: string
           customer_name: string
           customer_phone: string | null
-          flooring_type: string | null
           id: string
           installation_required: boolean | null
           is_locked: boolean | null
@@ -474,7 +481,6 @@ export type Database = {
           lock_price: number | null
           notes: string | null
           postal_code: string
-          project_type: string | null
           referrer: string | null
           session_id: string | null
           square_footage: number | null
@@ -499,12 +505,10 @@ export type Database = {
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
-          budget_range?: string | null
           created_at?: string
           customer_email: string
           customer_name: string
           customer_phone?: string | null
-          flooring_type?: string | null
           id?: string
           installation_required?: boolean | null
           is_locked?: boolean | null
@@ -512,7 +516,6 @@ export type Database = {
           lock_price?: number | null
           notes?: string | null
           postal_code: string
-          project_type?: string | null
           referrer?: string | null
           session_id?: string | null
           square_footage?: number | null
@@ -537,12 +540,10 @@ export type Database = {
           assigned_retailer_id?: string | null
           attachment_urls?: string[] | null
           brand_requested?: string | null
-          budget_range?: string | null
           created_at?: string
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
-          flooring_type?: string | null
           id?: string
           installation_required?: boolean | null
           is_locked?: boolean | null
@@ -550,7 +551,6 @@ export type Database = {
           lock_price?: number | null
           notes?: string | null
           postal_code?: string
-          project_type?: string | null
           referrer?: string | null
           session_id?: string | null
           square_footage?: number | null
@@ -1199,6 +1199,7 @@ export type Database = {
       }
     }
     Enums: {
+      sqft_tier_enum: "0-100" | "100-500" | "500-1000" | "1000-5000" | "5000+"
       verification_status:
         | "pending_verification"
         | "verified"
@@ -1331,6 +1332,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      sqft_tier_enum: ["0-100", "100-500", "500-1000", "1000-5000", "5000+"],
       verification_status: [
         "pending_verification",
         "verified",

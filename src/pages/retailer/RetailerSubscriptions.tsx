@@ -24,7 +24,7 @@ interface BrandSubscription {
   id: string;
   brand_name: string;
   is_active: boolean;
-  sqft_tier: string;
+  sqft_tier: '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+';
   lead_price: number;
   accepts_installation: boolean;
   installation_surcharge: number;
@@ -168,7 +168,7 @@ const RetailerSubscriptions = () => {
         const newSubscription = {
           retailer_id: profile.retailer_id,
           brand_name: brandName,
-          sqft_tier: tier,
+          sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
           is_active: true,
           lead_price: tierInfo?.basePrice || 0,
           accepts_installation: false,
