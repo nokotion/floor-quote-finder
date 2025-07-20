@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -189,14 +190,24 @@ export const VerificationModal = ({
     setIsLoading(true);
 
     try {
+      console.log('Calling verify-lead with:', {
+        leadId: tempLeadId,
+        token: verificationCode, // Changed from 'code' to 'token' to match edge function
+      });
+
       const { data, error } = await supabase.functions.invoke('verify-lead', {
         body: {
           leadId: tempLeadId,
-          code: verificationCode,
+          token: verificationCode, // Changed from 'code' to 'token' to match edge function
         },
       });
 
-      if (error) throw error;
+      console.log('verify-lead result:', { data, error });
+
+      if (error) {
+        console.error('verify-lead edge function error:', error);
+        throw error;
+      }
 
       if (data.success) {
         // Clean up temporary lead
