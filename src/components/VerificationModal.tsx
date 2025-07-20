@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -52,6 +53,15 @@ export const VerificationModal = ({
     setIsLoading(true);
 
     try {
+      console.log("Creating temporary lead for verification:", {
+        customer_name: 'TEMP_VERIFICATION',
+        customer_email: email,
+        customer_phone: phone,
+        postal_code: 'TEMP',
+        status: 'pending_verification',
+        is_verified: false
+      });
+
       // Create a temporary lead record for verification
       const { data: leadData, error: leadError } = await supabase
         .from('leads')
@@ -60,13 +70,18 @@ export const VerificationModal = ({
           customer_email: email,
           customer_phone: phone,
           postal_code: 'TEMP',
-          status: 'pending_verification'
+          status: 'pending_verification',
+          is_verified: false
         }])
         .select()
         .single();
 
-      if (leadError) throw leadError;
+      if (leadError) {
+        console.error('Lead creation error:', leadError);
+        throw leadError;
+      }
 
+      console.log('Temporary lead created successfully:', leadData.id);
       setTempLeadId(leadData.id);
 
       // Send verification code
