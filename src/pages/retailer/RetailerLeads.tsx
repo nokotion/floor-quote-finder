@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +18,6 @@ interface Lead {
   street_address: string;
   square_footage: number;
   brand_requested: string;
-  budget_range: string;
   created_at: string;
   is_locked: boolean;
   lock_price: number;
@@ -57,7 +57,7 @@ const RetailerLeads = () => {
 
       if (!profile?.retailer_id) return;
 
-      // Build query
+      // Build query - Remove budget_range from select
       let query = supabase
         .from('leads')
         .select(`
@@ -69,7 +69,6 @@ const RetailerLeads = () => {
           street_address,
           square_footage,
           brand_requested,
-          budget_range,
           created_at,
           is_locked,
           lock_price,
@@ -221,17 +220,10 @@ const RetailerLeads = () => {
                   <div className="font-medium">{lead.square_footage?.toLocaleString()} sq ft</div>
                 </div>
                 <div>
-                  <span className="text-gray-500">Budget:</span>
-                  <div className="font-medium">{lead.budget_range}</div>
+                  <span className="text-gray-500">Brand:</span>
+                  <div className="font-medium">{lead.brand_requested || 'Any'}</div>
                 </div>
               </div>
-
-              {lead.brand_requested && (
-                <div>
-                  <span className="text-gray-500 text-sm">Requested Brand:</span>
-                  <div className="font-medium">{lead.brand_requested}</div>
-                </div>
-              )}
 
               {lead.attachment_urls && lead.attachment_urls.length > 0 && (
                 <div className="flex items-center text-sm text-blue-600">

@@ -102,12 +102,18 @@ const AdminRetailerDetail = () => {
 
       if (retailerError) throw retailerError;
 
-      // Fetch lead distributions
+      // Fetch lead distributions with proper lead details
       const { data: distributionsData, error: distributionsError } = await supabase
         .from('lead_distributions')
         .select(`
-          *,
-          leads:lead_id (
+          id,
+          lead_price,
+          sent_at,
+          status,
+          brand_matched,
+          distance_km,
+          lead_id,
+          leads!lead_distributions_lead_id_fkey (
             customer_name,
             customer_email,
             postal_code,
@@ -296,7 +302,6 @@ const AdminRetailerDetail = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Contact Information */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -376,7 +381,6 @@ const AdminRetailerDetail = () => {
               </Card>
             </div>
 
-            {/* Services and Coverage */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {retailer.brands_carried && retailer.brands_carried.length > 0 && (
                 <Card>

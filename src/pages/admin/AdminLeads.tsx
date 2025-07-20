@@ -46,7 +46,20 @@ const AdminLeads = () => {
       const { data, error } = await supabase
         .from('leads')
         .select(`
-          *,
+          id,
+          customer_name,
+          customer_email,
+          customer_phone,
+          postal_code,
+          flooring_type,
+          square_footage,
+          brand_requested,
+          budget_range,
+          timeline,
+          status,
+          is_verified,
+          created_at,
+          assigned_retailer_id,
           retailers:assigned_retailer_id (
             business_name
           )
