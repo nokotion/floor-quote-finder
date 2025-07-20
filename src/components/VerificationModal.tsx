@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -59,7 +58,9 @@ export const VerificationModal = ({
         customer_phone: phone,
         postal_code: 'TEMP',
         status: 'pending_verification',
-        is_verified: false
+        is_verified: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
 
       // Create a temporary lead record for verification
@@ -71,7 +72,9 @@ export const VerificationModal = ({
           customer_phone: phone,
           postal_code: 'TEMP',
           status: 'pending_verification',
-          is_verified: false
+          is_verified: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }])
         .select()
         .single();
