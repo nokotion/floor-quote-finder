@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { CheckCircle, Mail, MessageSquare } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { validateAndFormatPhone } from "@/utils/phoneValidation";
+import { VerificationModal } from "@/components/VerificationModal";
 
 interface AddressData {
   street?: string;
@@ -51,8 +52,10 @@ const Quote = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
-  const [leadId, setLeadId] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [pendingQuoteData, setPendingQuoteData] = useState<any>(null);
 
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -100,7 +103,7 @@ const Quote = () => {
     }
   };
 
-  const uploadAttachments = async (files: FileList) => {
+  const uploadAttachments = async (files: FileList, leadId: string) => {
     const urls: string[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -108,7 +111,7 @@ const Quote = () => {
       
       try {
         const { data, error } = await supabase.storage
-          .from('customer-photos')
+          .from('pricemyfloor-files')
           .upload(filePath, file, {
             cacheControl: '3600',
             upsert: false
@@ -126,7 +129,7 @@ const Quote = () => {
 
         const url = `https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files/${data.path}`;
         urls.push(url);
-        setSubmissionProgress((prev) => prev + (100 / files.length));
+        setSubmissionProgress((prev) => prev + (10 / files.length));
       } catch (uploadError: any) {
         console.error("Unexpected error during upload:", uploadError);
         toast({
@@ -169,6 +172,33 @@ const Quote = () => {
       return;
     }
 
+    // Store quote data temporarily and show verification modal
+    const files = (document.getElementById('attachment') as HTMLInputElement)?.files;
+    const quoteData = {
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      postal_code: addressData.postal_code,
+      street_address: addressData.street,
+      square_footage: parseInt(size || "0"),
+      brand_requested: brand,
+      budget_range: budget,
+      installation_required: installation,
+      timeline: timeline,
+      notes: notes,
+      address_formatted: addressData.formatted_address,
+      address_city: addressData.city,
+      address_province: addressData.province,
+      files: files
+    };
+
+    setPendingQuoteData(quoteData);
+    setShowVerificationModal(true);
+  };
+
+  const handleVerificationSuccess = async () => {
+    if (!pendingQuoteData) return;
+
     setIsSubmitting(true);
     setSubmissionProgress(10);
 
@@ -178,20 +208,22 @@ const Quote = () => {
         .from('leads')
         .insert([
           {
-            customer_name: customerName,
-            customer_email: customerEmail,
-            customer_phone: customerPhone,
-            postal_code: addressData.postal_code,
-            street_address: addressData.street,
-            square_footage: parseInt(size || "0"),
-            brand_requested: brand,
-            budget_range: budget,
-            installation_required: installation,
-            timeline: timeline,
-            notes: notes,
-            address_formatted: addressData.formatted_address,
-            address_city: addressData.city,
-            address_province: addressData.province
+            customer_name: pendingQuoteData.customer_name,
+            customer_email: pendingQuoteData.customer_email,
+            customer_phone: pendingQuoteData.customer_phone,
+            postal_code: pendingQuoteData.postal_code,
+            street_address: pendingQuoteData.street_address,
+            square_footage: pendingQuoteData.square_footage,
+            brand_requested: pendingQuoteData.brand_requested,
+            budget_range: pendingQuoteData.budget_range,
+            installation_required: pendingQuoteData.installation_required,
+            timeline: pendingQuoteData.timeline,
+            notes: pendingQuoteData.notes,
+            address_formatted: pendingQuoteData.address_formatted,
+            address_city: pendingQuoteData.address_city,
+            address_province: pendingQuoteData.address_province,
+            is_verified: true,
+            status: 'verified'
           }
         ])
         .select()
@@ -202,31 +234,28 @@ const Quote = () => {
         throw leadError;
       }
 
-      setLeadId(leadData.id);
-      setSubmissionProgress(20);
+      setSubmissionProgress(40);
 
       // 2. Upload Attachments
-      const files = (document.getElementById('attachment') as HTMLInputElement)?.files;
-      if (files && files.length > 0) {
-        const uploadedUrls = await uploadAttachments(files);
+      if (pendingQuoteData.files && pendingQuoteData.files.length > 0) {
+        const uploadedUrls = await uploadAttachments(pendingQuoteData.files, leadData.id);
         setAttachmentUrls(uploadedUrls);
-        setSubmissionProgress(80);
+        
+        // Update lead with attachments
+        const { error: updateError } = await supabase
+          .from('leads')
+          .update({ attachment_urls: uploadedUrls })
+          .eq('id', leadData.id);
+
+        if (updateError) {
+          console.error("Attachment update error:", updateError);
+          throw updateError;
+        }
       }
+      setSubmissionProgress(80);
 
-      // 3. Update Lead Record with Attachments and Finalize
-      const { error: updateError } = await supabase
-        .from('leads')
-        .update({ attachment_urls: attachmentUrls })
-        .eq('id', leadData.id);
-
-      if (updateError) {
-        console.error("Attachment update error:", updateError);
-        throw updateError;
-      }
-      setSubmissionProgress(90);
-
-      // 4. Distribute Lead to Retailers
-      const { data: distributionData, error: distributionError } = await supabase.functions.invoke('distribute-lead', {
+      // 3. Distribute Lead to Retailers
+      const { data: distributionData, error: distributionError } = await supabase.functions.invoke('process-lead-submission', {
         body: { leadId: leadData.id },
       });
 
@@ -245,8 +274,10 @@ const Quote = () => {
           variant: "destructive",
         });
       }
+      
       setSubmissionProgress(100);
       setIsSubmitted(true);
+      setIsVerified(true);
 
     } catch (error: any) {
       console.error("Submission error:", error);
@@ -260,115 +291,6 @@ const Quote = () => {
     }
   };
 
-  const handleVerificationSend = async (method: 'email' | 'sms', contact: string) => {
-    if (!leadId) {
-      toast({
-        title: "Error",
-        description: "Quote submission not found. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log(`Sending ${method} verification to ${contact} for lead ${leadId}`);
-    setIsSubmitting(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('send-verification', {
-        body: {
-          leadId,
-          method,
-          contact,
-        },
-      });
-
-      console.log('Verification response:', data);
-
-      if (error) {
-        console.error('Verification error:', error);
-        throw error;
-      }
-
-      if (data.success) {
-        // Check for partial failure
-        if (data.partialFailure) {
-          toast({
-            title: "Verification Sent with Warning",
-            description: data.message,
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Verification Sent",
-            description: data.message,
-          });
-        }
-
-        // Navigate to verification page
-        const verifyParams = new URLSearchParams({
-          leadId,
-          method,
-          contact,
-        });
-        navigate(`/verify?${verifyParams.toString()}`);
-      } else {
-        // Handle specific error types
-        const errorMessage = data.error || 'Failed to send verification';
-        const errorDetails = data.details || 'Please try again';
-        
-        console.error('Verification failed:', {
-          error: data.error,
-          details: data.details,
-          errorType: data.errorType
-        });
-
-        // Show specific error messages based on error type
-        if (data.errorType === 'VERIFICATION_SEND_FAILED') {
-          toast({
-            title: "Verification Failed",
-            description: `${errorMessage}. ${errorDetails}`,
-            variant: "destructive",
-          });
-        } else if (data.errorType === 'DATABASE_UPDATE_FAILED') {
-          toast({
-            title: "System Warning",
-            description: data.warning || errorDetails,
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Verification Error",
-            description: `${errorMessage}. ${errorDetails}`,
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error: any) {
-      console.error('Network error during verification:', error);
-      
-      let errorMessage = 'Failed to send verification code';
-      let errorDescription = 'Please check your connection and try again';
-      
-      // Handle specific error types
-      if (error.message) {
-        if (error.message.includes('Phone number')) {
-          errorDescription = 'Please check your phone number format and try again';
-        } else if (error.message.includes('Email')) {
-          errorDescription = 'Please check your email address and try again';
-        } else if (error.message.includes('trial')) {
-          errorDescription = 'SMS verification is currently limited. Please try email verification instead';
-        }
-      }
-
-      toast({
-        title: errorMessage,
-        description: errorDescription,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
@@ -424,24 +346,13 @@ const Quote = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-4">Submission Received!</h2>
+                  <h2 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h2>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    To ensure you're a real person, please verify your{" "}
-                    {customerEmail && validateEmail(customerEmail) ? (
-                      <>
-                        <Button variant="link" onClick={() => handleVerificationSend('email', customerEmail)}>
-                          email
-                        </Button>{" "}
-                        or
-                      </>
-                    ) : null}{" "}
-                    <Button variant="link" onClick={() => handleVerificationSend('sms', customerPhone)}>
-                      phone
-                    </Button>
-                    .
+                    Your verified quote request has been sent to qualified retailers in your area. 
+                    You should receive responses within 24 hours.
                   </p>
                   <p className="text-sm text-gray-500">
-                    We'll connect you with verified retailers shortly.
+                    Thank you for using PriceMyFloor!
                   </p>
                 </motion.div>
               ) : (
@@ -568,6 +479,14 @@ const Quote = () => {
           </Card>
         </motion.div>
       </div>
+
+      <VerificationModal
+        open={showVerificationModal}
+        onOpenChange={setShowVerificationModal}
+        email={customerEmail}
+        phone={customerPhone}
+        onVerificationSuccess={handleVerificationSuccess}
+      />
     </div>
   );
 };
