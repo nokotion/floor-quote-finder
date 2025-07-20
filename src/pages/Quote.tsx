@@ -45,7 +45,6 @@ const Quote = () => {
     formatted_address: formatted_address || ""
   });
   const [notes, setNotes] = useState("");
-  const [attachmentUrls, setAttachmentUrls] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
@@ -230,7 +229,6 @@ const Quote = () => {
       // 2. Upload Attachments
       if (pendingQuoteData.files && pendingQuoteData.files.length > 0) {
         const uploadedUrls = await uploadAttachments(pendingQuoteData.files, leadData.id);
-        setAttachmentUrls(uploadedUrls);
         
         // Update lead with attachments
         const { error: updateError } = await supabase
@@ -305,9 +303,9 @@ const Quote = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-2xl"
+          className="w-full max-w-4xl"
         >
-          <Card className="shadow-lg">
+          <Card className="shadow-xl border-0 bg-white">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">
                 Complete Your Quote Request
@@ -317,39 +315,49 @@ const Quote = () => {
               </p>
             </CardHeader>
 
-            <CardContent className="space-y-6">
-              {/* Display Selected Options */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-3 flex items-center">
-                  <Package className="w-4 h-4 mr-2" />
-                  Your Selection
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                  <div className="flex items-center">
-                    <Tag className="w-4 h-4 mr-2 text-blue-600" />
+            <CardContent className="p-4">
+              {/* Your Selection - Prefilled Data Display */}
+              <Card className="shadow-xl border-0 bg-white mb-6">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <Package className="w-4 h-4 mr-2" />
+                    Your Selection
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <span className="text-gray-600">Brand:</span>
-                      <div className="font-medium">{brand}</div>
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Preferred Brand
+                      </Label>
+                      <div className="h-12 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center font-medium text-gray-900">
+                        <Tag className="w-4 h-4 mr-2 text-orange-600" />
+                        {brand}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Package className="w-4 h-4 mr-2 text-blue-600" />
+
                     <div>
-                      <span className="text-gray-600">Size:</span>
-                      <div className="font-medium">{size} sq ft</div>
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Project Size (sq ft)
+                      </Label>
+                      <div className="h-12 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center font-medium text-gray-900">
+                        <Package className="w-4 h-4 mr-2 text-orange-600" />
+                        {size}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="w-4 h-4 mr-2 text-blue-600" />
+
                     <div>
-                      <span className="text-gray-600">Location:</span>
-                      <div className="font-medium">
-                        {formatted_address || `${city}, ${province} ${postal}`}
+                      <Label className="text-sm font-semibold text-gray-800 mb-2 block">
+                        Address
+                      </Label>
+                      <div className="h-12 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center font-medium text-gray-900">
+                        <MapPin className="w-4 h-4 mr-2 text-orange-600" />
+                        <div className="truncate">
+                          {formatted_address || `${city}, ${province} ${postal}`}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {isSubmitting ? (
                 <div className="text-center">
@@ -388,6 +396,7 @@ const Quote = () => {
                       placeholder="John Doe"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
+                      className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       required
                     />
                   </div>
@@ -400,6 +409,7 @@ const Quote = () => {
                       placeholder="john.doe@example.com"
                       value={customerEmail}
                       onChange={(e) => handleEmailChange(e.target.value)}
+                      className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       required
                     />
                     {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
@@ -414,6 +424,7 @@ const Quote = () => {
                       value={customerPhone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
                       onBlur={handlePhoneBlur}
+                      className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                       required
                     />
                     {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
@@ -428,6 +439,7 @@ const Quote = () => {
                       placeholder="Anything else we should know about your project?"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
+                      className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
                     />
                   </div>
 
@@ -440,16 +452,23 @@ const Quote = () => {
                       id="attachment"
                       multiple
                       accept="image/*"
-                      className="cursor-pointer"
+                      className="cursor-pointer h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200"
                     />
                     <p className="text-gray-500 text-sm mt-1">
                       Upload photos of the space for more accurate quotes.
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    Get My Competitive Quotes
-                  </Button>
+                  <div className="text-center pt-2">
+                    <Button 
+                      type="submit" 
+                      size="lg" 
+                      disabled={isSubmitting}
+                      className="px-10 py-4 text-base font-semibold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 transition-all duration-300 shadow-lg transform hover:scale-105 hover:shadow-xl"
+                    >
+                      Get My Competitive Quotes
+                    </Button>
+                  </div>
                 </form>
               )}
             </CardContent>
