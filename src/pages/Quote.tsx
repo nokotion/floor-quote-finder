@@ -1,13 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, MapPin, Package, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { validateAndFormatPhone } from "@/utils/phoneValidation";
@@ -44,9 +44,6 @@ const Quote = () => {
     postal_code: postal || "",
     formatted_address: formatted_address || ""
   });
-  const [budget, setBudget] = useState("");
-  const [timeline, setTimeline] = useState("");
-  const [installation, setInstallation] = useState(false);
   const [notes, setNotes] = useState("");
   const [attachmentUrls, setAttachmentUrls] = useState<string[]>([]);
 
@@ -182,9 +179,6 @@ const Quote = () => {
       street_address: addressData.street,
       square_footage: parseInt(size || "0"),
       brand_requested: brand,
-      budget_range: budget,
-      installation_required: installation,
-      timeline: timeline,
       notes: notes,
       address_formatted: addressData.formatted_address,
       address_city: addressData.city,
@@ -215,9 +209,6 @@ const Quote = () => {
             street_address: pendingQuoteData.street_address,
             square_footage: pendingQuoteData.square_footage,
             brand_requested: pendingQuoteData.brand_requested,
-            budget_range: pendingQuoteData.budget_range,
-            installation_required: pendingQuoteData.installation_required,
-            timeline: pendingQuoteData.timeline,
             notes: pendingQuoteData.notes,
             address_formatted: pendingQuoteData.address_formatted,
             address_city: pendingQuoteData.address_city,
@@ -291,7 +282,6 @@ const Quote = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
       {/* Header */}
@@ -320,14 +310,47 @@ const Quote = () => {
           <Card className="shadow-lg">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">
-                Almost there!
+                Complete Your Quote Request
               </CardTitle>
               <p className="text-gray-600 mt-2">
-                Please provide your contact information to receive your personalized quotes.
+                We'll send your request to qualified retailers in your area
               </p>
             </CardHeader>
 
             <CardContent className="space-y-6">
+              {/* Display Selected Options */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-3 flex items-center">
+                  <Package className="w-4 h-4 mr-2" />
+                  Your Selection
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                  <div className="flex items-center">
+                    <Tag className="w-4 h-4 mr-2 text-blue-600" />
+                    <div>
+                      <span className="text-gray-600">Brand:</span>
+                      <div className="font-medium">{brand}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <Package className="w-4 h-4 mr-2 text-blue-600" />
+                    <div>
+                      <span className="text-gray-600">Size:</span>
+                      <div className="font-medium">{size} sq ft</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <MapPin className="w-4 h-4 mr-2 text-blue-600" />
+                    <div>
+                      <span className="text-gray-600">Location:</span>
+                      <div className="font-medium">
+                        {formatted_address || `${city}, ${province} ${postal}`}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {isSubmitting ? (
                 <div className="text-center">
                   <p className="text-lg text-gray-700 mb-4">Submitting your request...</p>
@@ -358,7 +381,7 @@ const Quote = () => {
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
                       id="name"
                       type="text"
@@ -368,8 +391,9 @@ const Quote = () => {
                       required
                     />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email">Email Address *</Label>
                     <Input
                       id="email"
                       type="email"
@@ -380,8 +404,9 @@ const Quote = () => {
                     />
                     {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
                   </div>
+                  
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -395,60 +420,12 @@ const Quote = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="budget">
-                      What's your budget for this project? (Optional)
-                    </Label>
-                    <Select value={budget} onValueChange={setBudget}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select budget range" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="$500 - $1,000">$500 - $1,000</SelectItem>
-                        <SelectItem value="$1,000 - $3,000">$1,000 - $3,000</SelectItem>
-                        <SelectItem value="$3,000 - $5,000">$3,000 - $5,000</SelectItem>
-                        <SelectItem value="$5,000+">$5,000+</SelectItem>
-                        <SelectItem value="Not sure">Not sure</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="timeline">
-                      When are you looking to start this project? (Optional)
-                    </Label>
-                    <Select value={timeline} onValueChange={setTimeline}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select timeline" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Within 1-2 weeks">Within 1-2 weeks</SelectItem>
-                        <SelectItem value="Within the next month">Within the next month</SelectItem>
-                        <SelectItem value="Within 2-3 months">Within 2-3 months</SelectItem>
-                        <SelectItem value="Not sure">Not sure</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="installation" className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="installation"
-                        checked={installation}
-                        onChange={(e) => setInstallation(e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <span>Do you require installation services?</span>
-                    </Label>
-                  </div>
-
-                  <div>
                     <Label htmlFor="notes">
                       Additional Notes (Optional)
                     </Label>
                     <Input
                       id="notes"
-                      placeholder="Anything else we should know?"
+                      placeholder="Anything else we should know about your project?"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
@@ -471,7 +448,7 @@ const Quote = () => {
                   </div>
 
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    Submit Request
+                    Get My Competitive Quotes
                   </Button>
                 </form>
               )}
