@@ -35,11 +35,18 @@ const parseSquareFootage = (sizeString: string): number => {
   return match ? parseInt(match[1]) : 500; // Default to 500 if parsing fails
 };
 
-// Check if postal codes match (first 3 characters)
+// Check if postal codes match (first 3 characters) - NOW WITH SAFETY CHECKS
 const postalCodeMatches = (leadPostal: string, retailerPrefixes: string[]): boolean => {
+  // Safety checks for lead postal code
+  if (!leadPostal || typeof leadPostal !== 'string') return false;
   if (!retailerPrefixes || retailerPrefixes.length === 0) return true; // No restrictions
+  
   const leadPrefix = leadPostal.substring(0, 3).toUpperCase();
-  return retailerPrefixes.some(prefix => prefix.substring(0, 3).toUpperCase() === leadPrefix);
+  return retailerPrefixes.some(prefix => {
+    // Safety check for each prefix
+    if (!prefix || typeof prefix !== 'string') return false;
+    return prefix.substring(0, 3).toUpperCase() === leadPrefix;
+  });
 };
 
 serve(async (req) => {
@@ -60,6 +67,33 @@ serve(async (req) => {
     const { leadData } = await req.json();
     logStep("Received lead data", { leadId: leadData.id });
 
+    // CRITICAL INPUT VALIDATION - Added to prevent crashes
+    if (!leadData.postalCode || typeof leadData.postalCode !== 'string') {
+      logStep("ERROR - Missing postal code", { postalCode: leadData.postalCode });
+      return new Response(JSON.stringify({ 
+        error: 'Postal code is required for lead matching',
+        success: false 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    const leadBrand = leadData.brands?.[0] || leadData.brand_requested;
+    if (!leadBrand || typeof leadBrand !== 'string') {
+      logStep("ERROR - Missing brand", { 
+        brands: leadData.brands, 
+        brand_requested: leadData.brand_requested 
+      });
+      return new Response(JSON.stringify({ 
+        error: 'Brand selection is required for lead matching',
+        success: false 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
     // Parse square footage and determine tier
     const squareFootage = parseSquareFootage(leadData.projectSize || leadData.square_footage?.toString() || "500");
     const sqftTier = getSquareFootageTier(squareFootage);
@@ -68,7 +102,7 @@ serve(async (req) => {
     logStep("Lead requirements", { 
       squareFootage, 
       sqftTier, 
-      brand: leadData.brands?.[0] || leadData.brand_requested,
+      brand: leadBrand,
       postalCode: leadData.postalCode,
       requiresInstallation 
     });
@@ -102,7 +136,6 @@ serve(async (req) => {
 
     // Apply 4-criteria matching logic
     const matchingRetailers = [];
-    const leadBrand = leadData.brands?.[0] || leadData.brand_requested;
     
     for (const subscription of brandSubscriptions || []) {
       const retailer = subscription.retailers;
@@ -114,7 +147,7 @@ serve(async (req) => {
       // Criterion 2: Square footage tier match
       const sqftMatch = subscription.sqft_tier === sqftTier;
       
-      // Criterion 3: Postal code prefix match
+      // Criterion 3: Postal code prefix match (NOW SAFE)
       const postalMatch = postalCodeMatches(leadData.postalCode, retailer.postal_code_prefixes);
       
       // Criterion 4: Installation preference match
@@ -235,7 +268,7 @@ serve(async (req) => {
       matching_criteria: {
         brand: leadBrand,
         square_footage_tier: sqftTier,
-        postal_code_prefix: leadData.postalCode.substring(0, 3),
+        postal_code_prefix: leadData.postalCode ? leadData.postalCode.substring(0, 3) : 'unknown',
         requires_installation: requiresInstallation
       }
     }), {
