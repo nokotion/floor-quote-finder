@@ -6,6 +6,9 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabase } from './integrations/supabase/client';
 import { MainLayout } from './components/layout/MainLayout';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
+import Index from './pages/Index';
+import Quote from './pages/Quote';
+import Browse from './pages/Browse';
 import RetailerLogin from './pages/RetailerLogin';
 import RetailerApply from './pages/RetailerApply';
 import RetailerDashboard from './pages/retailer/RetailerDashboard';
@@ -18,61 +21,42 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminRetailers from './pages/admin/AdminRetailers';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminBrands from './pages/admin/AdminBrands';
+import AdminUsers from './pages/admin/AdminUsers';
 
-// Create missing page components
-const HomePage = () => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <div className="max-w-7xl mx-auto px-4 py-16">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Price My Floor
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          Connect with verified flooring retailers across Canada
-        </p>
-        <div className="space-y-4">
-          <div className="flex justify-center space-x-4">
-            <a href="/retailer/login" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-              Retailer Login
-            </a>
-            <a href="/admin/login" className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">
-              Admin Login
-            </a>
-          </div>
+// Create missing page components that are still needed
+const AboutPage = () => (
+  <MainLayout>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">
+            About Price My Floor
+          </h1>
+          <p className="text-xl text-gray-600">
+            We connect homeowners with verified flooring retailers across Canada.
+          </p>
         </div>
       </div>
     </div>
-  </div>
-);
-
-const AboutPage = () => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <div className="max-w-7xl mx-auto px-4 py-16">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          About Price My Floor
-        </h1>
-        <p className="text-xl text-gray-600">
-          We connect homeowners with verified flooring retailers across Canada.
-        </p>
-      </div>
-    </div>
-  </div>
+  </MainLayout>
 );
 
 const ContactPage = () => (
-  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <div className="max-w-7xl mx-auto px-4 py-16">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          Contact Us
-        </h1>
-        <p className="text-xl text-gray-600">
-          Get in touch with our support team.
-        </p>
+  <MainLayout>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">
+            Contact Us
+          </h1>
+          <p className="text-xl text-gray-600">
+            Get in touch with our support team.
+          </p>
+        </div>
       </div>
     </div>
-  </div>
+  </MainLayout>
 );
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -110,8 +94,10 @@ function App() {
     <Router>
       <LayoutWrapper>
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
+          {/* Public routes - restored original pages */}
+          <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+          <Route path="/quote" element={<MainLayout><Quote /></MainLayout>} />
+          <Route path="/browse" element={<MainLayout><Browse /></MainLayout>} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/auth" element={
@@ -138,6 +124,8 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/retailers" element={<ProtectedRoute><AdminRetailers /></ProtectedRoute>} />
+          <Route path="/admin/brands" element={<ProtectedRoute><AdminBrands /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
         </Routes>
       </LayoutWrapper>
