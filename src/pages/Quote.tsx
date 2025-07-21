@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { validateAndFormatPhone } from "@/utils/phoneValidation";
 import { VerificationModal } from "@/components/VerificationModal";
+import { validatePostalCode } from "@/utils/postalCodeUtils";
 
 interface AddressData {
   street?: string;
@@ -140,6 +141,24 @@ const Quote = () => {
     return urls;
   };
 
+  const getValidatedPostalCode = () => {
+    // Try multiple sources for postal code
+    const possiblePostalCodes = [
+      addressData.postal_code,
+      postal,
+      // Extract from formatted address if available
+      addressData.formatted_address?.match(/[A-Z]\d[A-Z]\s*\d[A-Z]\d/)?.[0]
+    ].filter(Boolean);
+
+    for (const postalCode of possiblePostalCodes) {
+      if (postalCode && validatePostalCode(postalCode)) {
+        return postalCode.toUpperCase();
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -170,13 +189,34 @@ const Quote = () => {
       return;
     }
 
+    // Validate postal code
+    const validPostalCode = getValidatedPostalCode();
+    if (!validPostalCode) {
+      toast({
+        title: "Invalid Postal Code",
+        description: "Please ensure you have a valid Canadian postal code.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate brand selection
+    if (!brand) {
+      toast({
+        title: "Brand Selection Required",
+        description: "Please ensure a brand is selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Store quote data temporarily and show verification modal
     const files = (document.getElementById('attachment') as HTMLInputElement)?.files;
     const quoteData = {
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone,
-      postal_code: addressData.postal_code,
+      postal_code: validPostalCode,
       street_address: addressData.street,
       square_footage: parseInt(size?.split('-')[0] || "500"),
       brand_requested: brand,
@@ -212,13 +252,13 @@ const Quote = () => {
         customer_name: pendingQuoteData.customer_name,
         customer_email: pendingQuoteData.customer_email,
         customer_phone: pendingQuoteData.customer_phone,
-        postal_code: pendingQuoteData.postal_code,
+        postalCode: pendingQuoteData.postal_code, // Use validated postal code
         street_address: pendingQuoteData.street_address,
         address_city: pendingQuoteData.address_city,
         address_province: pendingQuoteData.address_province,
         address_formatted: pendingQuoteData.address_formatted,
-        brand_requested: pendingQuoteData.brand_requested,
-        project_type: pendingQuoteData.project_type,
+        brand_requested: pendingQuoteData.brand_requested, // Use validated brand
+        projectSize: pendingQuoteData.project_type,
         square_footage: pendingQuoteData.square_footage,
         installation_required: pendingQuoteData.installation_required,
         notes: pendingQuoteData.notes,
