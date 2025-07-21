@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabase } from './integrations/supabase/client';
+import { AuthProvider } from './components/auth/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
 import Index from './pages/Index';
@@ -59,77 +61,93 @@ const ContactPage = () => (
   </MainLayout>
 );
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  const [session, setSession] = React.useState(null)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-  }, [])
-
-  if (!session) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Auth
-          supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          providers={[]}
-          redirectTo={`${location.pathname}`}
-        />
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-};
-
 function App() {
   return (
-    <Router>
-      <LayoutWrapper>
-        <Routes>
-          {/* Public routes - restored original pages */}
-          <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-          <Route path="/quote" element={<MainLayout><Quote /></MainLayout>} />
-          <Route path="/browse" element={<MainLayout><Browse /></MainLayout>} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/auth" element={
-            <div className="flex justify-center items-center h-screen">
-              <Auth
-                supabaseClient={supabase}
-                appearance={{ theme: ThemeSupa }}
-                providers={[]}
-              />
-            </div>
-          } />
-          
-          {/* Retailer routes */}
-          <Route path="/retailer/login" element={<RetailerLogin />} />
-          <Route path="/retailer/apply" element={<RetailerApply />} />
-          <Route path="/retailer" element={<ProtectedRoute><RetailerDashboard /></ProtectedRoute>} />
-          <Route path="/retailer/leads" element={<ProtectedRoute><RetailerLeads /></ProtectedRoute>} />
-          <Route path="/retailer/subscriptions" element={<ProtectedRoute><RetailerSubscriptions /></ProtectedRoute>} />
-          <Route path="/retailer/coverage-map" element={<ProtectedRoute><RetailerCoverageMap /></ProtectedRoute>} />
-          <Route path="/retailer/billing" element={<ProtectedRoute><RetailerBilling /></ProtectedRoute>} />
-          <Route path="/retailer/settings" element={<ProtectedRoute><RetailerSettings /></ProtectedRoute>} />
-          
-          {/* Admin routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/retailers" element={<ProtectedRoute><AdminRetailers /></ProtectedRoute>} />
-          <Route path="/admin/brands" element={<ProtectedRoute><AdminBrands /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-        </Routes>
-      </LayoutWrapper>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <LayoutWrapper>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/quote" element={<Quote />} />
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/auth" element={
+              <div className="flex justify-center items-center h-screen">
+                <Auth
+                  supabaseClient={supabase}
+                  appearance={{ theme: ThemeSupa }}
+                  providers={[]}
+                />
+              </div>
+            } />
+            
+            {/* Retailer routes */}
+            <Route path="/retailer/login" element={<RetailerLogin />} />
+            <Route path="/retailer/apply" element={<RetailerApply />} />
+            <Route path="/retailer" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/retailer/leads" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerLeads />
+              </ProtectedRoute>
+            } />
+            <Route path="/retailer/subscriptions" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerSubscriptions />
+              </ProtectedRoute>
+            } />
+            <Route path="/retailer/coverage-map" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerCoverageMap />
+              </ProtectedRoute>
+            } />
+            <Route path="/retailer/billing" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerBilling />
+              </ProtectedRoute>
+            } />
+            <Route path="/retailer/settings" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/retailers" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminRetailers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/brands" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminBrands />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/settings" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminSettings />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </LayoutWrapper>
+      </Router>
+    </AuthProvider>
   );
 }
 
