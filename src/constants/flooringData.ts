@@ -20,3 +20,11 @@ export const projectSizes = [
   { value: "1000-5000", label: "1,000–5,000 sq ft" },
   { value: "5000+", label: "5,000+ sq ft" }
 ];
+
+export const SQFT_TIERS = [
+  { value: '0-100', label: '0–100 sq ft', basePrice: 1.00 },
+  { value: '100-500', label: '100–500 sq ft', basePrice: 1.25 },
+  { value: '500-1000', label: '500–1,000 sq ft', basePrice: 2.50 },
+  { value: '1000-5000', label: '1,000–5,000 sq ft', basePrice: 3.50 },
+  { value: '5000+', label: '5,000+ sq ft', basePrice: 5.00 }
+];
