@@ -6,13 +6,15 @@ import {
   Users, 
   CreditCard, 
   Settings, 
-  Package 
+  Package,
+  MapPin
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/retailer', icon: LayoutDashboard },
   { name: 'My Leads', href: '/retailer/leads', icon: Users },
   { name: 'Subscriptions', href: '/retailer/subscriptions', icon: Package },
+  { name: 'Coverage Map', href: '/retailer/coverage-map', icon: MapPin },
   { name: 'Billing', href: '/retailer/billing', icon: CreditCard },
   { name: 'Settings', href: '/retailer/settings', icon: Settings },
 ];

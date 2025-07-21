@@ -1,123 +1,96 @@
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { Auth } from '@supabase/auth-ui-react'
+import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { supabase } from './integrations/supabase/client';
+import { MainLayout } from './components/layout/MainLayout';
+import { LayoutWrapper } from './components/layout/LayoutWrapper';
+import RetailerLogin from './pages/retailer/RetailerLogin';
+import RetailerApply from './pages/retailer/RetailerApply';
+import RetailerDashboard from './pages/retailer/RetailerDashboard';
+import RetailerLeads from './pages/retailer/RetailerLeads';
+import RetailerBilling from './pages/retailer/RetailerBilling';
+import RetailerSettings from './pages/retailer/RetailerSettings';
+import RetailerSubscriptions from './pages/retailer/RetailerSubscriptions';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminRetailers from './pages/admin/AdminRetailers';
+import AdminBrands from './pages/admin/AdminBrands';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminSettings from './pages/admin/AdminSettings';
+import RetailerCoverageMap from './pages/retailer/RetailerCoverageMap';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Browse from "./pages/Browse";
-import Quote from "./pages/Quote";
-import Verify from "./pages/Verify";
-import BrandDetail from "./pages/BrandDetail";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./components/auth/AuthContext";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Auth from "./pages/Auth";
-import RetailerLogin from "./pages/RetailerLogin";
-import AdminLogin from "./pages/AdminLogin";
-import RetailerApply from "./pages/RetailerApply";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminRetailers from "./pages/admin/AdminRetailers";
-import AdminRetailerDetail from "./pages/admin/AdminRetailerDetail";
-import AdminApplications from "./pages/admin/AdminApplications";
-import AdminLeads from "./pages/admin/AdminLeads";
-import AdminSettings from "./pages/admin/AdminSettings";
-import RetailerDashboard from "./pages/retailer/RetailerDashboard";
-import RetailerLeads from "./pages/retailer/RetailerLeads";
-import RetailerSubscriptions from "./pages/retailer/RetailerSubscriptions";
-import RetailerBilling from "./pages/retailer/RetailerBilling";
-import { LayoutWrapper } from "./components/layout/LayoutWrapper";
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const [session, setSession] = React.useState(null)
 
-import RetailerSettings from "./pages/retailer/RetailerSettings";
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
 
-const queryClient = new QueryClient();
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+  }, [])
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <LayoutWrapper>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/browse" element={<Browse />} />
-              <Route path="/quote" element={<Quote />} />
-              <Route path="/verify" element={<Verify />} />
-              <Route path="/brand/:slug" element={<BrandDetail />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/retailer/login" element={<RetailerLogin />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/retailer/apply" element={<RetailerApply />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/retailers" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminRetailers />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/retailers/:id" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminRetailerDetail />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/applications" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminApplications />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/leads" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminLeads />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/settings" element={
-                <ProtectedRoute requireRole="admin">
-                  <AdminSettings />
-                </ProtectedRoute>
-              } />
-              
-              {/* Retailer Routes */}
-              <Route path="/retailer" element={
-                <ProtectedRoute>
-                  <RetailerDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/retailer/leads" element={
-                <ProtectedRoute>
-                  <RetailerLeads />
-                </ProtectedRoute>
-              } />
-              <Route path="/retailer/subscriptions" element={
-                <ProtectedRoute>
-                  <RetailerSubscriptions />
-                </ProtectedRoute>
-              } />
-              <Route path="/retailer/billing" element={
-                <ProtectedRoute>
-                  <RetailerBilling />
-                </ProtectedRoute>
-              } />
-              <Route path="/retailer/settings" element={
-                <ProtectedRoute>
-                  <RetailerSettings />
-                </ProtectedRoute>
-              } />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </LayoutWrapper>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+  if (!session) {
+    // Redirect to login page if not authenticated
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Auth
+          supabaseClient={supabase}
+          appearance={{ theme: ThemeSupa }}
+          providers={[]}
+          redirectTo={`${location.pathname}`}
+        />
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+function App() {
+  return (
+    <Router>
+      <LayoutWrapper>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<MainLayout.Home />} />
+          <Route path="/about" element={<MainLayout.About />} />
+          <Route path="/contact" element={<MainLayout.Contact />} />
+          <Route path="/auth" element={
+            <div className="flex justify-center items-center h-screen">
+              <Auth
+                supabaseClient={supabase}
+                appearance={{ theme: ThemeSupa }}
+                providers={[]}
+              />
+            </div>
+          } />
+          
+          {/* Retailer routes */}
+          <Route path="/retailer/login" element={<RetailerLogin />} />
+          <Route path="/retailer/apply" element={<RetailerApply />} />
+          <Route path="/retailer" element={<ProtectedRoute><RetailerDashboard /></ProtectedRoute>} />
+          <Route path="/retailer/leads" element={<ProtectedRoute><RetailerLeads /></ProtectedRoute>} />
+          <Route path="/retailer/subscriptions" element={<ProtectedRoute><RetailerSubscriptions /></ProtectedRoute>} />
+          <Route path="/retailer/coverage-map" element={<ProtectedRoute><RetailerCoverageMap /></ProtectedRoute>} />
+          <Route path="/retailer/billing" element={<ProtectedRoute><RetailerBilling /></ProtectedRoute>} />
+          <Route path="/retailer/settings" element={<ProtectedRoute><RetailerSettings /></ProtectedRoute>} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/retailers" element={<ProtectedRoute><AdminRetailers /></ProtectedRoute>} />
+          <Route path="/admin/brands" element={<ProtectedRoute><AdminBrands /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
+        </Routes>
+      </LayoutWrapper>
+    </Router>
+  );
+}
 
 export default App;
