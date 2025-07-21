@@ -27,13 +27,15 @@ interface RetailerSubscriptionCardProps {
   subscriptions: BrandSubscription[];
   onToggleTier: (brandName: string, tier: string, checked: boolean) => void;
   onToggleInstall: (brandName: string, tier: string, checked: boolean) => void;
+  savingStates?: {[key: string]: boolean};
 }
 
 export default function RetailerSubscriptionCard({ 
   brand, 
   subscriptions, 
   onToggleTier, 
-  onToggleInstall 
+  onToggleInstall,
+  savingStates = {}
 }: RetailerSubscriptionCardProps) {
   const activeSubscriptions = subscriptions.filter(s => s.is_active);
   const categoriesArray = brand.categories ? brand.categories.split(',').map(c => c.trim()) : [];
@@ -70,30 +72,44 @@ export default function RetailerSubscriptionCard({
           const subscription = subscriptions.find(s => s.sqft_tier === tier.value);
           const isChecked = subscription?.is_active || false;
           const installChecked = subscription?.accepts_installation || false;
+          const tierKey = `${brand.name}-${tier.value}`;
+          const isSaving = savingStates[tierKey];
 
           return (
-            <div key={tier.value} className="bg-muted/30 p-2 rounded-lg border">
+            <div 
+              key={tier.value} 
+              className={`p-2 rounded-lg border transition-colors ${
+                isChecked 
+                  ? 'bg-primary/5 border-primary/20' 
+                  : 'bg-muted/30'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <Label className="flex items-center gap-2 text-xs cursor-pointer">
                   <Checkbox 
                     checked={isChecked} 
-                    onCheckedChange={(checked) => onToggleTier(brand.name, tier.value, checked as boolean)} 
+                    onCheckedChange={(checked) => onToggleTier(brand.name, tier.value, checked as boolean)}
+                    disabled={isSaving}
                   />
-                  <span>{tier.label}</span>
+                  <span className={isSaving ? 'opacity-50' : ''}>{tier.label}</span>
                 </Label>
                 <span className="text-xs text-muted-foreground font-medium">
                   ${tier.basePrice.toFixed(2)}
                 </span>
               </div>
+              
               {isChecked && (
-                <div className="mt-2 flex items-center gap-2 pl-6">
-                  <Switch 
-                    checked={installChecked} 
-                    onCheckedChange={(checked) => onToggleInstall(brand.name, tier.value, checked as boolean)} 
-                  />
-                  <span className="text-xs text-muted-foreground">
-                    Accept installation leads (+$0.50)
-                  </span>
+                <div className="mt-2 ml-6 pl-2 border-l-2 border-muted">
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      checked={installChecked} 
+                      onCheckedChange={(checked) => onToggleInstall(brand.name, tier.value, checked as boolean)}
+                      disabled={isSaving}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Accept installation leads (+$0.50)
+                    </span>
+                  </div>
                 </div>
               )}
             </div>

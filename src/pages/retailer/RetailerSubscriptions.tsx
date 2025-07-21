@@ -97,13 +97,6 @@ const RetailerSubscriptions = () => {
 
       if (error) throw error;
 
-      // Update local state
-      setSubscriptions(prev => 
-        prev.map(sub => 
-          sub.id === subscriptionId ? { ...sub, ...updates } : sub
-        )
-      );
-
       toast({
         title: "Saved",
         description: "Subscription settings updated successfully.",
@@ -123,6 +116,9 @@ const RetailerSubscriptions = () => {
   const debouncedAutoSave = useAutoSave(autoSaveSubscription);
 
   const handleToggleTier = async (brandName: string, tier: string, isActive: boolean) => {
+    const tierKey = `${brandName}-${tier}`;
+    setSavingState(tierKey, true);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -140,18 +136,32 @@ const RetailerSubscriptions = () => {
       );
 
       if (existingSubscription) {
+        // Optimistic update
+        setSubscriptions(prev => 
+          prev.map(sub => 
+            sub.id === existingSubscription.id 
+              ? { ...sub, is_active: isActive } 
+              : sub
+          )
+        );
+
         // Update existing subscription
-        await supabase
+        const { error } = await supabase
           .from('brand_subscriptions')
           .update({ is_active: isActive })
           .eq('id', existingSubscription.id);
 
-        // Update local state
-        setSubscriptions(prev => 
-          prev.map(sub => 
-            sub.id === existingSubscription.id ? { ...sub, is_active: isActive } : sub
-          )
-        );
+        if (error) {
+          // Revert optimistic update on error
+          setSubscriptions(prev => 
+            prev.map(sub => 
+              sub.id === existingSubscription.id 
+                ? { ...sub, is_active: !isActive } 
+                : sub
+            )
+          );
+          throw error;
+        }
       } else if (isActive) {
         // Create new subscription with calculated lead_price
         const tierInfo = SQFT_TIERS.find(t => t.value === tier);
@@ -160,16 +170,18 @@ const RetailerSubscriptions = () => {
           brand_name: brandName,
           sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
           is_active: true,
-          lead_price: tierInfo?.basePrice || 0, // Auto-calculate from constants
+          lead_price: tierInfo?.basePrice || 0,
           accepts_installation: false,
           installation_surcharge: 0.50
         };
 
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('brand_subscriptions')
           .insert(newSubscription)
           .select()
           .single();
+
+        if (error) throw error;
 
         if (data) {
           setSubscriptions(prev => [...prev, data]);
@@ -187,6 +199,8 @@ const RetailerSubscriptions = () => {
         description: "Failed to update subscription.",
         variant: "destructive",
       });
+    } finally {
+      setSavingState(tierKey, false);
     }
   };
 
@@ -197,7 +211,7 @@ const RetailerSubscriptions = () => {
       );
 
       if (existingSubscription) {
-        // Update local state immediately for responsive UI
+        // Optimistic update
         setSubscriptions(prev => 
           prev.map(sub => 
             sub.id === existingSubscription.id 
@@ -260,6 +274,7 @@ const RetailerSubscriptions = () => {
               subscriptions={brandSubscriptions}
               onToggleTier={handleToggleTier}
               onToggleInstall={handleToggleInstall}
+              savingStates={savingStates}
             />
           );
         })}
