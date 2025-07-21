@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { formatAndValidatePostalCode } from '@/utils/postalCodeUtils';
+import EnhancedPostalCodeCoverage from '@/components/retailer/EnhancedPostalCodeCoverage';
 import { Building2, MapPin, Phone, Mail, Globe, DollarSign } from 'lucide-react';
 
 interface RetailerProfile {
@@ -275,7 +277,12 @@ const RetailerSettings = () => {
               <Input
                 id="postal_code"
                 value={profile.postal_code || ''}
-                onChange={(e) => updateProfile('postal_code', e.target.value)}
+                onChange={(e) => {
+                  const formatted = formatAndValidatePostalCode(e.target.value, profile.postal_code || '');
+                  updateProfile('postal_code', formatted);
+                }}
+                placeholder="A1A 1A1"
+                maxLength={7}
               />
             </div>
           </CardContent>
@@ -321,6 +328,9 @@ const RetailerSettings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Enhanced Postal Code Coverage - Full Width */}
+      <EnhancedPostalCodeCoverage retailerId={profile.id} />
 
       {/* Save Button */}
       <div className="flex justify-end">
