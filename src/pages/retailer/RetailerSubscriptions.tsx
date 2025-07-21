@@ -9,6 +9,7 @@ import PostalCodeCoverage from '@/components/retailer/PostalCodeCoverage';
 import RetailerSubscriptionCard from '@/components/retailer/RetailerSubscriptionCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { SQFT_TIERS } from '@/constants/flooringData';
+import { useAuth } from '@/components/auth/AuthContext';
 
 interface FlooringBrand {
   id: string;
@@ -40,44 +41,62 @@ const RetailerSubscriptions = () => {
   const [loading, setLoading] = useState(true);
   const [retailerId, setRetailerId] = useState<string>('');
   const [savingStates, setSavingStates] = useState<{[key: string]: boolean}>({});
+  
+  const { user, profile } = useAuth();
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    console.log('RetailerSubscriptions mounted with user:', user?.id, 'profile:', profile);
+    if (user && profile) {
+      fetchData();
+    }
+  }, [user, profile]);
 
   const fetchData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get retailer profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('retailer_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.retailer_id) return;
+      console.log('Fetching data for retailer:', profile?.retailer_id);
+      
+      if (!profile?.retailer_id) {
+        console.error('No retailer_id found in profile');
+        setLoading(false);
+        return;
+      }
 
       setRetailerId(profile.retailer_id);
 
       // Fetch available brands
-      const { data: brandsData } = await supabase
+      const { data: brandsData, error: brandsError } = await supabase
         .from('flooring_brands')
         .select('*')
         .order('featured', { ascending: false })
         .order('name');
 
+      if (brandsError) {
+        console.error('Error fetching brands:', brandsError);
+        throw brandsError;
+      }
+
       // Fetch current subscriptions
-      const { data: subscriptionsData } = await supabase
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
         .from('brand_subscriptions')
         .select('*')
         .eq('retailer_id', profile.retailer_id);
 
+      if (subscriptionsError) {
+        console.error('Error fetching subscriptions:', subscriptionsError);
+        throw subscriptionsError;
+      }
+
+      console.log('Fetched brands:', brandsData?.length, 'subscriptions:', subscriptionsData?.length);
+      
       setBrands(brandsData || []);
       setSubscriptions(subscriptionsData || []);
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load subscription data. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -120,16 +139,9 @@ const RetailerSubscriptions = () => {
     setSavingState(tierKey, true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('retailer_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.retailer_id) return;
+      if (!profile?.retailer_id) {
+        throw new Error('No retailer ID found');
+      }
 
       const existingSubscription = subscriptions.find(s => 
         s.brand_name === brandName && s.sqft_tier === tier
