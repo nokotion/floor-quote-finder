@@ -1,7 +1,13 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 import { flooringTypes } from "@/constants/flooringData";
+
+// Create a clean anonymous client for public data queries
+const anonClient = createClient(
+  "https://syjxtyvsencbmhuprnyu.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5anh0eXZzZW5jYm1odXBybnl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNzQ4MTQsImV4cCI6MjA2NTc1MDgxNH0.0MchabnLmc3rnXzHnKeTYJO-gTDV3MzYNQQOl3ARCnc"
+);
 
 interface Brand {
   id: string;
@@ -19,7 +25,7 @@ export const useFlooringData = () => {
     const fetchData = async () => {
       console.log('🔄 Fetching brands from database...');
       
-      const { data, error } = await supabase
+      const { data, error } = await anonClient
         .from('flooring_brands')
         .select('id, name, categories');
       
