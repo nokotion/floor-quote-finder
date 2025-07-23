@@ -8,7 +8,14 @@ import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 
 const FlooringPathTabs = () => {
   const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
-  const { brands, brandCounts, brandCountsLoading } = useFlooringData();
+  const { brands, brandCounts, brandCountsLoading, error } = useFlooringData();
+  
+  console.log('🏠 FlooringPathTabs render:', { 
+    brandsCount: brands.length, 
+    loading: brandCountsLoading,
+    error,
+    firstBrand: brands[0]?.name
+  });
 
   return (
     <section className="py-4 px-4 bg-white">
@@ -33,6 +40,11 @@ const FlooringPathTabs = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
+            {error && (
+              <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded border">
+                Error loading brands: {error}
+              </div>
+            )}
             <QuickQuoteForm brands={brands} />
           </motion.div>
         )}
