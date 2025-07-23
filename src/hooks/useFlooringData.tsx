@@ -16,21 +16,24 @@ export const useFlooringData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching brands from database...');
+        console.log('🔄 Fetching brands from database...');
+        
         // Fetch brands
         const { data: brandsData, error: brandsError } = await supabase
           .from('flooring_brands')
           .select('id, name, categories')
           .order('name');
         
-        console.log('Brands fetch result:', { brandsData, brandsError });
+        console.log('📊 BRANDS FETCHED:', brandsData?.length || 0, 'brands');
+        console.log('🔍 Raw data:', brandsData);
+        console.log('❌ ERROR (if any):', brandsError);
         
         if (brandsError) {
-          console.error('Error fetching brands:', brandsError);
+          console.error('💥 Error fetching brands:', brandsError);
           throw brandsError;
         }
         
-        console.log('Setting brands:', brandsData?.length || 0, 'brands found');
+        console.log('✅ Setting brands state with', brandsData?.length || 0, 'brands');
         setBrands(brandsData || []);
 
         // Calculate brand counts
@@ -40,9 +43,10 @@ export const useFlooringData = () => {
             brand.categories?.toLowerCase().includes(type.name.toLowerCase())
           ).length || 0;
         });
+        console.log('📈 Brand counts calculated:', counts);
         setBrandCounts(counts);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('💥 Error in fetchData:', error);
       } finally {
         setBrandCountsLoading(false);
       }
