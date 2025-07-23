@@ -20,6 +20,7 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
+  console.log('QuickQuoteForm rendered with brands:', brands?.length || 0, 'brands');
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
   const [postalCode, setPostalCode] = useState("");
@@ -107,7 +108,7 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
                   <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
                     <SelectValue placeholder="Select brand" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                     {brands.map((brand) => (
                       <SelectItem key={brand.id} value={brand.name} className="font-medium">
                         {brand.name}

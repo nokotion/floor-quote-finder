@@ -16,13 +16,21 @@ export const useFlooringData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching brands from database...');
         // Fetch brands
         const { data: brandsData, error: brandsError } = await supabase
           .from('flooring_brands')
           .select('id, name, categories')
           .order('name');
         
-        if (brandsError) throw brandsError;
+        console.log('Brands fetch result:', { brandsData, brandsError });
+        
+        if (brandsError) {
+          console.error('Error fetching brands:', brandsError);
+          throw brandsError;
+        }
+        
+        console.log('Setting brands:', brandsData?.length || 0, 'brands found');
         setBrands(brandsData || []);
 
         // Calculate brand counts
