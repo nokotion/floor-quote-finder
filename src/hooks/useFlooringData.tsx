@@ -14,67 +14,58 @@ export const useFlooringData = () => {
   const [brandCountsLoading, setBrandCountsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🚀 useFlooringData hook mounted, starting fetch...');
+    
     const fetchData = async () => {
-      setBrandCountsLoading(true);
-      try {
-        console.log('🔄 Fetching brands from database...');
-        
-        // Ensure we're using anonymous access for public data
-        const { data: brandsData, error: brandsError } = await supabase
-          .from('flooring_brands')
-          .select('id, name, categories')
-          .order('name');
-        
-        console.log('📊 BRANDS FETCHED:', brandsData?.length || 0, 'brands');
-        console.log('🔍 Raw data sample:', brandsData?.slice(0, 3));
-        
-        if (brandsError) {
-          console.error('💥 Error fetching brands:', brandsError);
-          console.error('💥 Error details:', JSON.stringify(brandsError, null, 2));
-          throw brandsError;
-        }
-        
-        if (!brandsData || brandsData.length === 0) {
-          console.warn('⚠️ No brands found in database');
-          setBrands([]);
-          setBrandCounts({});
-          return;
-        }
-        
-        console.log('✅ Setting brands state with', brandsData.length, 'brands');
-        setBrands(brandsData);
-
-        // Calculate brand counts with better error handling for categories
-        const counts: Record<string, number> = {};
-        flooringTypes.forEach(type => {
-          counts[type.name] = brandsData?.filter(brand => {
-            if (!brand.categories) return false;
-            
-            // Handle both string and array formats for categories
-            let categoryString = '';
-            if (Array.isArray(brand.categories)) {
-              categoryString = brand.categories.join(',').toLowerCase();
-            } else {
-              categoryString = String(brand.categories).toLowerCase();
-            }
-            
-            return categoryString.includes(type.name.toLowerCase());
-          }).length || 0;
-        });
-        console.log('📈 Brand counts calculated:', counts);
-        setBrandCounts(counts);
-      } catch (error) {
-        console.error('💥 Error in fetchData:', error);
-        console.error('💥 Full error object:', JSON.stringify(error, null, 2));
+      console.log('🔄 Fetching brands from database...');
+      
+      const { data, error } = await supabase
+        .from('flooring_brands')
+        .select('id, name, categories');
+      
+      console.log('📊 Query result:', { data: data?.length, error });
+      
+      if (error) {
+        console.error('❌ Supabase error:', error);
         setBrands([]);
         setBrandCounts({});
-      } finally {
         setBrandCountsLoading(false);
+        return;
       }
+      
+      if (data && data.length > 0) {
+        console.log('✅ Successfully fetched', data.length, 'brands');
+        console.log('🔍 First brand:', data[0]);
+        setBrands(data);
+        
+        // Simple brand counts calculation
+        const counts: Record<string, number> = {};
+        flooringTypes.forEach(type => {
+          counts[type.name] = data.filter(brand => {
+            const categories = brand.categories || '';
+            return categories.toLowerCase().includes(type.name.toLowerCase());
+          }).length;
+        });
+        
+        console.log('📈 Brand counts:', counts);
+        setBrandCounts(counts);
+      } else {
+        console.warn('⚠️ No brands returned from query');
+        setBrands([]);
+        setBrandCounts({});
+      }
+      
+      setBrandCountsLoading(false);
     };
 
-    fetchData();
+    fetchData().catch(error => {
+      console.error('💥 fetchData error:', error);
+      setBrands([]);
+      setBrandCounts({});
+      setBrandCountsLoading(false);
+    });
   }, []);
 
+  console.log('🎯 Hook returning:', { brandsLength: brands.length, brandCountsLoading });
   return { brands, brandCounts, brandCountsLoading };
 };
