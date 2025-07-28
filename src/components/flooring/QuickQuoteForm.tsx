@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { AddressAutocomplete, AddressData } from "@/components/ui/address-autocomplete";
 import { projectSizes } from "@/constants/flooringData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Brand {
   id: string;
@@ -20,7 +21,26 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
-  console.log('QuickQuoteForm rendered with brands:', brands?.length || 0, 'brands');
+  console.log('🏠 QuickQuoteForm rendered with brands:', brands?.length || 0, 'brands');
+  console.log('🔍 Brand names:', brands?.map(b => b.name).slice(0, 5));
+  
+  // Direct test query to debug Supabase connection
+  useEffect(() => {
+    const testQuery = async () => {
+      console.log('🧪 Testing direct Supabase query from QuickQuoteForm...');
+      try {
+        const { data, error } = await supabase
+          .from('flooring_brands')
+          .select('id, name')
+          .limit(3);
+        console.log('🧪 Direct query result:', { data, error });
+      } catch (err) {
+        console.error('🧪 Direct query failed:', err);
+      }
+    };
+    testQuery();
+  }, []);
+  
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
   const [postalCode, setPostalCode] = useState("");
