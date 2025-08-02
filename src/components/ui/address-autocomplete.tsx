@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AddressData {
   formatted_address: string;
@@ -24,8 +25,7 @@ interface AddressAutocompleteProps {
   usePostalCodeOnly?: boolean;
 }
 
-// Google Maps API key - in production, restrict this key to your domain in Google Cloud Console
-const GOOGLE_MAPS_API_KEY = 'AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50';
+// Google Maps API key is now fetched securely from backend
 
 const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value,
@@ -48,7 +48,10 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       try {
         console.log('Initializing Google Places Autocomplete...');
         
-        if (!GOOGLE_MAPS_API_KEY) {
+        // Fetch Google Maps API key securely from edge function
+        const { data, error } = await supabase.functions.invoke('google-maps-config');
+        
+        if (error || !data?.apiKey) {
           console.log('Google Maps API key not configured - using fallback input mode');
           setHasError(true);
           setErrorMessage('Enter your complete address or postal code');
@@ -58,7 +61,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
         console.log('Loading Google Maps API...');
         const loader = new Loader({
-          apiKey: GOOGLE_MAPS_API_KEY,
+          apiKey: data.apiKey,
           version: 'weekly',
           libraries: ['places']
         });
