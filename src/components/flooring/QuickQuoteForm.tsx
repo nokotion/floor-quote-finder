@@ -20,25 +20,33 @@ interface QuickQuoteFormProps {
   brands: Brand[];
 }
 
-export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
-  console.log('🏠 QuickQuoteForm rendered with brands:', brands?.length || 0, 'brands');
-  console.log('🔍 Brand names:', brands?.map(b => b.name).slice(0, 5));
+export const QuickQuoteForm = ({ brands: propBrands }: QuickQuoteFormProps) => {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
   
-  // Direct test query to debug Supabase connection
+  // Direct query to fetch brands (bypassing the hook)
   useEffect(() => {
-    const testQuery = async () => {
-      console.log('🧪 Testing direct Supabase query from QuickQuoteForm...');
+    const fetchBrands = async () => {
       try {
         const { data, error } = await supabase
           .from('flooring_brands')
           .select('id, name')
-          .limit(3);
-        console.log('🧪 Direct query result:', { data, error });
+          .order('name');
+        
+        if (error) {
+          console.error('Failed to fetch brands:', error);
+        } else {
+          setBrands(data || []);
+          console.log('✅ Fetched', data?.length || 0, 'brands');
+        }
       } catch (err) {
-        console.error('🧪 Direct query failed:', err);
+        console.error('Error fetching brands:', err);
+      } finally {
+        setBrandsLoading(false);
       }
     };
-    testQuery();
+    
+    fetchBrands();
   }, []);
   
   const [selectedBrand, setSelectedBrand] = useState("");
@@ -124,13 +132,13 @@ export const QuickQuoteForm = ({ brands }: QuickQuoteFormProps) => {
                 <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                   Preferred Brand
                 </Label>
-                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                <Select value={selectedBrand} onValueChange={setSelectedBrand} disabled={brandsLoading}>
                   <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
-                    <SelectValue placeholder="Select brand" />
+                    <SelectValue placeholder={brandsLoading ? "Loading brands..." : "Select brand"} />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
                     {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.name} className="font-medium">
+                      <SelectItem key={brand.id} value={brand.name} className="font-medium text-gray-900 hover:bg-gray-100">
                         {brand.name}
                       </SelectItem>
                     ))}
