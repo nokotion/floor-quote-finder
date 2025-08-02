@@ -24,23 +24,26 @@ export const QuickQuoteForm = ({ brands: propBrands }: QuickQuoteFormProps) => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   
-  // Direct query to fetch brands (bypassing the hook)
   useEffect(() => {
     const fetchBrands = async () => {
+      console.log('🎯 Starting to fetch brands from flooring_brands table...');
       try {
         const { data, error } = await supabase
           .from('flooring_brands')
           .select('id, name')
           .order('name');
         
+        console.log('🎯 Supabase response:', { data: data?.length || 0, error });
+        
         if (error) {
-          console.error('Failed to fetch brands:', error);
+          console.error('❌ Failed to fetch brands:', error);
         } else {
           setBrands(data || []);
-          console.log('✅ Fetched', data?.length || 0, 'brands');
+          console.log('✅ Successfully fetched', data?.length || 0, 'brands');
+          console.log('🔍 First few brands:', data?.slice(0, 3));
         }
       } catch (err) {
-        console.error('Error fetching brands:', err);
+        console.error('💥 Error fetching brands:', err);
       } finally {
         setBrandsLoading(false);
       }
