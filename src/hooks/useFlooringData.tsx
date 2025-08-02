@@ -22,7 +22,10 @@ export const useFlooringData = () => {
         console.log('📡 Making Supabase query to flooring_brands...');
         const { data, error } = await supabase
           .from('flooring_brands')
-          .select('id, name, categories');
+          .select('id, name, categories')
+          .order('name');
+        
+        console.log("useFlooringData fetched brands:", data, error);
         
         if (error) {
           console.error('❌ Supabase error:', error);

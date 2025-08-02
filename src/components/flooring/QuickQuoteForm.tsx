@@ -1,15 +1,12 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { AddressAutocomplete, AddressData } from "@/components/ui/address-autocomplete";
 import { projectSizes } from "@/constants/flooringData";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Brand {
   id: string;
@@ -18,39 +15,11 @@ interface Brand {
 
 interface QuickQuoteFormProps {
   brands: Brand[];
+  brandsLoading?: boolean;
 }
 
-export const QuickQuoteForm = ({ brands: propBrands }: QuickQuoteFormProps) => {
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [brandsLoading, setBrandsLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchBrands = async () => {
-      console.log('🎯 Starting to fetch brands from flooring_brands table...');
-      try {
-        const { data, error } = await supabase
-          .from('flooring_brands')
-          .select('id, name')
-          .order('name');
-        
-        console.log('🎯 Supabase response:', { data: data?.length || 0, error });
-        
-        if (error) {
-          console.error('❌ Failed to fetch brands:', error);
-        } else {
-          setBrands(data || []);
-          console.log('✅ Successfully fetched', data?.length || 0, 'brands');
-          console.log('🔍 First few brands:', data?.slice(0, 3));
-        }
-      } catch (err) {
-        console.error('💥 Error fetching brands:', err);
-      } finally {
-        setBrandsLoading(false);
-      }
-    };
-    
-    fetchBrands();
-  }, []);
+export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
+  console.log("QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -140,11 +109,19 @@ export const QuickQuoteForm = ({ brands: propBrands }: QuickQuoteFormProps) => {
                     <SelectValue placeholder={brandsLoading ? "Loading brands..." : "Select brand"} />
                   </SelectTrigger>
                   <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.name} className="font-medium text-gray-900 hover:bg-gray-100">
-                        {brand.name}
-                      </SelectItem>
-                    ))}
+                    {propBrands?.length > 0 ? (
+                      propBrands.map((brand) => (
+                        <SelectItem key={brand.id} value={brand.name} className="font-medium text-gray-900 hover:bg-gray-100">
+                          {brand.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      !brandsLoading && (
+                        <SelectItem value="" disabled className="font-medium text-gray-500">
+                          No brands available
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>

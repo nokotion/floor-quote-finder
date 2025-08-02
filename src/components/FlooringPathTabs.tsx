@@ -45,7 +45,7 @@ const FlooringPathTabs = () => {
                 Error loading brands: {error}
               </div>
             )}
-            <QuickQuoteForm brands={brands} />
+            <QuickQuoteForm brands={brands} brandsLoading={brandCountsLoading} />
           </motion.div>
         )}
 
