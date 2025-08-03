@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,12 +23,6 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
   console.log("🎬 QuickQuoteForm rendering...");
   console.log("📥 QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
   console.log("🔄 QuickQuoteForm brandsLoading state:", brandsLoading);
-  console.log("🔍 Brands array details:", {
-    isArray: Array.isArray(propBrands),
-    length: propBrands?.length,
-    hasItems: propBrands && propBrands.length > 0,
-    firstBrand: propBrands?.[0]
-  });
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -114,51 +109,31 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
                 <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                   Preferred Brand
                 </Label>
-                {brandsLoading ? (
-                  (() => {
-                    console.log("🎯 Rendering loading state");
-                    return (
-                      <Select disabled>
-                        <SelectTrigger className="h-12 bg-white border-gray-200">
-                          <SelectValue placeholder="Loading brands..." />
-                        </SelectTrigger>
-                      </Select>
-                    );
-                  })()
-                ) : (
-                  (() => {
-                    console.log("🎯 Rendering dropdown with brands. Count:", propBrands?.length);
-                    console.log("🎯 Brands data check:", propBrands && Array.isArray(propBrands) && propBrands.length > 0);
-                    return (
-                      <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                        <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                          <SelectValue placeholder="Select brand" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                          {propBrands && propBrands.length > 0 ? (
-                            propBrands.map((brand) => {
-                              console.log("🎯 Rendering brand option:", brand);
-                              return (
-                                <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
-                                  {brand.name}
-                                </SelectItem>
-                              );
-                            })
-                          ) : (
-                            (() => {
-                              console.log("🎯 No brands to render - showing fallback");
-                              return (
-                                <SelectItem disabled value="no-brands" className="font-medium text-gray-500">
-                                  No brands available
-                                </SelectItem>
-                              );
-                            })()
-                          )}
-                        </SelectContent>
-                      </Select>
-                    );
-                  })()
-                )}
+                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                  <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                    <SelectValue placeholder={brandsLoading ? "Loading brands..." : "Select brand"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
+                    {brandsLoading ? (
+                      <SelectItem disabled value="loading" className="font-medium text-gray-500">
+                        Loading brands...
+                      </SelectItem>
+                    ) : propBrands && propBrands.length > 0 ? (
+                      propBrands.map((brand) => {
+                        console.log("🎯 Rendering brand option:", brand);
+                        return (
+                          <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
+                            {brand.name}
+                          </SelectItem>
+                        );
+                      })
+                    ) : (
+                      <SelectItem disabled value="no-brands" className="font-medium text-gray-500">
+                        No brands available
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

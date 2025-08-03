@@ -1,5 +1,4 @@
 
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,38 +20,82 @@ export const useFlooringData = () => {
     const fetchBrands = async () => {
       setBrandsLoading(true);
       console.log("🔄 Set brandsLoading to true");
+      
       try {
-        console.log("📡 Making Supabase query...");
-        const { data, error } = await supabase
+        console.log("📡 Testing Supabase connection...");
+        
+        // First test basic connection
+        const { data: testData, error: testError } = await supabase
           .from("flooring_brands")
-          .select("id, name")
-          .order("name");
+          .select("count", { count: "exact", head: true });
         
-        console.log("🚀 Supabase raw result:", { data, error });
-        console.log("🔍 Data type:", typeof data, "Array?", Array.isArray(data));
-        console.log("🔍 Error details:", error?.message, error?.details, error?.hint);
+        console.log("🧪 Connection test result:", { testData, testError, count: testData });
         
-        if (error) {
-          console.error("❌ Supabase fetch error:", error);
-          setError(`Database error: ${error.message}`);
-        } else if (!data) {
-          console.warn("⚠️ No data received from Supabase");
-          setError("No data received from database");
-        } else if (Array.isArray(data) && data.length === 0) {
-          console.warn("⚠️ Data is empty array");
-          setBrands([]);
-          setError("No brands found in database");
-        } else if (data) {
-          console.log("✅ Setting brands data:", data.length, "brands");
-          console.log("🔍 First 3 brands:", data.slice(0, 3));
-          setBrands(data);
-          setError(null);
-          console.log("✅ useFlooringData fetched brands:", data?.length, data?.slice(0,3));
+        if (testError) {
+          console.error("❌ Connection test failed:", testError);
+          // Try with a fallback of hardcoded brands for now
+          console.log("🔄 Using fallback brands...");
+          const fallbackBrands = [
+            { id: "1", name: "Shaw" },
+            { id: "2", name: "Mohawk" },
+            { id: "3", name: "Armstrong" },
+            { id: "4", name: "Tarkett" },
+            { id: "5", name: "Mannington" }
+          ];
+          setBrands(fallbackBrands);
+          setError("Using fallback brands - database connection issue");
+          console.log("✅ Fallback brands set:", fallbackBrands.length);
+        } else {
+          console.log("✅ Connection successful, fetching actual brands...");
+          
+          const { data, error } = await supabase
+            .from("flooring_brands")
+            .select("id, name")
+            .order("name");
+          
+          console.log("🚀 Supabase brand fetch result:", { data, error });
+          console.log("🔍 Data type:", typeof data, "Array?", Array.isArray(data));
+          console.log("🔍 Error details:", error?.message, error?.details, error?.hint);
+          
+          if (error) {
+            console.error("❌ Brand fetch error:", error);
+            setError(`Database error: ${error.message}`);
+          } else if (!data || data.length === 0) {
+            console.warn("⚠️ No brands found, adding sample data...");
+            // If no data exists, we'll use fallback brands
+            const fallbackBrands = [
+              { id: "1", name: "Shaw" },
+              { id: "2", name: "Mohawk" },
+              { id: "3", name: "Armstrong" },
+              { id: "4", name: "Tarkett" },
+              { id: "5", name: "Mannington" }
+            ];
+            setBrands(fallbackBrands);
+            setError("No brands in database - using sample brands");
+          } else {
+            console.log("✅ Setting brands data:", data.length, "brands");
+            console.log("🔍 First 3 brands:", data.slice(0, 3));
+            setBrands(data);
+            setError(null);
+          }
         }
       } catch (fetchError) {
         console.error("💥 Fetch exception:", fetchError);
-        console.error("💥 Exception stack:", fetchError instanceof Error ? fetchError.stack : 'No stack');
-        setError(`Fetch failed: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
+        console.error("💥 Exception details:", {
+          message: fetchError instanceof Error ? fetchError.message : 'Unknown error',
+          stack: fetchError instanceof Error ? fetchError.stack : 'No stack'
+        });
+        
+        // Use fallback brands on any error
+        const fallbackBrands = [
+          { id: "1", name: "Shaw" },
+          { id: "2", name: "Mohawk" },
+          { id: "3", name: "Armstrong" },
+          { id: "4", name: "Tarkett" },
+          { id: "5", name: "Mannington" }
+        ];
+        setBrands(fallbackBrands);
+        setError(`Fetch failed: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'} - using fallback brands`);
       } finally {
         console.log("🏁 Setting brandsLoading to false");
         setBrandsLoading(false);
@@ -67,4 +110,3 @@ export const useFlooringData = () => {
   
   return { brands, brandsLoading, error };
 };
-
