@@ -25,51 +25,56 @@ export const useFlooringData = () => {
     console.log(`[${instanceId.current}] 🚀 Starting brand fetch...`);
     
     const fetchBrands = async () => {
-      try {
-        setBrandsLoading(true);
-        setError(null);
-        
-        console.log(`[${instanceId.current}] 📡 Querying flooring_brands table...`);
-        
-        // Simple, direct query
-        const { data, error, status, statusText } = await supabase
-          .from("flooring_brands")
-          .select("id, name")
-          .order("name");
+      setBrandsLoading(true);
+      setError(null);
+      
+      console.log(`[${instanceId.current}] 📡 Querying flooring_brands table...`);
+      console.log(`[${instanceId.current}] 🔐 Auth state:`, supabase.auth.getUser());
+      
+      // Raw Supabase query without error handling to see exact failure point
+      const response = await supabase
+        .from("flooring_brands")
+        .select("id, name")
+        .order("name");
 
-        console.log(`[${instanceId.current}] 📊 Query completed:`, { 
-          status, 
-          statusText,
-          dataLength: data?.length || 0,
-          error: error ? `${error.code}: ${error.message}` : null,
-          sampleData: data?.slice(0, 3)
+      // Log raw response before any processing
+      console.log(`[${instanceId.current}] 🔍 RAW SUPABASE RESPONSE:`, {
+        data: response.data,
+        error: response.error,
+        status: response.status,
+        statusText: response.statusText,
+        count: response.count,
+        rawResponse: response
+      });
+
+      if (response.error) {
+        console.error(`[${instanceId.current}] ❌ SUPABASE ERROR DETAILS:`, {
+          code: response.error.code,
+          message: response.error.message,
+          details: response.error.details,
+          hint: response.error.hint
         });
-        
-        if (error) {
-          console.error(`[${instanceId.current}] ❌ Supabase error:`, error);
-          throw new Error(`Database error: ${error.message}`);
-        }
-        
-        if (!data || data.length === 0) {
-          console.warn(`[${instanceId.current}] ⚠️ No brands found, using fallback`);
-          setBrands(FALLBACK_BRANDS);
-          setError("No brands found in database, showing defaults");
-        } else {
-          console.log(`[${instanceId.current}] ✅ Loaded ${data.length} brands successfully`);
-          setBrands(data);
-          setError(null);
-        }
-        
-      } catch (fetchError) {
-        console.error(`[${instanceId.current}] 💥 Fetch failed:`, fetchError);
-        setError(fetchError instanceof Error ? fetchError.message : 'Unknown error');
-        setBrands(FALLBACK_BRANDS);
-      } finally {
+        setError(`Database error: ${response.error.message}`);
+        setBrands([]); // No fallback, force empty to see the real issue
         setBrandsLoading(false);
+        return;
       }
+      
+      if (!response.data || response.data.length === 0) {
+        console.warn(`[${instanceId.current}] ⚠️ No brands found in database`);
+        setBrands([]);
+        setError("No brands found in database");
+        setBrandsLoading(false);
+        return;
+      }
+
+      console.log(`[${instanceId.current}] ✅ Successfully loaded brands:`, response.data.length, response.data.slice(0, 3));
+      setBrands(response.data);
+      setError(null);
+      setBrandsLoading(false);
     };
 
-    // Execute immediately without timeout
+    // Execute immediately
     fetchBrands();
   }, []);
 

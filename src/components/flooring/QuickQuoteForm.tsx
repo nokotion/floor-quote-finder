@@ -20,9 +20,12 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
-  console.log("🎬 QuickQuoteForm rendering...");
-  console.log("📥 QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
-  console.log("🔄 QuickQuoteForm brandsLoading state:", brandsLoading);
+  console.log("📥 QuickQuoteForm final brands prop:", { 
+    brandsCount: propBrands?.length, 
+    brandsLoading, 
+    firstBrand: propBrands?.[0]?.name,
+    allBrands: propBrands?.map(b => b.name).slice(0, 10)
+  });
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
