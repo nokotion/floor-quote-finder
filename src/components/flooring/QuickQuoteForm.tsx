@@ -19,6 +19,7 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
+  console.log("🎬 QuickQuoteForm rendering...");
   console.log("📥 QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
   console.log("🔄 QuickQuoteForm brandsLoading state:", brandsLoading);
   

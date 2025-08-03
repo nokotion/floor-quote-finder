@@ -8,13 +8,16 @@ interface Brand {
 }
 
 export const useFlooringData = () => {
+  console.log("🎬 useFlooringData hook mounting...");
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("🚀 Starting brand fetch...");
     const fetchBrands = async () => {
       setBrandsLoading(true);
+      console.log("🔄 Set brandsLoading to true");
       try {
         const { data, error } = await supabase
           .from("flooring_brands")

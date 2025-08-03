@@ -7,10 +7,11 @@ import { QuickQuoteForm } from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 
 const FlooringPathTabs = () => {
+  console.log("🎬 FlooringPathTabs rendering...");
   const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
   const { brands, brandsLoading, error } = useFlooringData();
   
-  console.log("📤 Passing brands to QuickQuoteForm:", brands?.length);
+  console.log("📤 Passing brands to QuickQuoteForm:", brands?.length, "Loading:", brandsLoading);
 
   return (
     <section className="py-4 px-4 bg-white">
