@@ -36,11 +36,6 @@ const FlooringPathTabs = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {error && (
-              <div className="text-red-600 text-sm mb-4 p-3 bg-red-50 rounded border">
-                Error loading brands: {error}
-              </div>
-            )}
             <QuickQuoteForm brands={brands} brandsLoading={brandsLoading} />
           </motion.div>
         )}

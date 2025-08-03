@@ -32,12 +32,14 @@ export const useFlooringData = () => {
     }
     
     abortControllerRef.current = new AbortController();
+    
+    // Set a more reasonable timeout - 10 seconds
     const timeoutId = setTimeout(() => {
-      console.log(`[${instanceId.current}] ⏰ ${new Date().toISOString()} - 5 second timeout reached, using fallback brands`);
+      console.log(`[${instanceId.current}] ⏰ ${new Date().toISOString()} - 10 second timeout reached, using fallback brands`);
       setBrands(FALLBACK_BRANDS);
       setBrandsLoading(false);
       setError("Query timeout - using fallback brands");
-    }, 5000);
+    }, 10000);
 
     const fetchBrands = async () => {
       try {
