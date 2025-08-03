@@ -78,27 +78,27 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           });
 
           autocompleteRef.current.addListener('place_changed', () => {
-            const place = autocompleteRef.current?.getPlace();
-console.log('Place selected:', place);
+  const place = autocompleteRef.current?.getPlace();
+  console.log('Place selected:', place);
 
-if (place && place.formatted_address) {
-  const addressData: AddressData = {
-    formatted_address: place.formatted_address
-  };
+  if (place && place.formatted_address) {
+    const addressData: AddressData = {
+      formatted_address: place.formatted_address
+    };
 
-  if (place.address_components) {
-    place.address_components.forEach((component) => {
-      const types = component.types;
-      if (types.includes('street_number')) addressData.street_number = component.long_name;
-      else if (types.includes('route')) addressData.route = component.long_name;
-      else if (types.includes('locality')) addressData.locality = component.long_name;
-      else if (types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = component.short_name;
-      else if (types.includes('postal_code')) addressData.postal_code = component.long_name;
-      else if (types.includes('country')) addressData.country = component.long_name;
-    });
+    if (place.address_components) {
+      place.address_components.forEach((component) => {
+        const types = component.types;
+        if (types.includes('street_number')) addressData.street_number = component.long_name;
+        else if (types.includes('route')) addressData.route = component.long_name;
+        else if (types.includes('locality')) addressData.locality = component.long_name;
+        else if (types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = component.short_name;
+        else if (types.includes('postal_code')) addressData.postal_code = component.long_name;
+        else if (types.includes('country')) addressData.country = component.long_name;
+      });
+    }
+
+    console.log('Address data extracted:', addressData);
+    onChange(place.formatted_address, addressData);
   }
-
-  console.log('Address data extracted:', addressData);
-  onChange(place.formatted_address, addressData);
-}
 });
