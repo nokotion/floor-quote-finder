@@ -65,4 +65,9 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
         if (inputRef.current && !autocompleteRef.current) {
           console.log('Creating Google Places Autocomplete instance...');
-          autocompleteRef.current = new google.maps.places.Auto
+         autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+  types: usePostalCodeOnly ? ['postal_code'] : ['address'],
+  componentRestrictions: { country: 'ca' },
+  fields: ['formatted_address', 'address_components', 'geometry']
+});
+
