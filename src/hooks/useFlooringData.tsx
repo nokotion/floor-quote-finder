@@ -11,14 +11,22 @@ interface Brand {
 
 export const useFlooringData = () => {
   const instanceId = useRef(`HOOK_${Math.random().toString(36).substr(2, 9)}`);
+  const fetchInProgress = useRef(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log(`[${instanceId.current}] 🚀 Starting brand fetch...`);
+    console.log(`[${instanceId.current}] 🎬 HOOK MOUNTED - Starting brand fetch...`);
+    
+    // Prevent multiple simultaneous fetches
+    if (fetchInProgress.current) {
+      console.log(`[${instanceId.current}] ⚠️ Fetch already in progress, skipping...`);
+      return;
+    }
     
     const fetchBrands = async () => {
+      fetchInProgress.current = true;
       setBrandsLoading(true);
       setError(null);
       
@@ -49,8 +57,9 @@ export const useFlooringData = () => {
           hint: response.error.hint
         });
         setError(`Database error: ${response.error.message}`);
-        setBrands([]); // No fallback, force empty to see the real issue
+        setBrands([]);
         setBrandsLoading(false);
+        fetchInProgress.current = false;
         return;
       }
       
@@ -59,6 +68,7 @@ export const useFlooringData = () => {
         setBrands([]);
         setError("No brands found in database");
         setBrandsLoading(false);
+        fetchInProgress.current = false;
         return;
       }
 
@@ -66,10 +76,17 @@ export const useFlooringData = () => {
       setBrands(response.data);
       setError(null);
       setBrandsLoading(false);
+      fetchInProgress.current = false;
     };
 
     // Execute immediately
     fetchBrands();
+    
+    // Cleanup function to track unmounting
+    return () => {
+      console.log(`[${instanceId.current}] 🧹 HOOK UNMOUNTING - Cleanup`);
+      fetchInProgress.current = false;
+    };
   }, []);
 
   console.log(`[${instanceId.current}] 🎯 Current state:`, { 

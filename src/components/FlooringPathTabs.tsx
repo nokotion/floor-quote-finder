@@ -1,17 +1,35 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useFlooringData } from "@/hooks/useFlooringData";
 import { TabSwitcher } from "@/components/flooring/TabSwitcher";
 import { QuickQuoteForm } from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 
-const FlooringPathTabs = () => {
-  console.log("🎬 FlooringPathTabs rendering...");
-  const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
+const FlooringPathTabs = memo(() => {
+  const componentId = useRef(`TABS_${Math.random().toString(36).substr(2, 9)}`);
+  const renderCount = useRef(0);
+  renderCount.current++;
+  
+  console.log(`[${componentId.current}] 🎬 FlooringPathTabs rendering... (render #${renderCount.current})`);
+  
+  const [activeTab, setActiveTab] = useState("quick");
   const { brands, brandsLoading, error } = useFlooringData();
   
-  console.log("📤 Passing brands to QuickQuoteForm:", brands?.length, "Loading:", brandsLoading);
+  // Track re-renders
+  useEffect(() => {
+    console.log(`[${componentId.current}] 🔄 FlooringPathTabs useEffect triggered`);
+  });
+  
+  // Track component lifecycle
+  useEffect(() => {
+    console.log(`[${componentId.current}] 🎬 FlooringPathTabs MOUNTED`);
+    return () => {
+      console.log(`[${componentId.current}] 🧹 FlooringPathTabs UNMOUNTING`);
+    };
+  }, []);
+  
+  console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", brandsLoading, "Error:", error);
 
   return (
     <section className="py-4 px-4 bg-white">
@@ -52,6 +70,8 @@ const FlooringPathTabs = () => {
       </div>
     </section>
   );
-};
+});
+
+FlooringPathTabs.displayName = 'FlooringPathTabs';
 
 export default FlooringPathTabs;

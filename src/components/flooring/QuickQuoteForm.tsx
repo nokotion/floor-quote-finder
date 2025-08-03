@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -19,15 +19,30 @@ interface QuickQuoteFormProps {
   brandsLoading?: boolean;
 }
 
-export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
+export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
   const componentId = useRef(`FORM_${Math.random().toString(36).substr(2, 9)}`);
+  const renderCount = useRef(0);
+  renderCount.current++;
   
-  console.log(`[${componentId.current}] 📥 QuickQuoteForm (FLOORING FOLDER) final brands prop:`, { 
+  console.log(`[${componentId.current}] 📥 QuickQuoteForm (FLOORING FOLDER) render #${renderCount.current} - brands prop:`, { 
     brandsCount: propBrands?.length, 
     brandsLoading, 
     firstBrand: propBrands?.[0]?.name,
     allBrands: propBrands?.map(b => b.name).slice(0, 10)
   });
+  
+  // Track component lifecycle
+  useEffect(() => {
+    console.log(`[${componentId.current}] 🎬 QuickQuoteForm MOUNTED`);
+    return () => {
+      console.log(`[${componentId.current}] 🧹 QuickQuoteForm UNMOUNTING`);
+    };
+  }, []);
+  
+  // Track prop changes
+  useEffect(() => {
+    console.log(`[${componentId.current}] 🔄 Brands prop changed:`, propBrands?.length, "loading:", brandsLoading);
+  }, [propBrands, brandsLoading]);
   
   console.log(`[${componentId.current}] 🎯 Dropdown rendering brands:`, propBrands?.map(b => b.name));
   
@@ -208,4 +223,6 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
       </Card>
     </div>
   );
-};
+});
+
+QuickQuoteForm.displayName = 'QuickQuoteForm';
