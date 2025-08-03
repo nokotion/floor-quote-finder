@@ -78,24 +78,27 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           });
 
           autocompleteRef.current.addListener('place_changed', () => {
-            autocompleteRef.current.addListener('place_changed', () => {
-  const place = autocompleteRef.current?.getPlace();
-  if (!place?.formatted_address) return;
+            const place = autocompleteRef.current?.getPlace();
+console.log('Place selected:', place);
 
+if (place && place.formatted_address) {
   const addressData: AddressData = {
     formatted_address: place.formatted_address
   };
 
-  place.address_components?.forEach((c) => {
-    if (c.types.includes('street_number')) addressData.street_number = c.long_name;
-    if (c.types.includes('route')) addressData.route = c.long_name;
-    if (c.types.includes('locality')) addressData.locality = c.long_name;
-    if (c.types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = c.short_name;
-    if (c.types.includes('postal_code')) addressData.postal_code = c.long_name;
-    if (c.types.includes('country')) addressData.country = c.long_name;
-  });
+  if (place.address_components) {
+    place.address_components.forEach((component) => {
+      const types = component.types;
+      if (types.includes('street_number')) addressData.street_number = component.long_name;
+      else if (types.includes('route')) addressData.route = component.long_name;
+      else if (types.includes('locality')) addressData.locality = component.long_name;
+      else if (types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = component.short_name;
+      else if (types.includes('postal_code')) addressData.postal_code = component.long_name;
+      else if (types.includes('country')) addressData.country = component.long_name;
+    });
+  }
 
+  console.log('Address data extracted:', addressData);
   onChange(place.formatted_address, addressData);
+}
 });
-
-        
