@@ -69,10 +69,8 @@ export const useFlooringData = () => {
       }
     };
 
-    // Add a small delay to avoid rapid successive calls
-    const timeoutId = setTimeout(fetchBrands, 100);
-    
-    return () => clearTimeout(timeoutId);
+    // Execute immediately without timeout
+    fetchBrands();
   }, []);
 
   console.log(`[${instanceId.current}] 🎯 Current state:`, { 
