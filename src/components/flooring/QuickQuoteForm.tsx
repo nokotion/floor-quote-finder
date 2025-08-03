@@ -19,7 +19,8 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
-  console.log("✅ QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
+  console.log("📥 QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
+  console.log("🔄 QuickQuoteForm brandsLoading state:", brandsLoading);
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -105,24 +106,34 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
                   Preferred Brand
                 </Label>
                 {brandsLoading ? (
-                  <Select disabled>
-                    <SelectTrigger className="h-12 bg-white border-gray-200">
-                      <SelectValue placeholder="Loading brands..." />
-                    </SelectTrigger>
-                  </Select>
+                  (() => {
+                    console.log("🎯 Rendering loading state");
+                    return (
+                      <Select disabled>
+                        <SelectTrigger className="h-12 bg-white border-gray-200">
+                          <SelectValue placeholder="Loading brands..." />
+                        </SelectTrigger>
+                      </Select>
+                    );
+                  })()
                 ) : (
-                  <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                    <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                      {propBrands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  (() => {
+                    console.log("🎯 Rendering dropdown with brands");
+                    return (
+                      <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                        <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Select brand" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
+                          {propBrands.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
+                              {brand.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()
                 )}
               </div>
 

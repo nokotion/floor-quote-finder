@@ -10,7 +10,7 @@ const FlooringPathTabs = () => {
   const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
   const { brands, brandsLoading, error } = useFlooringData();
   
-  console.log("📊 Passing brands to QuickQuoteForm:", brands?.length);
+  console.log("📤 Passing brands to QuickQuoteForm:", brands?.length);
 
   return (
     <section className="py-4 px-4 bg-white">

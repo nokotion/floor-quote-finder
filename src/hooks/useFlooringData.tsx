@@ -14,24 +14,31 @@ export const useFlooringData = () => {
 
   useEffect(() => {
     const fetchBrands = async () => {
+      setBrandsLoading(true);
       try {
         const { data, error } = await supabase
           .from("flooring_brands")
           .select("id, name")
           .order("name");
         
-        console.log("🚀 useFlooringData fetched brands:", data, error);
+        console.log("🚀 Supabase raw result:", { data, error });
         
         if (error) {
-          console.error("❌ Supabase error:", error);
+          console.error("❌ Supabase fetch error:", error);
           setError(`Database error: ${error.message}`);
+        } else if (!data) {
+          console.warn("⚠️ No data received from Supabase");
+        } else if (Array.isArray(data) && data.length === 0) {
+          console.warn("⚠️ Data is empty array");
         } else if (data) {
           setBrands(data);
+          console.log("✅ useFlooringData fetched brands:", data?.length, data?.slice(0,3));
         }
       } catch (fetchError) {
         console.error("💥 Fetch exception:", fetchError);
         setError(`Fetch failed: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       } finally {
+        console.log("🏁 Setting brandsLoading to false");
         setBrandsLoading(false);
       }
     };
