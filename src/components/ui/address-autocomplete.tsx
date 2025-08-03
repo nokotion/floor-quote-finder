@@ -1,3 +1,4 @@
+
 /// <reference types="@types/google.maps" />
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
@@ -24,7 +25,7 @@ interface AddressAutocompleteProps {
   usePostalCodeOnly?: boolean;
 }
 
-const FALLBACK_GOOGLE_KEY = "YOUR_FALLBACK_KEY_HERE"; // <-- TEMP fallback
+// Google Maps API key is now fetched securely from backend
 
 const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   value,
@@ -38,25 +39,38 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [googleMapsEnabled, setGoogleMapsEnabled] = useState(false);
 
   useEffect(() => {
-    const loadMaps = async () => {
+    const initializeAutocomplete = async () => {
       try {
-        let apiKey = FALLBACK_GOOGLE_KEY;
+        console.log('Initializing Google Places Autocomplete...');
+        
+        // Fetch Google Maps API key securely from edge function
+        const { data, error } = await supabase.functions.invoke('google-maps-config');
+        
+        if (error || !data?.apiKey) {
+          console.log('Google Maps API key not configured - using fallback input mode');
+          setHasError(true);
+          setErrorMessage('Enter your complete address or postal code');
+          setIsLoaded(true);
+          return;
+        }
 
-        // Try secure key from Supabase function
-        const { data } = await supabase.functions.invoke('google-maps-config').catch(() => ({ data: null }));
-        if (data?.apiKey) apiKey = data.apiKey;
-
+        console.log('Loading Google Maps API...');
         const loader = new Loader({
-          apiKey,
+          apiKey: data.apiKey,
           version: 'weekly',
           libraries: ['places']
         });
-        await loader.load();
 
-        if (inputRef.current) {
+        await loader.load();
+        console.log('Google Maps API loaded successfully');
+        
+        if (inputRef.current && !autocompleteRef.current) {
+          console.log('Creating Google Places Autocomplete instance...');
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
             types: usePostalCodeOnly ? ['postal_code'] : ['address'],
             componentRestrictions: { country: 'ca' },
@@ -64,7 +78,24 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           });
 
           autocompleteRef.current.addListener('place_changed', () => {
-            const place = autocompleteRef.current?.getPlace();
-            if (!place?.formatted_address) return;
+            autocompleteRef.current.addListener('place_changed', () => {
+  const place = autocompleteRef.current?.getPlace();
+  if (!place?.formatted_address) return;
 
-            const addressData: AddressData = { form
+  const addressData: AddressData = {
+    formatted_address: place.formatted_address
+  };
+
+  place.address_components?.forEach((c) => {
+    if (c.types.includes('street_number')) addressData.street_number = c.long_name;
+    if (c.types.includes('route')) addressData.route = c.long_name;
+    if (c.types.includes('locality')) addressData.locality = c.long_name;
+    if (c.types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = c.short_name;
+    if (c.types.includes('postal_code')) addressData.postal_code = c.long_name;
+    if (c.types.includes('country')) addressData.country = c.long_name;
+  });
+
+  onChange(place.formatted_address, addressData);
+});
+
+        
