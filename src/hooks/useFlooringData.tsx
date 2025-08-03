@@ -7,17 +7,26 @@ interface Brand {
   name: string;
 }
 
-// FALLBACK_BRANDS removed completely to surface real issues
+// Module-level cache to persist data across component mounts
+const cachedBrands = { data: null as Brand[] | null };
 
 export const useFlooringData = () => {
   const instanceId = useRef(`HOOK_${Math.random().toString(36).substr(2, 9)}`);
   const fetchInProgress = useRef(false);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [brandsLoading, setBrandsLoading] = useState(true);
+  const [brands, setBrands] = useState<Brand[]>(cachedBrands.data || []);
+  const [brandsLoading, setBrandsLoading] = useState(!cachedBrands.data);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log(`[${instanceId.current}] 🎬 HOOK MOUNTED - Starting brand fetch...`);
+    
+    // Skip fetch if we have cached data
+    if (cachedBrands.data) {
+      console.log(`[${instanceId.current}] ✅ Using cached brands:`, cachedBrands.data.length);
+      setBrands(cachedBrands.data);
+      setBrandsLoading(false);
+      return;
+    }
     
     // Prevent multiple simultaneous fetches
     if (fetchInProgress.current) {
@@ -73,6 +82,9 @@ export const useFlooringData = () => {
       }
 
       console.log(`[${instanceId.current}] ✅ Successfully loaded brands:`, response.data.length, response.data.slice(0, 3));
+      
+      // Cache the successful response
+      cachedBrands.data = response.data;
       setBrands(response.data);
       setError(null);
       setBrandsLoading(false);

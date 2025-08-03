@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
-import { useFlooringData } from "@/hooks/useFlooringData";
+import { useBrands } from "@/contexts/BrandContext";
 import { TabSwitcher } from "@/components/flooring/TabSwitcher";
 import { QuickQuoteForm } from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
@@ -14,7 +14,7 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 🎬 FlooringPathTabs rendering... (render #${renderCount.current})`);
   
   const [activeTab, setActiveTab] = useState("quick");
-  const { brands, brandsLoading, error } = useFlooringData();
+  const { brands, brandsLoading, error } = useBrands();
   
   // Track re-renders
   useEffect(() => {
