@@ -14,7 +14,7 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 🎬 FlooringPathTabs rendering... (render #${renderCount.current})`);
   
   const [activeTab, setActiveTab] = useState("quick");
-  const { brands, loading } = useBrands();
+  const { brands, loading, error, refetch } = useBrands();
   
   // Track re-renders
   useEffect(() => {
@@ -29,7 +29,7 @@ const FlooringPathTabs = memo(() => {
     };
   }, []);
   
-  console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading);
+  console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading, "Error:", error);
 
   return (
     <section className="py-4 px-4 bg-white">
@@ -54,7 +54,7 @@ const FlooringPathTabs = memo(() => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <QuickQuoteForm brands={brands} brandsLoading={loading} />
+            <QuickQuoteForm brands={brands} brandsLoading={loading} error={error} onRetry={refetch} />
           </motion.div>
         )}
 

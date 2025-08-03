@@ -26,7 +26,13 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setError(null);
     
     try {
-      const { data, error } = await supabase.from("flooring_brands").select("id, name").order("name");
+      // Add timeout to prevent hanging
+      const fetchPromise = supabase.from("flooring_brands").select("id, name").order("name");
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Fetch timeout after 10 seconds")), 10000)
+      );
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
       
       console.log("📊 BrandContext: Query result:", { data: data?.length, error });
       
@@ -45,7 +51,7 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     } catch (err) {
       console.error("💥 BrandContext: Unexpected error:", err);
-      setError("Failed to load brands");
+      setError(err instanceof Error ? err.message : "Failed to load brands");
       setBrands([]);
     } finally {
       setLoading(false);

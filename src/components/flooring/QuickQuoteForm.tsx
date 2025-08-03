@@ -17,9 +17,11 @@ interface Brand {
 interface QuickQuoteFormProps {
   brands: Brand[];
   brandsLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => Promise<void>;
 }
 
-export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
+export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false, error, onRetry }: QuickQuoteFormProps) => {
   const componentId = useRef(`FORM_${Math.random().toString(36).substr(2, 9)}`);
   const renderCount = useRef(0);
   renderCount.current++;
@@ -140,6 +142,10 @@ export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false 
                       <SelectItem disabled value="loading" className="font-medium text-gray-500">
                         Loading brands...
                       </SelectItem>
+                    ) : error ? (
+                      <SelectItem disabled value="error" className="font-medium text-red-500">
+                        Error loading brands
+                      </SelectItem>
                     ) : propBrands && propBrands.length > 0 ? (
                       propBrands.map((brand) => {
                         console.log("🎯 Rendering brand option:", brand);
@@ -156,6 +162,17 @@ export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false 
                     )}
                   </SelectContent>
                 </Select>
+                {error && onRetry && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={onRetry}
+                    className="mt-2 text-xs"
+                  >
+                    Retry Loading Brands
+                  </Button>
+                )}
               </div>
 
               <div>
