@@ -101,4 +101,6 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     console.log('Address data extracted:', addressData);
     onChange(place.formatted_address, addressData);
   }
-});
+}); // ✅ closes the addListener callback
+
+} // ✅ closes the "if (inputRef.current && !autocompleteRef.current)" block
