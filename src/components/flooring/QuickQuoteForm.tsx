@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -20,12 +20,16 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
-  console.log("📥 QuickQuoteForm final brands prop:", { 
+  const componentId = useRef(`FORM_${Math.random().toString(36).substr(2, 9)}`);
+  
+  console.log(`[${componentId.current}] 📥 QuickQuoteForm (FLOORING FOLDER) final brands prop:`, { 
     brandsCount: propBrands?.length, 
     brandsLoading, 
     firstBrand: propBrands?.[0]?.name,
     allBrands: propBrands?.map(b => b.name).slice(0, 10)
   });
+  
+  console.log(`[${componentId.current}] 🎯 Dropdown rendering brands:`, propBrands?.map(b => b.name));
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");

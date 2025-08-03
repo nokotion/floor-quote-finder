@@ -7,16 +7,10 @@ interface Brand {
   name: string;
 }
 
-const FALLBACK_BRANDS = [
-  { id: "1", name: "Shaw" },
-  { id: "2", name: "Mohawk" },
-  { id: "3", name: "Armstrong" },
-  { id: "4", name: "Tarkett" },
-  { id: "5", name: "Mannington" }
-];
+// FALLBACK_BRANDS removed completely to surface real issues
 
 export const useFlooringData = () => {
-  const instanceId = useRef(Math.random().toString(36).substr(2, 9));
+  const instanceId = useRef(`HOOK_${Math.random().toString(36).substr(2, 9)}`);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
