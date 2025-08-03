@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { formatAndValidatePostalCode, validatePostalCode } from "@/utils/postalCodeUtils";
 import { AddressAutocomplete, AddressData } from "@/components/ui/address-autocomplete";
 import { projectSizes } from "@/constants/flooringData";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Brand {
   id: string;
@@ -54,7 +55,48 @@ export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false,
   const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [postalCodeError, setPostalCodeError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fallbackBrands, setFallbackBrands] = useState<Brand[]>([]);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Fallback direct fetch for brands if context fails
+  const fetchBrandsFallback = async () => {
+    if (fallbackBrands.length > 0) return; // Already have fallback brands
+    
+    console.log("🚨 QuickQuoteForm: Attempting fallback brand fetch...");
+    setFallbackLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from("flooring_brands")
+        .select("id, name")
+        .order("name")
+        .limit(50);
+        
+      if (data && !error) {
+        console.log("✅ QuickQuoteForm: Fallback fetch successful:", data.length, "brands");
+        setFallbackBrands(data);
+      } else {
+        console.error("❌ QuickQuoteForm: Fallback fetch failed:", error);
+      }
+    } catch (err) {
+      console.error("💥 QuickQuoteForm: Fallback fetch error:", err);
+    } finally {
+      setFallbackLoading(false);
+    }
+  };
+
+  // Trigger fallback if context has error and no brands
+  useEffect(() => {
+    if (error && propBrands.length === 0 && !brandsLoading) {
+      fetchBrandsFallback();
+    }
+  }, [error, propBrands.length, brandsLoading]);
+
+  // Use fallback brands if main brands failed
+  const effectiveBrands = propBrands.length > 0 ? propBrands : fallbackBrands;
+  const effectiveLoading = brandsLoading || (fallbackLoading && effectiveBrands.length === 0);
+  const hasError = error && effectiveBrands.length === 0;
 
   const handleAddressChange = (address: string, data?: AddressData) => {
     if (data && data.postal_code) {
@@ -133,46 +175,60 @@ export const QuickQuoteForm = memo(({ brands: propBrands, brandsLoading = false,
                 <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                   Preferred Brand
                 </Label>
-                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                  <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder={brandsLoading ? "Loading brands..." : "Select brand"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                    {brandsLoading ? (
-                      <SelectItem disabled value="loading" className="font-medium text-gray-500">
-                        Loading brands...
-                      </SelectItem>
-                    ) : error ? (
-                      <SelectItem disabled value="error" className="font-medium text-red-500">
-                        Error loading brands
-                      </SelectItem>
-                    ) : propBrands && propBrands.length > 0 ? (
-                      propBrands.map((brand) => {
-                        console.log("🎯 Rendering brand option:", brand);
-                        return (
-                          <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
-                            {brand.name}
-                          </SelectItem>
-                        );
-                      })
-                    ) : (
-                      <SelectItem disabled value="no-brands" className="font-medium text-gray-500">
-                        No brands available
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                {error && onRetry && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={onRetry}
-                    className="mt-2 text-xs"
-                  >
-                    Retry Loading Brands
-                  </Button>
-                )}
+                 <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                   <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                     <SelectValue placeholder={effectiveLoading ? "Loading brands..." : "Select brand"} />
+                   </SelectTrigger>
+                   <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
+                     {effectiveLoading ? (
+                       <SelectItem disabled value="loading" className="font-medium text-gray-500">
+                         Loading brands...
+                       </SelectItem>
+                     ) : hasError ? (
+                       <SelectItem disabled value="error" className="font-medium text-red-500">
+                         Error loading brands
+                       </SelectItem>
+                     ) : effectiveBrands && effectiveBrands.length > 0 ? (
+                       effectiveBrands.map((brand) => {
+                         console.log("🎯 Rendering brand option:", brand);
+                         return (
+                           <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
+                             {brand.name}
+                           </SelectItem>
+                         );
+                       })
+                     ) : (
+                       <SelectItem disabled value="no-brands" className="font-medium text-gray-500">
+                         No brands available
+                       </SelectItem>
+                     )}
+                   </SelectContent>
+                 </Select>
+                 {hasError && (
+                   <div className="space-y-2 mt-2">
+                     {onRetry && (
+                       <Button 
+                         type="button" 
+                         variant="outline" 
+                         size="sm" 
+                         onClick={onRetry}
+                         className="text-xs w-full"
+                       >
+                         Retry Loading Brands
+                       </Button>
+                     )}
+                     <Button 
+                       type="button" 
+                       variant="outline" 
+                       size="sm" 
+                       onClick={fetchBrandsFallback}
+                       className="text-xs w-full"
+                       disabled={fallbackLoading}
+                     >
+                       {fallbackLoading ? "Loading..." : "Try Direct Fetch"}
+                     </Button>
+                   </div>
+                 )}
               </div>
 
               <div>
