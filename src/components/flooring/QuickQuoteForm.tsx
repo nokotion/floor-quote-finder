@@ -19,7 +19,7 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
-  console.log("📋 QuickQuoteForm received brands:", propBrands?.length, "loading:", brandsLoading, "first brand:", propBrands?.[0]);
+  console.log("✅ QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -117,7 +117,7 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
                     </SelectTrigger>
                     <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
                       {propBrands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.name} className="font-medium text-gray-900 hover:bg-gray-100">
+                        <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
                           {brand.name}
                         </SelectItem>
                       ))}
