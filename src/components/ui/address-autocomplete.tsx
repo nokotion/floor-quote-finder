@@ -43,31 +43,85 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   useEffect(() => {
     const initializeAutocomplete = async () => {
       try {
-        console.log('Initializing Google Places Autocomplete...');
+        console.log("Initializing Google Places Autocomplete...");
+        const { data, error } = await supabase.functions.invoke("google-maps-config");
 
-        const { data, error } = await supabase.functions.invoke('google-maps-config');
         if (error || !data?.apiKey) {
-          console.log('Google Maps API key not configured - using fallback input mode');
+          console.log("Google Maps API key missing, fallback to manual input.");
           setHasError(true);
-          setErrorMessage('Enter your complete address or postal code');
+          setErrorMessage("Enter your address manually.");
           setIsLoaded(true);
           return;
         }
 
-        console.log('Loading Google Maps API...');
         const loader = new Loader({
           apiKey: data.apiKey,
-          version: 'weekly',
-          libraries: ['places']
+          version: "weekly",
+          libraries: ["places"]
         });
+
         await loader.load();
-        console.log('Google Maps API loaded successfully');
 
         if (inputRef.current && !autocompleteRef.current) {
-          console.log('Creating Google Places Autocomplete instance...');
-         autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-  types: usePostalCodeOnly ? ['postal_code'] : ['address'],
-  componentRestrictions: { country: 'ca' },
-  fields: ['formatted_address', 'address_components', 'geometry']
-});
+          autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+            types: usePostalCodeOnly ? ["postal_code"] : ["address"],
+            componentRestrictions: { country: "ca" },
+            fields: ["formatted_address", "address_components", "geometry"]
+          });
 
+          autocompleteRef.current.addListener("place_changed", () => {
+            const place = autocompleteRef.current?.getPlace();
+            if (place && place.formatted_address) {
+              const addressData: AddressData = { formatted_address: place.formatted_address };
+
+              place.address_components?.forEach((c) => {
+                const types = c.types;
+                if (types.includes("street_number")) addressData.street_number = c.long_name;
+                else if (types.includes("route")) addressData.route = c.long_name;
+                else if (types.includes("locality")) addressData.locality = c.long_name;
+                else if (types.includes("administrative_area_level_1")) addressData.administrative_area_level_1 = c.short_name;
+                else if (types.includes("postal_code")) addressData.postal_code = c.long_name;
+                else if (types.includes("country")) addressData.country = c.long_name;
+              });
+
+              console.log("Address data extracted:", addressData);
+              onChange(place.formatted_address, addressData);
+            }
+          });
+        }
+
+        setGoogleMapsEnabled(true);
+      } catch (err) {
+        console.error("Error loading Google Maps:", err);
+        setHasError(true);
+        setErrorMessage("Google Maps failed. Manual input only.");
+        setGoogleMapsEnabled(false);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    initializeAutocomplete();
+  }, [onChange, usePostalCodeOnly]);
+
+  return (
+    <div className="space-y-1">
+      <Input
+        ref={inputRef}
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        placeholder={!isLoaded ? "Loading address search..." : placeholder}
+        className={className}
+        disabled={false}
+      />
+      {googleMapsEnabled && <p className="text-xs text-gray-400 mt-1">Powered by Google Maps</p>}
+      {hasError && <p className="text-sm text-red-600">{errorMessage}</p>}
+    </div>
+  );
+};
+
+export default AddressAutocomplete;
+export { AddressAutocomplete };
+export type { AddressData };
