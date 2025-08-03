@@ -19,7 +19,7 @@ interface QuickQuoteFormProps {
 }
 
 export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: QuickQuoteFormProps) => {
-  console.log("QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
+  console.log("📋 QuickQuoteForm received brands:", propBrands?.length, "loading:", brandsLoading, "first brand:", propBrands?.[0]);
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -104,26 +104,26 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
                 <Label htmlFor="brand" className="text-sm font-semibold text-gray-800 mb-2 block">
                   Preferred Brand
                 </Label>
-                <Select value={selectedBrand} onValueChange={setSelectedBrand} disabled={brandsLoading}>
-                  <SelectTrigger className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium">
-                    <SelectValue placeholder={brandsLoading ? "Loading brands..." : "Select brand"} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                    {propBrands?.length > 0 ? (
-                      propBrands.map((brand) => (
+                {brandsLoading ? (
+                  <Select disabled>
+                    <SelectTrigger className="h-12 bg-white border-gray-200">
+                      <SelectValue placeholder="Loading brands..." />
+                    </SelectTrigger>
+                  </Select>
+                ) : (
+                  <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                    <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue placeholder="Select brand" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
+                      {propBrands.map((brand) => (
                         <SelectItem key={brand.id} value={brand.name} className="font-medium text-gray-900 hover:bg-gray-100">
                           {brand.name}
                         </SelectItem>
-                      ))
-                    ) : (
-                      !brandsLoading && (
-                        <SelectItem value="" disabled className="font-medium text-gray-500">
-                          No brands available
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
               <div>

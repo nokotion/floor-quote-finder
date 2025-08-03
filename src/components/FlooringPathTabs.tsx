@@ -8,11 +8,13 @@ import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 
 const FlooringPathTabs = () => {
   const [activeTab, setActiveTab] = useState("quick"); // Default to "quick" (I Know What I Want)
-  const { brands, brandCounts, brandCountsLoading, error } = useFlooringData();
+  const { brands, brandsLoading, error } = useFlooringData();
+  
+  console.log("📊 FlooringPathTabs - Passing brands to QuickQuoteForm:", brands.length, "loading:", brandsLoading);
   
   console.log('🏠 FlooringPathTabs render:', { 
     brandsCount: brands.length, 
-    loading: brandCountsLoading,
+    loading: brandsLoading,
     error,
     firstBrand: brands[0]?.name
   });
@@ -45,7 +47,7 @@ const FlooringPathTabs = () => {
                 Error loading brands: {error}
               </div>
             )}
-            <QuickQuoteForm brands={brands} brandsLoading={brandCountsLoading} />
+            <QuickQuoteForm brands={brands} brandsLoading={brandsLoading} />
           </motion.div>
         )}
 
@@ -55,7 +57,7 @@ const FlooringPathTabs = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <FlooringTypeGrid brandCounts={brandCounts} brandCountsLoading={brandCountsLoading} />
+            <FlooringTypeGrid brandCounts={{}} brandCountsLoading={brandsLoading} />
           </motion.div>
         )}
       </div>
