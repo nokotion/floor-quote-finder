@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+console.log("🔥 useFlooringData.tsx file loaded");
+
 interface Brand {
   id: string;
   name: string;
