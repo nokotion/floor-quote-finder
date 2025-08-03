@@ -22,6 +22,12 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
   console.log("🎬 QuickQuoteForm rendering...");
   console.log("📥 QuickQuoteForm received brands:", propBrands?.length, propBrands?.[0]);
   console.log("🔄 QuickQuoteForm brandsLoading state:", brandsLoading);
+  console.log("🔍 Brands array details:", {
+    isArray: Array.isArray(propBrands),
+    length: propBrands?.length,
+    hasItems: propBrands && propBrands.length > 0,
+    firstBrand: propBrands?.[0]
+  });
   
   const [selectedBrand, setSelectedBrand] = useState("");
   const [projectSize, setProjectSize] = useState("");
@@ -95,6 +101,8 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
 
   const isFormValid = selectedBrand && projectSize && postalCode && validatePostalCode(postalCode);
 
+  console.log("🎯 About to render brand dropdown. Loading?", brandsLoading, "Brands count:", propBrands?.length);
+
   return (
     <div className="max-w-4xl mx-auto">
       <Card className="shadow-xl border-0 bg-white">
@@ -119,18 +127,33 @@ export const QuickQuoteForm = ({ brands: propBrands, brandsLoading = false }: Qu
                   })()
                 ) : (
                   (() => {
-                    console.log("🎯 Rendering dropdown with brands");
+                    console.log("🎯 Rendering dropdown with brands. Count:", propBrands?.length);
+                    console.log("🎯 Brands data check:", propBrands && Array.isArray(propBrands) && propBrands.length > 0);
                     return (
                       <Select value={selectedBrand} onValueChange={setSelectedBrand}>
                         <SelectTrigger className="h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
                           <SelectValue placeholder="Select brand" />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
-                          {propBrands.map((brand) => (
-                            <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
-                              {brand.name}
-                            </SelectItem>
-                          ))}
+                          {propBrands && propBrands.length > 0 ? (
+                            propBrands.map((brand) => {
+                              console.log("🎯 Rendering brand option:", brand);
+                              return (
+                                <SelectItem key={brand.id} value={brand.id} className="font-medium text-gray-900 hover:bg-gray-100">
+                                  {brand.name}
+                                </SelectItem>
+                              );
+                            })
+                          ) : (
+                            (() => {
+                              console.log("🎯 No brands to render - showing fallback");
+                              return (
+                                <SelectItem disabled value="no-brands" className="font-medium text-gray-500">
+                                  No brands available
+                                </SelectItem>
+                              );
+                            })()
+                          )}
                         </SelectContent>
                       </Select>
                     );
