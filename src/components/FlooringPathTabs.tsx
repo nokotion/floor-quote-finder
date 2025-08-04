@@ -32,8 +32,44 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading, "Error:", error);
 
   return (
-    <section className="py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-16 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Hero Section */}
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            Get Competitive Flooring Quotes from Verified Local Retailers
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+            Compare prices, quality, and service from trusted flooring stores across Canada
+          </p>
+          
+          {/* Statistics */}
+          <motion.div 
+            className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">2 Min</div>
+              <div className="text-sm text-muted-foreground">Average Quote Time</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">500+</div>
+              <div className="text-sm text-muted-foreground">Verified Retailers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">98%</div>
+              <div className="text-sm text-muted-foreground">Customer Satisfaction</div>
+            </div>
+          </motion.div>
+        </motion.div>
+
         {/* Enhanced Connected Tab Switcher - Bigger and More Prominent */}
         <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
