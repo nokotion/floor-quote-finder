@@ -88,8 +88,12 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       // Progressive timeout based on retry count
       const timeout = Math.min(5000 + (retryCount * 2000), 15000);
-      const fetchPromise = supabase.from("flooring_brands").select("id, name").order("name");
-      const timeoutPromise = new Promise((_, reject) =>
+      const fetchPromise = supabase
+  .from("flooring_brands")
+  .select("id, name")
+  .order("name")
+  .throwOnError(); // ensures any RLS error is visible in console
+console.log("🔍 Fetching brands with public access...");      const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error(`Fetch timeout after ${timeout/1000} seconds`)), timeout)
       );
 
