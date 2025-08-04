@@ -8,6 +8,7 @@ import { AuthProvider } from './components/auth/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
+import { BrandProvider } from './contexts/BrandContext';
 import Index from './pages/Index';
 import Quote from './pages/Quote';
 import Browse from './pages/Browse';
@@ -61,7 +62,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <LayoutWrapper>
+        <BrandProvider>
+          <LayoutWrapper>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -141,7 +143,8 @@ function App() {
               </ProtectedRoute>
             } />
           </Routes>
-        </LayoutWrapper>
+          </LayoutWrapper>
+        </BrandProvider>
       </Router>
     </AuthProvider>
   );

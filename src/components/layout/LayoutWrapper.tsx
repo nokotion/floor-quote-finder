@@ -1,4 +1,3 @@
-import { BrandProvider } from "../../contexts/BrandContext";
 import { useLocation } from "react-router-dom";
 import { MainLayout } from "./MainLayout";
 import { AdminLayout } from "../admin/AdminLayout";
@@ -18,24 +17,12 @@ export const LayoutWrapper = ({ children }: LayoutWrapperProps) => {
   }
 
   if (path.startsWith('/retailer') && path !== '/retailer/login' && path !== '/retailer/apply') {
-    return (
-      <BrandProvider>
-        <RetailerLayout>{children}</RetailerLayout>
-      </BrandProvider>
-    );
+    return <RetailerLayout>{children}</RetailerLayout>;
   }
 
   if (path.startsWith('/admin') && path !== '/admin/login') {
-    return (
-      <BrandProvider>
-        <AdminLayout>{children}</AdminLayout>
-      </BrandProvider>
-    );
+    return <AdminLayout>{children}</AdminLayout>;
   }
 
-  return (
-    <BrandProvider>
-      <MainLayout>{children}</MainLayout>
-    </BrandProvider>
-  );
+  return <MainLayout>{children}</MainLayout>;
 };

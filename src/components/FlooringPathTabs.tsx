@@ -32,18 +32,8 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading, "Error:", error);
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-6xl mx-auto">
-        <motion.div 
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl font-bold mb-4">How would you like to get started?</h2>
-          <p className="text-xl text-gray-600 mb-8">Choose your preferred path to find the perfect flooring</p>
-        </motion.div>
-
+    <section className="py-8 px-4">
+      <div className="max-w-4xl mx-auto">
         {/* Enhanced Connected Tab Switcher - Bigger and More Prominent */}
         <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
