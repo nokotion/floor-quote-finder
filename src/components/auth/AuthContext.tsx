@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useDebounce } from '@/hooks/useDebounce';
 
 interface Profile {
   id: string;
@@ -97,19 +96,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return fetchPromise;
   };
 
-  // Debounced profile fetch to prevent rapid successive calls
-  const debouncedFetchProfile = useDebounce(async (userId: string) => {
-    if (!userId) return;
-    
-    console.log('Debounced profile fetch for:', userId);
-    const profileData = await fetchProfile(userId);
-    
-    // Only update state if this is still the current user
-    if (user?.id === userId) {
-      setProfile(profileData);
-      console.log('Profile updated via debounced fetch:', profileData);
-    }
-  }, 100);
 
   const refreshProfile = async () => {
     if (user?.id) {
@@ -137,10 +123,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           // Use setTimeout to defer Supabase calls and prevent deadlocks
-          setTimeout(() => {
+          setTimeout(async () => {
             if (mounted && session?.user) {
-              console.log(`[${timestamp}] Triggering debounced profile fetch...`);
-              debouncedFetchProfile(session.user.id);
+              console.log(`[${timestamp}] Fetching profile after auth change...`);
+              const profileData = await fetchProfile(session.user.id);
+              if (mounted) {
+                setProfile(profileData);
+                console.log(`[${timestamp}] Profile set after auth change:`, profileData);
+              }
             }
           }, 0);
         } else {
@@ -202,7 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 10000); // Reduced to 10 seconds
+    }, 8000); // Reduced timeout
 
     initializeAuth();
 
@@ -214,7 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Clear any ongoing fetches
       currentFetchRef.current = null;
     };
-  }, [debouncedFetchProfile]);
+  }, []); // Removed dependency on debouncedFetchProfile to prevent re-renders
 
   const signIn = async (email: string, password: string) => {
     console.log('Signing in user:', email);
