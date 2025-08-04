@@ -42,11 +42,11 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   useEffect(() => {
     const initializeAutocomplete = async () => {
       try {
-        console.log("Initializing Google Places Autocomplete...");
+        console.log("🚀 Initializing Google Places Autocomplete...");
 
-        // ✅ Directly load Google Maps API with your key
+        // ✅ Directly load Google Maps API with your key (no Supabase call)
         const loader = new Loader({
-          apiKey: "AlzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50", // ✅ your API key here
+          apiKey: "AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50", // ✅ your Google API Key here
           version: "weekly",
           libraries: ["places"],
         });
@@ -78,22 +78,19 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               if (types.includes("country")) addressData.country = component.long_name;
             });
 
-            console.log("✅ Address data extracted:", addressData);
+            console.log("✅ Address selected:", addressData);
             onChange(place.formatted_address, addressData);
           });
 
           setGoogleMapsEnabled(true);
         }
-
-        setIsLoaded(true);
-        setHasError(false);
-        setErrorMessage("");
       } catch (err) {
         console.error("❌ Error loading Google Maps:", err);
         setHasError(true);
-        setErrorMessage("Google Maps failed to load. Enter address manually.");
-        setIsLoaded(true);
+        setErrorMessage("Google Maps failed to load. Enter your address manually.");
         setGoogleMapsEnabled(false);
+      } finally {
+        setIsLoaded(true);
       }
     };
 
@@ -116,12 +113,8 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         className={className}
         disabled={!isLoaded}
       />
-      {googleMapsEnabled && (
-        <p className="text-xs text-gray-400 mt-1">Powered by Google Maps</p>
-      )}
-      {hasError && errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
-      )}
+      {googleMapsEnabled && <p className="text-xs text-gray-400 mt-1">Powered by Google Maps</p>}
+      {hasError && <p className="text-sm text-red-600">{errorMessage}</p>}
     </div>
   );
 };
