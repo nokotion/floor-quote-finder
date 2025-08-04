@@ -85,7 +85,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
               .from('retailers')
               .select('status')
               .eq('id', profile.retailer_id)
-              .single();
+              .maybeSingle();
 
             if (retailerError) {
               console.error('Error checking retailer status:', retailerError);
