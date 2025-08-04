@@ -36,24 +36,19 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [googleMapsEnabled, setGoogleMapsEnabled] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const init = async () => {
       try {
-        console.log("🚀 Initializing Google Maps directly with API key");
-
         const loader = new Loader({
-          apiKey: "AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50", // ✅ Direct Key
+          apiKey: "AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50", // ✅ Static key
           version: "weekly",
           libraries: ["places"],
         });
 
         await loader.load();
-        console.log("✅ Google Maps API Loaded");
 
-        if (inputRef.current && !autocompleteRef.current) {
+        if (inputRef.current) {
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
             types: usePostalCodeOnly ? ["postal_code"] : ["address"],
             componentRestrictions: { country: "ca" },
@@ -62,38 +57,34 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
           autocompleteRef.current.addListener("place_changed", () => {
             const place = autocompleteRef.current?.getPlace();
-            if (!place || !place.formatted_address) return;
+            if (!place?.formatted_address) return;
 
-            const addressData: AddressData = { formatted_address: place.formatted_address };
+            const data: AddressData = { formatted_address: place.formatted_address };
             place.address_components?.forEach((c) => {
-              if (c.types.includes("street_number")) addressData.street_number = c.long_name;
-              if (c.types.includes("route")) addressData.route = c.long_name;
-              if (c.types.includes("locality")) addressData.locality = c.long_name;
-              if (c.types.includes("administrative_area_level_1")) addressData.administrative_area_level_1 = c.short_name;
-              if (c.types.includes("postal_code")) addressData.postal_code = c.long_name;
-              if (c.types.includes("country")) addressData.country = c.long_name;
+              if (c.types.includes("street_number")) data.street_number = c.long_name;
+              if (c.types.includes("route")) data.route = c.long_name;
+              if (c.types.includes("locality")) data.locality = c.long_name;
+              if (c.types.includes("administrative_area_level_1")) data.administrative_area_level_1 = c.short_name;
+              if (c.types.includes("postal_code")) data.postal_code = c.long_name;
+              if (c.types.includes("country")) data.country = c.long_name;
             });
 
-            console.log("📍 Address Data Extracted:", addressData);
-            onChange(place.formatted_address, addressData);
+            onChange(place.formatted_address, data);
           });
 
           setGoogleMapsEnabled(true);
         }
       } catch (err) {
-        console.error("❌ Google Maps failed to load:", err);
-        setHasError(true);
-        setErrorMessage("Google Maps failed to load. Enter your address manually.");
-        setGoogleMapsEnabled(false);
+        console.error("❌ Google Maps failed, fallback to manual:", err);
       } finally {
-        setIsLoaded(true); // ✅ Always enable input
+        setIsLoaded(true);
       }
     };
 
     init();
   }, [onChange, usePostalCodeOnly]);
 
-  const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleManual = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
   };
 
@@ -103,14 +94,13 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         ref={inputRef}
         id={id}
         value={value}
-        onChange={handleManualChange}
+        onChange={handleManual}
         onBlur={onBlur}
         placeholder={!isLoaded ? "Loading address search..." : placeholder}
         className={className}
-        disabled={false} // ✅ Always allow manual typing
+        disabled={false} // ✅ Always enable
       />
       {googleMapsEnabled && <p className="text-xs text-gray-400">Powered by Google Maps</p>}
-      {hasError && <p className="text-sm text-red-600">{errorMessage}</p>}
     </div>
   );
 };
