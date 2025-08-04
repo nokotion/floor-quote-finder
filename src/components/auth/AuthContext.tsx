@@ -42,25 +42,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Track ongoing profile fetch to prevent race conditions
   const currentFetchRef = useRef<{ userId: string; promise: Promise<any> } | null>(null);
   const profileCacheRef = useRef<{ [userId: string]: Profile | null }>({});
-  
-  // Add re-render detection
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-  console.log(`[AUTH RENDER #${renderCount.current}] AuthProvider render - user=${user?.id}, profile=${!!profile}, loading=${loading}`);
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
-    const timestamp = Date.now();
-    console.log(`[${timestamp}] Fetching profile for user:`, userId);
-    
     // Check cache first
     if (profileCacheRef.current[userId]) {
-      console.log(`[${timestamp}] Profile found in cache:`, profileCacheRef.current[userId]);
       return profileCacheRef.current[userId];
     }
     
     // If there's already a fetch in progress for this user, return that promise
     if (currentFetchRef.current?.userId === userId) {
-      console.log(`[${timestamp}] Profile fetch already in progress, waiting...`);
       return currentFetchRef.current.promise;
     }
     
@@ -74,17 +64,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .maybeSingle();
 
         if (error) {
-          console.error(`[${timestamp}] Database error fetching profile:`, error);
+          console.error('Database error fetching profile:', error);
           // Don't cache database errors, allow retry
           return null;
         }
 
-        console.log(`[${timestamp}] Profile fetched successfully:`, data);
         // Cache the result
         profileCacheRef.current[userId] = data;
         return data;
       } catch (error) {
-        console.error(`[${timestamp}] Network error in fetchProfile:`, error);
+        console.error('Network error in fetchProfile:', error);
         // Don't cache network errors, allow retry
         return null;
       } finally {
@@ -113,14 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
-    console.log('AuthProvider effect mounting...');
 
-    // Set up auth state listener - NO async operations here to prevent deadlocks
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        const timestamp = Date.now();
-        console.log(`[${timestamp}] Auth state changed:`, event, session?.user?.id);
-        
         if (!mounted) return;
 
         setSession(session);
@@ -130,11 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Use setTimeout to defer Supabase calls and prevent deadlocks
           setTimeout(async () => {
             if (mounted && session?.user) {
-              console.log(`[${timestamp}] Fetching profile after auth change...`);
               const profileData = await fetchProfile(session.user.id);
               if (mounted) {
                 setProfile(profileData);
-                console.log(`[${timestamp}] Profile set after auth change:`, profileData);
               }
             }
           }, 0);
@@ -147,7 +130,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Set loading to false for auth state changes (but not initial load)
         if (event !== 'INITIAL_SESSION') {
           setLoading(false);
-          console.log(`[${timestamp}] Auth loading set to false (${event})`);
         }
       }
     );
@@ -155,7 +137,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     const initializeAuth = async () => {
       try {
-        console.log('Initializing auth...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -163,8 +144,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (mounted) setLoading(false);
           return;
         }
-
-        console.log('Initial session check:', session?.user?.id);
         
         if (!mounted) return;
 
@@ -172,21 +151,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          console.log('User found in session, fetching profile...');
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
-            console.log('Profile set in initialization:', profileData);
           }
-        } else {
-          console.log('No user in session');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
       } finally {
         if (mounted) {
           setLoading(false);
-          console.log('Auth initialization complete');
         }
       }
     };
@@ -194,15 +168,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Add a timeout fallback to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
       if (mounted) {
-        console.warn('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 8000); // Reduced timeout
+    }, 5000);
 
     initializeAuth();
 
     return () => {
-      console.log('AuthProvider effect unmounting...');
       mounted = false;
       clearTimeout(loadingTimeout);
       subscription.unsubscribe();
@@ -212,7 +184,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []); // Removed dependency on debouncedFetchProfile to prevent re-renders
 
   const signIn = async (email: string, password: string) => {
-    console.log('Signing in user:', email);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -235,7 +206,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('Signing out user');
     setProfile(null);
     await supabase.auth.signOut();
   };

@@ -18,18 +18,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
   const [debugInfo, setDebugInfo] = useState<string>('');
   const checkExecutedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const prevPropsRef = useRef<{user: any, profile: any, loading: boolean}>({ user: null, profile: null, loading: true });
-
-  // Add re-render detection
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-  
-  console.log(`[RENDER #${renderCount.current}] ProtectedRoute render - user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`);
 
   useEffect(() => {
-    const timestamp = Date.now();
-    const debugMessage = `[${timestamp}] ProtectedRoute: user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`;
-    console.log(debugMessage);
+    const debugMessage = `ProtectedRoute: user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`;
     setDebugInfo(debugMessage);
 
     // Clear any existing timeout
@@ -44,14 +35,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
 
     // If still loading, wait a bit more but don't wait indefinitely
     if (loading) {
-      console.log(`[${timestamp}] Still loading auth, waiting...`);
       setRoleChecking(true);
       
       // Set a reasonable timeout for auth loading
       timeoutRef.current = setTimeout(() => {
-        console.warn(`[${timestamp}] Auth loading timeout, proceeding with current state`);
         setRoleChecking(false);
-      }, 3000); // 3 second timeout
+      }, 2000); // 2 second timeout
       
       return;
     }
@@ -62,10 +51,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
       checkExecutedRef.current = true;
 
       try {
-        console.log(`[${timestamp}] Starting access check...`);
-
         if (!user) {
-          console.log(`[${timestamp}] No user found, redirecting to login`);
           setRoleChecking(false);
           if (requireRole === 'admin') {
             navigate('/admin/login');
@@ -76,34 +62,26 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
         }
 
         if (!profile) {
-          console.log(`[${timestamp}] No profile found for user, this may indicate a profile fetch is still pending`);
-          
           // Give it a moment for profile to load, but don't wait too long
           timeoutRef.current = setTimeout(() => {
             if (!profile) {
-              console.error(`[${timestamp}] Profile still not available after timeout`);
               setError('Unable to load user profile. Please try refreshing the page.');
               setRoleChecking(false);
             }
-          }, 2000);
+          }, 1500);
           
           return;
         }
 
-        console.log(`[${timestamp}] Profile found:`, profile);
-
         if (requireRole === 'admin') {
           if (profile.role === 'admin') {
-            console.log(`[${timestamp}] Admin access granted`);
             setHasAccess(true);
           } else {
-            console.log(`[${timestamp}] Admin access denied, redirecting`);
             navigate('/admin/login');
           }
         } else if (requireRole === 'retailer') {
           if (profile.retailer_id) {
             try {
-              console.log(`[${timestamp}] Checking retailer status...`);
               const { data: retailer, error: retailerError } = await supabase
                 .from('retailers')
                 .select('status')
@@ -111,26 +89,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
                 .maybeSingle();
 
               if (retailerError) {
-                console.error(`[${timestamp}] Error checking retailer status:`, retailerError);
+                console.error('Error checking retailer status:', retailerError);
                 setError('Error verifying retailer account');
                 setRoleChecking(false);
                 return;
               }
 
               if (retailer?.status === 'approved') {
-                console.log(`[${timestamp}] Retailer access granted`);
                 setHasAccess(true);
               } else {
-                console.log(`[${timestamp}] Retailer not approved, status:`, retailer?.status);
                 setError(`Your retailer account is ${retailer?.status || 'pending approval'}`);
                 setTimeout(() => navigate('/retailer/login'), 3000);
               }
             } catch (error) {
-              console.error(`[${timestamp}] Network error checking retailer:`, error);
+              console.error('Network error checking retailer:', error);
               setError('Network error verifying retailer account');
             }
           } else {
-            console.log(`[${timestamp}] No retailer_id found in profile`);
             setError('No retailer account associated with this user');
             setTimeout(() => navigate('/retailer/login'), 3000);
           }
@@ -138,7 +113,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
 
         setRoleChecking(false);
       } catch (error) {
-        console.error(`[${timestamp}] Unexpected error in access check:`, error);
+        console.error('Unexpected error in access check:', error);
         setError('An unexpected error occurred during authentication');
         setRoleChecking(false);
       }
