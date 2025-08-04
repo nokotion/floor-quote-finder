@@ -5,6 +5,7 @@ import { useBrands } from "@/contexts/BrandContext";
 import { TabSwitcher } from "@/components/flooring/TabSwitcher";
 import QuickQuoteForm from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
+import { ContainerTextFlip } from "@/components/ui/container-text-flip";
 
 const FlooringPathTabs = memo(() => {
   const componentId = useRef(`TABS_${Math.random().toString(36).substr(2, 9)}`);
@@ -42,7 +43,11 @@ const FlooringPathTabs = memo(() => {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Get Competitive Flooring Quotes from Verified Local Retailers
+            Get <ContainerTextFlip 
+              words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} 
+              className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
+              interval={2500}
+            /> Flooring Quotes from Verified Retailers
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Compare prices, quality, and service from trusted flooring stores across Canada
@@ -56,7 +61,13 @@ const FlooringPathTabs = memo(() => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary">2 Min</div>
+              <div className="text-3xl font-bold text-primary">
+                <ContainerTextFlip 
+                  words={["2 Min", "Fast", "Quick", "Easy"]} 
+                  className="text-3xl font-bold text-primary"
+                  interval={3000}
+                />
+              </div>
               <div className="text-sm text-muted-foreground">Average Quote Time</div>
             </div>
             <div className="text-center">
