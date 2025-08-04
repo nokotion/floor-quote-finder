@@ -4,7 +4,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 
-interface AddressData {
+export interface AddressData {
   formatted_address: string;
   street_number?: string;
   route?: string;
@@ -31,43 +31,39 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   placeholder = "Start typing your address...",
   className = "",
   id,
-  usePostalCodeOnly = false
+  usePostalCodeOnly = false,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [googleMapsEnabled, setGoogleMapsEnabled] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [googleMapsEnabled, setGoogleMapsEnabled] = useState(false);
 
   useEffect(() => {
-    const initializeAutocomplete = async () => {
+    const init = async () => {
       try {
-        console.log('Initializing Google Places Autocomplete...');
-        const { data, error } = await supabase.functions.invoke('google-maps-config');
+        console.log("🚀 Loading Google Maps API...");
+        const { data, error } = await supabase.functions.invoke("google-maps-config");
 
         if (error || !data?.apiKey) {
-          console.error("Google Maps API key missing, fallback to manual input.");
-          setHasError(true);
-          setErrorMessage("Enter your address manually.");
-          setIsLoaded(true);
-          return;
+          throw new Error("Google Maps API key missing");
         }
 
         const loader = new Loader({
           apiKey: data.apiKey,
-          version: 'weekly',
-          libraries: ['places'],
+          version: "weekly",
+          libraries: ["places"],
         });
 
         await loader.load();
-        console.log("Google Maps API loaded successfully");
+        console.log("✅ Google Maps API loaded");
 
         if (inputRef.current && !autocompleteRef.current) {
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-            types: usePostalCodeOnly ? ['postal_code'] : ['address'],
-            componentRestrictions: { country: 'ca' },
-            fields: ['formatted_address', 'address_components', 'geometry']
+            types: usePostalCodeOnly ? ["postal_code"] : ["address"],
+            componentRestrictions: { country: "ca" },
+            fields: ["formatted_address", "address_components", "geometry"],
           });
 
           autocompleteRef.current.addListener("place_changed", () => {
@@ -75,38 +71,33 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             if (!place || !place.formatted_address) return;
 
             const addressData: AddressData = { formatted_address: place.formatted_address };
-
             place.address_components?.forEach((c) => {
-              const types = c.types;
-              if (types.includes('street_number')) addressData.street_number = c.long_name;
-              else if (types.includes('route')) addressData.route = c.long_name;
-              else if (types.includes('locality')) addressData.locality = c.long_name;
-              else if (types.includes('administrative_area_level_1')) addressData.administrative_area_level_1 = c.short_name;
-              else if (types.includes('postal_code')) addressData.postal_code = c.long_name;
-              else if (types.includes('country')) addressData.country = c.long_name;
+              if (c.types.includes("street_number")) addressData.street_number = c.long_name;
+              if (c.types.includes("route")) addressData.route = c.long_name;
+              if (c.types.includes("locality")) addressData.locality = c.long_name;
+              if (c.types.includes("administrative_area_level_1")) addressData.administrative_area_level_1 = c.short_name;
+              if (c.types.includes("postal_code")) addressData.postal_code = c.long_name;
+              if (c.types.includes("country")) addressData.country = c.long_name;
             });
 
-            console.log("Address data extracted:", addressData);
+            console.log("📍 Address extracted:", addressData);
             onChange(place.formatted_address, addressData);
           });
 
           setGoogleMapsEnabled(true);
         }
-
-        setIsLoaded(true);
-        setHasError(false);
-        setErrorMessage("");
       } catch (err) {
-        console.error("Error loading Google Maps:", err);
+        console.error("❌ Google Maps failed to load:", err);
+        setGoogleMapsEnabled(false);
         setHasError(true);
         setErrorMessage("Google Maps failed to load. Enter your address manually.");
-        setGoogleMapsEnabled(false);
+      } finally {
         setIsLoaded(true);
       }
     };
 
-    initializeAutocomplete();
-  }, [onChange, usePostalCodeOnly]); // ✅ closes useEffect correctly
+    init();
+  }, [onChange, usePostalCodeOnly]);
 
   const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -120,17 +111,12 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         value={value}
         onChange={handleManualChange}
         onBlur={onBlur}
-        placeholder={!isLoaded ? "Loading address search..." : hasError ? "Enter your address manually" : placeholder}
+        placeholder={!isLoaded ? "Loading address search..." : placeholder}
         className={className}
         disabled={!isLoaded}
       />
-
-      {googleMapsEnabled && (
-        <p className="text-xs text-gray-400 mt-1">Powered by Google Maps</p>
-      )}
-      {hasError && errorMessage && (
-        <p className="text-sm text-red-600">{errorMessage}</p>
-      )}
+      {googleMapsEnabled && <p className="text-xs text-gray-400">Powered by Google Maps</p>}
+      {hasError && <p className="text-sm text-red-600">{errorMessage}</p>}
     </div>
   );
 };
