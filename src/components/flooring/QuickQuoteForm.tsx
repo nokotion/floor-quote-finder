@@ -27,6 +27,9 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Add logging for debugging brands
+  console.log("QuickQuoteForm - Brands received:", brands?.length, "Loading:", brandsLoading);
+
   const handleAddressChange = (address: string, data?: AddressData) => {
     setPostalCode(address);
     setAddressData(data || null);
@@ -51,9 +54,8 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
   const isFormValid = selectedBrand && projectSize && postalCode;
 
   return (
-    <section className="py-16 px-4 bg-white">
-      <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+    <div className="max-w-4xl mx-auto">
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
           <CardHeader>
             <CardTitle className="text-center text-2xl">Quick Quote Form</CardTitle>
           </CardHeader>
@@ -119,8 +121,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
             </form>
           </CardContent>
         </Card>
-      </div>
-    </section>
+    </div>
   );
 };
 

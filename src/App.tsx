@@ -28,37 +28,33 @@ import AdminUsers from './pages/admin/AdminUsers';
 
 // Create missing page components that are still needed
 const AboutPage = () => (
-  <MainLayout>
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">
-            About Price My Floor
-          </h1>
-          <p className="text-xl text-gray-600">
-            We connect homeowners with verified flooring retailers across Canada.
-          </p>
-        </div>
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">
+          About Price My Floor
+        </h1>
+        <p className="text-xl text-gray-600">
+          We connect homeowners with verified flooring retailers across Canada.
+        </p>
       </div>
     </div>
-  </MainLayout>
+  </div>
 );
 
 const ContactPage = () => (
-  <MainLayout>
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">
-            Contact Us
-          </h1>
-          <p className="text-xl text-gray-600">
-            Get in touch with our support team.
-          </p>
-        </div>
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">
+          Contact Us
+        </h1>
+        <p className="text-xl text-gray-600">
+          Get in touch with our support team.
+        </p>
       </div>
     </div>
-  </MainLayout>
+  </div>
 );
 
 function App() {
