@@ -15,33 +15,59 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
   const [roleChecking, setRoleChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     const checkAccess = async () => {
-      console.log('ProtectedRoute checking access for user:', user?.id, 'requireRole:', requireRole);
-      console.log('Profile:', profile);
+      const debugMessage = `ProtectedRoute: user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`;
+      console.log(debugMessage);
+      setDebugInfo(debugMessage);
 
       if (loading) {
         console.log('Still loading auth...');
         return;
       }
 
+      // Add timeout for loading state
+      const timeoutId = setTimeout(() => {
+        if (loading && retryCount < 3) {
+          console.log('Loading timeout, retrying...');
+          setRetryCount(prev => prev + 1);
+        }
+      }, 5000);
+
       if (!user) {
         console.log('No user, redirecting to login');
+        setRoleChecking(false);
         if (requireRole === 'admin') {
           navigate('/admin/login');
         } else {
           navigate('/retailer/login');
         }
+        clearTimeout(timeoutId);
         return;
       }
 
       if (!profile) {
-        console.log('No profile found for user');
-        setError('User profile not found');
-        setRoleChecking(false);
-        return;
+        console.log('No profile found for user, retrying...');
+        if (retryCount < 3) {
+          console.log(`Retry attempt ${retryCount + 1}/3`);
+          setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, 1000);
+          clearTimeout(timeoutId);
+          return;
+        } else {
+          console.log('Max retries reached, showing error');
+          setError('User profile not found after multiple attempts');
+          setRoleChecking(false);
+          clearTimeout(timeoutId);
+          return;
+        }
       }
+
+      console.log('Profile found:', profile);
 
       if (requireRole === 'admin') {
         if (profile.role === 'admin') {
@@ -65,6 +91,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
               console.error('Error checking retailer status:', retailerError);
               setError('Error verifying retailer account');
               setRoleChecking(false);
+              clearTimeout(timeoutId);
               return;
             }
 
@@ -88,10 +115,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
       }
 
       setRoleChecking(false);
+      clearTimeout(timeoutId);
     };
 
     checkAccess();
-  }, [user, profile, loading, navigate, requireRole]);
+  }, [user, profile, loading, navigate, requireRole, retryCount]);
 
   if (loading || roleChecking) {
     return (
@@ -99,6 +127,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
+          {retryCount > 0 && (
+            <p className="text-sm text-gray-500 mt-2">Retry attempt {retryCount}/3</p>
+          )}
+          <p className="text-xs text-gray-400 mt-4">{debugInfo}</p>
         </div>
       </div>
     );

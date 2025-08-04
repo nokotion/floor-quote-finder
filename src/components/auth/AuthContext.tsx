@@ -42,18 +42,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     console.log('Fetching profile for user:', userId);
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      );
+
+      const fetchPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+
       if (error) {
         console.error('Error fetching profile:', error);
+        console.error('Error details:', { code: error.code, message: error.message, details: error.details });
         return null;
       }
 
-      console.log('Profile fetched:', data);
+      console.log('Profile fetched successfully:', data);
       return data;
     } catch (error) {
       console.error('Error in fetchProfile:', error);
@@ -83,9 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           // Fetch profile data when user is authenticated
+          console.log('Fetching profile for authenticated user...');
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
+            console.log('Profile set in auth state change:', profileData);
           }
         } else {
           setProfile(null);
@@ -93,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (mounted) {
           setLoading(false);
+          console.log('Auth loading set to false');
         }
       }
     );
@@ -100,7 +111,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Initializing auth...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setLoading(false);
+          return;
+        }
+
         console.log('Initial session check:', session?.user?.id);
         
         if (!mounted) return;
@@ -109,24 +128,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          console.log('User found in session, fetching profile...');
           const profileData = await fetchProfile(session.user.id);
           if (mounted) {
             setProfile(profileData);
+            console.log('Profile set in initialization:', profileData);
           }
+        } else {
+          console.log('No user in session');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
       } finally {
         if (mounted) {
           setLoading(false);
+          console.log('Auth initialization complete');
         }
       }
     };
+
+    // Add a timeout fallback to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      if (mounted) {
+        console.warn('Auth loading timeout reached, setting loading to false');
+        setLoading(false);
+      }
+    }, 15000); // 15 second timeout
 
     initializeAuth();
 
     return () => {
       mounted = false;
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
