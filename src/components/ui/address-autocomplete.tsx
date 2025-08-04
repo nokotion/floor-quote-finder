@@ -44,18 +44,12 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     const initializeAutocomplete = async () => {
       try {
         console.log("Initializing Google Places Autocomplete...");
-        const { data, error } = await supabase.functions.invoke("google-maps-config");
-
-        if (error || !data?.apiKey) {
-          console.log("Google Maps API key missing, fallback to manual input.");
-          setHasError(true);
-          setErrorMessage("Enter your address manually.");
-          setIsLoaded(true);
-          return;
-        }
-
         const loader = new Loader({
-          apiKey: data.apiKey,
+    apiKey: "YOUR_GOOGLE_MAPS_API_KEY",  // <-- put your key here for testing
+    version: "weekly",
+    libraries: ["places"]
+});
+
           version: "weekly",
           libraries: ["places"]
         });
