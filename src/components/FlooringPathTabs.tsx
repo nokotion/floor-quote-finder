@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useBrands } from "@/contexts/BrandContext";
 import { TabSwitcher } from "@/components/flooring/TabSwitcher";
-import { QuickQuoteForm } from "@/components/flooring/QuickQuoteForm";
+import QuickQuoteForm from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 
 const FlooringPathTabs = memo(() => {
@@ -14,7 +14,7 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 🎬 FlooringPathTabs rendering... (render #${renderCount.current})`);
   
   const [activeTab, setActiveTab] = useState("quick");
-  const { brands, loading, error, refetch } = useBrands();
+  const { brands, loading, error } = useBrands();
   
   // Track re-renders
   useEffect(() => {
@@ -54,7 +54,7 @@ const FlooringPathTabs = memo(() => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <QuickQuoteForm brands={brands} brandsLoading={loading} error={error} onRetry={refetch} />
+            <QuickQuoteForm brands={brands} brandsLoading={loading} />
           </motion.div>
         )}
 
