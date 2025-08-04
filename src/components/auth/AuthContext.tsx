@@ -1,7 +1,8 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Profile {
   id: string;
@@ -38,39 +39,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Track ongoing profile fetch to prevent race conditions
+  const currentFetchRef = useRef<{ userId: string; promise: Promise<any> } | null>(null);
+  const profileCacheRef = useRef<{ [userId: string]: Profile | null }>({});
 
-  const fetchProfile = async (userId: string) => {
-    console.log('Fetching profile for user:', userId);
-    try {
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
-      );
-
-      const fetchPromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        console.error('Error details:', { code: error.code, message: error.message, details: error.details });
-        return null;
-      }
-
-      console.log('Profile fetched successfully:', data);
-      return data;
-    } catch (error) {
-      console.error('Error in fetchProfile:', error);
-      return null;
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    const timestamp = Date.now();
+    console.log(`[${timestamp}] Fetching profile for user:`, userId);
+    
+    // Check cache first
+    if (profileCacheRef.current[userId]) {
+      console.log(`[${timestamp}] Profile found in cache:`, profileCacheRef.current[userId]);
+      return profileCacheRef.current[userId];
     }
+    
+    // If there's already a fetch in progress for this user, return that promise
+    if (currentFetchRef.current?.userId === userId) {
+      console.log(`[${timestamp}] Profile fetch already in progress, waiting...`);
+      return currentFetchRef.current.promise;
+    }
+    
+    // Create new fetch promise
+    const fetchPromise = (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (error) {
+          console.error(`[${timestamp}] Database error fetching profile:`, error);
+          // Don't cache database errors, allow retry
+          return null;
+        }
+
+        console.log(`[${timestamp}] Profile fetched successfully:`, data);
+        // Cache the result
+        profileCacheRef.current[userId] = data;
+        return data;
+      } catch (error) {
+        console.error(`[${timestamp}] Network error in fetchProfile:`, error);
+        // Don't cache network errors, allow retry
+        return null;
+      } finally {
+        // Clear the current fetch reference
+        if (currentFetchRef.current?.userId === userId) {
+          currentFetchRef.current = null;
+        }
+      }
+    })();
+    
+    // Store the current fetch
+    currentFetchRef.current = { userId, promise: fetchPromise };
+    
+    return fetchPromise;
   };
 
+  // Debounced profile fetch to prevent rapid successive calls
+  const debouncedFetchProfile = useDebounce(async (userId: string) => {
+    if (!userId) return;
+    
+    console.log('Debounced profile fetch for:', userId);
+    const profileData = await fetchProfile(userId);
+    
+    // Only update state if this is still the current user
+    if (user?.id === userId) {
+      setProfile(profileData);
+      console.log('Profile updated via debounced fetch:', profileData);
+    }
+  }, 100);
+
   const refreshProfile = async () => {
-    if (user) {
+    if (user?.id) {
+      // Clear cache to force fresh fetch
+      delete profileCacheRef.current[user.id];
       const profileData = await fetchProfile(user.id);
       setProfile(profileData);
     }
@@ -78,11 +122,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    console.log('AuthProvider effect mounting...');
 
-    // Set up auth state listener
+    // Set up auth state listener - NO async operations here to prevent deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+      (event, session) => {
+        const timestamp = Date.now();
+        console.log(`[${timestamp}] Auth state changed:`, event, session?.user?.id);
         
         if (!mounted) return;
 
@@ -90,20 +136,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Fetch profile data when user is authenticated
-          console.log('Fetching profile for authenticated user...');
-          const profileData = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-            console.log('Profile set in auth state change:', profileData);
-          }
+          // Use setTimeout to defer Supabase calls and prevent deadlocks
+          setTimeout(() => {
+            if (mounted && session?.user) {
+              console.log(`[${timestamp}] Triggering debounced profile fetch...`);
+              debouncedFetchProfile(session.user.id);
+            }
+          }, 0);
         } else {
           setProfile(null);
+          // Clear cache when user logs out
+          profileCacheRef.current = {};
         }
         
-        if (mounted) {
+        // Set loading to false for auth state changes (but not initial load)
+        if (event !== 'INITIAL_SESSION') {
           setLoading(false);
-          console.log('Auth loading set to false');
+          console.log(`[${timestamp}] Auth loading set to false (${event})`);
         }
       }
     );
@@ -116,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (sessionError) {
           console.error('Session error:', sessionError);
-          setLoading(false);
+          if (mounted) setLoading(false);
           return;
         }
 
@@ -153,16 +202,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Auth loading timeout reached, setting loading to false');
         setLoading(false);
       }
-    }, 15000); // 15 second timeout
+    }, 10000); // Reduced to 10 seconds
 
     initializeAuth();
 
     return () => {
+      console.log('AuthProvider effect unmounting...');
       mounted = false;
       clearTimeout(loadingTimeout);
       subscription.unsubscribe();
+      // Clear any ongoing fetches
+      currentFetchRef.current = null;
     };
-  }, []);
+  }, [debouncedFetchProfile]);
 
   const signIn = async (email: string, password: string) => {
     console.log('Signing in user:', email);
