@@ -18,6 +18,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
   const [debugInfo, setDebugInfo] = useState<string>('');
   const checkExecutedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const prevPropsRef = useRef<{user: any, profile: any, loading: boolean}>({ user: null, profile: null, loading: true });
+
+  // Add re-render detection
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  
+  console.log(`[RENDER #${renderCount.current}] ProtectedRoute render - user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`);
 
   useEffect(() => {
     const timestamp = Date.now();

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -42,6 +42,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Track ongoing profile fetch to prevent race conditions
   const currentFetchRef = useRef<{ userId: string; promise: Promise<any> } | null>(null);
   const profileCacheRef = useRef<{ [userId: string]: Profile | null }>({});
+  
+  // Add re-render detection
+  const renderCount = useRef(0);
+  renderCount.current += 1;
+  console.log(`[AUTH RENDER #${renderCount.current}] AuthProvider render - user=${user?.id}, profile=${!!profile}, loading=${loading}`);
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     const timestamp = Date.now();
@@ -235,17 +240,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   };
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    user,
+    session,
+    profile,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    refreshProfile
+  }), [user, session, profile, loading]);
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      profile,
-      loading,
-      signIn,
-      signUp,
-      signOut,
-      refreshProfile
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
