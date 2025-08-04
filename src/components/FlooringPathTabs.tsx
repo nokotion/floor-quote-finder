@@ -45,7 +45,8 @@ const FlooringPathTabs = memo(() => {
           <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             Get <ContainerTextFlip 
               words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} 
-              className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
+              className="bg-transparent shadow-none border-none"
+              textClassName="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
               interval={2500}
             /> Flooring Quotes from Verified Retailers
           </h1>
@@ -64,7 +65,8 @@ const FlooringPathTabs = memo(() => {
               <div className="text-3xl font-bold text-primary">
                 <ContainerTextFlip 
                   words={["2 Min", "Fast", "Quick", "Easy"]} 
-                  className="text-3xl font-bold text-primary"
+                  className="bg-transparent shadow-none border-none"
+                  textClassName="text-3xl font-bold text-primary"
                   interval={3000}
                 />
               </div>

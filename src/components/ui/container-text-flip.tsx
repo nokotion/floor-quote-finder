@@ -56,11 +56,7 @@ export function ContainerTextFlip({
       animate={{ width }}
       transition={{ duration: animationDuration / 2000 }}
       className={cn(
-        "relative inline-block rounded-lg px-4 py-2 text-center font-bold",
-        "bg-gradient-to-b from-primary/10 to-primary/20",
-        "shadow-[inset_0_-1px_hsl(var(--primary)/0.3),inset_0_0_0_1px_hsl(var(--primary)/0.2),_0_4px_8px_hsl(var(--primary)/0.1)]",
-        "dark:bg-gradient-to-b dark:from-primary/20 dark:to-primary/30",
-        "dark:shadow-[inset_0_-1px_hsl(var(--primary)/0.4),inset_0_0_0_1px_hsl(var(--primary)/0.3),_0_4px_8px_hsl(var(--primary)/0.2)]",
+        "relative inline-block text-center font-bold",
         className
       )}
       key={words[currentWordIndex]}
