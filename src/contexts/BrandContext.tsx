@@ -22,10 +22,16 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const fetchBrands = async () => {
       try {
+        console.log("Fetching brands from Supabase...");
         const { data, error } = await supabase.from("flooring_brands").select("id, name").order("name");
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
+        console.log("Brands fetched successfully:", data);
         setBrands(data || []);
       } catch (err: any) {
+        console.error("Error fetching brands:", err.message);
         setError(err.message);
       } finally {
         setLoading(false);
