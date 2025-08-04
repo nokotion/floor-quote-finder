@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
   formatted_address: string;
@@ -43,21 +42,16 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   useEffect(() => {
     const init = async () => {
       try {
-        console.log("🚀 Loading Google Maps API...");
-        const { data, error } = await supabase.functions.invoke("google-maps-config");
-
-        if (error || !data?.apiKey) {
-          throw new Error("Google Maps API key missing");
-        }
+        console.log("🚀 Initializing Google Maps directly with API key");
 
         const loader = new Loader({
-          apiKey: data.apiKey,
+          apiKey: "AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50", // ✅ Direct Key
           version: "weekly",
           libraries: ["places"],
         });
 
         await loader.load();
-        console.log("✅ Google Maps API loaded");
+        console.log("✅ Google Maps API Loaded");
 
         if (inputRef.current && !autocompleteRef.current) {
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
@@ -80,7 +74,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               if (c.types.includes("country")) addressData.country = c.long_name;
             });
 
-            console.log("📍 Address extracted:", addressData);
+            console.log("📍 Address Data Extracted:", addressData);
             onChange(place.formatted_address, addressData);
           });
 
@@ -88,11 +82,11 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         }
       } catch (err) {
         console.error("❌ Google Maps failed to load:", err);
-        setGoogleMapsEnabled(false);
         setHasError(true);
         setErrorMessage("Google Maps failed to load. Enter your address manually.");
+        setGoogleMapsEnabled(false);
       } finally {
-        setIsLoaded(true);
+        setIsLoaded(true); // ✅ Always enable input
       }
     };
 
@@ -113,7 +107,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         onBlur={onBlur}
         placeholder={!isLoaded ? "Loading address search..." : placeholder}
         className={className}
-        disabled={!isLoaded}
+        disabled={false} // ✅ Always allow manual typing
       />
       {googleMapsEnabled && <p className="text-xs text-gray-400">Powered by Google Maps</p>}
       {hasError && <p className="text-sm text-red-600">{errorMessage}</p>}
