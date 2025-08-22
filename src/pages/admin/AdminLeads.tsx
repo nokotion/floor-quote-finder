@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Filter, Eye, MapPin, Package, Tag, Wrench, Camera, Calendar, DollarSign } from "lucide-react";
+import { Search, Filter, Eye, MapPin, Package, Tag, Wrench, Camera, Calendar, DollarSign, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 
 interface Lead {
@@ -52,6 +52,7 @@ const AdminLeads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadDistributions, setLeadDistributions] = useState<Record<string, LeadDistribution[]>>({});
   const [loading, setLoading] = useState(true);
+  const [verifyingLeads, setVerifyingLeads] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
@@ -143,6 +144,63 @@ const AdminLeads = () => {
     
     return matchesSearch && matchesStatus;
   });
+
+  const verifyLead = async (leadId: string) => {
+    setVerifyingLeads(prev => new Set(prev).add(leadId));
+    
+    try {
+      // Update lead verification status
+      const { error: updateError } = await supabase
+        .from('leads')
+        .update({
+          is_verified: true,
+          verified_at: new Date().toISOString(),
+          verification_token: null,
+          verification_expires_at: null,
+          status: 'verified'
+        })
+        .eq('id', leadId);
+
+      if (updateError) throw updateError;
+
+      // Call the verify-lead edge function to trigger distribution
+      const { error: functionError } = await supabase.functions.invoke('verify-lead', {
+        body: { leadId, token: 'admin_verified' }
+      });
+
+      if (functionError) {
+        console.error('Edge function error:', functionError);
+        // Don't throw here as the lead is already verified, just log the distribution issue
+        toast({
+          title: "Lead Verified",
+          description: "Lead verified successfully. Distribution may need manual trigger.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Lead Verified",
+          description: "Lead verified and distributed to qualified retailers.",
+          variant: "default",
+        });
+      }
+
+      // Refresh the leads data
+      await fetchLeads();
+    } catch (error) {
+      console.error('Error verifying lead:', error);
+      toast({
+        title: "Error",
+        description: "Failed to verify lead. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setVerifyingLeads(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(leadId);
+        return newSet;
+      });
+    }
+  };
 
   const toggleLeadExpansion = (leadId: string) => {
     setExpandedLead(expandedLead === leadId ? null : leadId);
@@ -240,15 +298,29 @@ const AdminLeads = () => {
                     </div>
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => toggleLeadExpansion(lead.id)}
-                    className="flex items-center gap-2"
-                  >
-                    <Eye className="w-4 h-4" />
-                    {isExpanded ? 'Hide Details' : 'View Details'}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {!lead.is_verified && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => verifyLead(lead.id)}
+                        disabled={verifyingLeads.has(lead.id)}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        {verifyingLeads.has(lead.id) ? 'Verifying...' : 'Verify Lead'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleLeadExpansion(lead.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      {isExpanded ? 'Hide Details' : 'View Details'}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 

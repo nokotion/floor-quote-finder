@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
-import { DevLoginPanel } from '@/components/dev/DevLoginPanel';
+
 
 const RetailerLogin = () => {
   const [email, setEmail] = useState('');
@@ -100,10 +100,6 @@ const RetailerLogin = () => {
         </nav>
 
         <div className="py-12 px-4">
-          {/* Development Mode Test Accounts - Full width for better layout */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <DevLoginPanel />
-          </div>
           
           <div className="max-w-md mx-auto space-y-6">
             {/* Show password reset form if required */}

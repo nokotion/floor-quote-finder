@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
-import { DevLoginPanel } from '@/components/dev/DevLoginPanel';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
@@ -149,8 +149,6 @@ const Auth = () => {
 
       <div className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Dev Panel */}
-          <DevLoginPanel onLogin={checkUserRoleAndRedirect} />
 
           {/* Main Auth Card */}
           <Card className="shadow-xl">
@@ -288,9 +286,6 @@ const Auth = () => {
           <div className="text-center text-sm text-gray-600 space-y-2">
             <p>
               For retailers: <Link to="/retailer/apply" className="text-blue-600 hover:underline">Apply to join our network</Link>
-            </p>
-            <p className="text-xs">
-              Admin access and retailer accounts available in dev mode above
             </p>
           </div>
         </div>
