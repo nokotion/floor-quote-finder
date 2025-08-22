@@ -100,10 +100,12 @@ const RetailerLogin = () => {
         </nav>
 
         <div className="py-12 px-4">
-          <div className="max-w-md mx-auto space-y-6">
-            {/* Development Mode Test Accounts */}
+          {/* Development Mode Test Accounts - Full width for better layout */}
+          <div className="max-w-4xl mx-auto mb-8">
             <DevLoginPanel />
-            
+          </div>
+          
+          <div className="max-w-md mx-auto space-y-6">
             {/* Show password reset form if required */}
             {showPasswordReset ? (
               <PasswordResetForm onSuccess={handlePasswordResetSuccess} />
