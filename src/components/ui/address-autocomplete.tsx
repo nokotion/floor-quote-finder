@@ -1,6 +1,7 @@
 /// <reference types="@types/google.maps" />
 import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AddressData {
   formatted_address: string;
@@ -18,20 +19,51 @@ interface Props {
   id?: string;
 }
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyAHCJ9TJj7wLc5Gk_7zmYq9gthe71o3x50"; // ✅ Static Key
-
 const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
+    // Fetch API key securely from our proxy
+    const fetchApiKey = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('google-maps-proxy', {
+          body: { service: 'places-api' }
+        });
+
+        if (error) throw error;
+        
+        if (data?.apiKey) {
+          setApiKey(data.apiKey);
+        } else {
+          console.error("❌ No API key returned from proxy");
+        }
+      } catch (error) {
+        console.error("❌ Failed to fetch Google Maps API key:", error);
+      }
+    };
+
+    fetchApiKey();
+  }, []);
+
+  useEffect(() => {
+    if (!apiKey) return;
+
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.onload = () => setGoogleLoaded(true);
     script.onerror = () => console.error("❌ Google Maps failed to load");
     document.head.appendChild(script);
-  }, []);
+
+    return () => {
+      // Clean up script if component unmounts
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, [apiKey]);
 
   useEffect(() => {
     if (!googleLoaded || !inputRef.current) return;
