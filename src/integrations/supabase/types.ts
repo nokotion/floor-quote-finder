@@ -1187,6 +1187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_verify_lead: {
+        Args: { p_lead_id: string }
+        Returns: undefined
+      }
       calculate_postal_distance: {
         Args: { postal1: string; postal2: string }
         Returns: number
