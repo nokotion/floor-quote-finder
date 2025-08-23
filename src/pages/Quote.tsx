@@ -12,7 +12,7 @@ import { CheckCircle, MapPin, Package, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { validateAndFormatPhone } from "@/utils/phoneValidation";
-import { VerificationModal } from "@/components/VerificationModal";
+// Removed VerificationModal import - now using direct secure submission
 import { validatePostalCode } from "@/utils/postalCodeUtils";
 
 interface AddressData {
@@ -52,9 +52,7 @@ const Quote = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionProgress, setSubmissionProgress] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-  const [pendingQuoteData, setPendingQuoteData] = useState<any>(null);
+  // Removed verification modal state - now using direct secure submission
 
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
@@ -210,81 +208,43 @@ const Quote = () => {
       return;
     }
 
-    // Store quote data temporarily and show verification modal
-    const files = (document.getElementById('attachment') as HTMLInputElement)?.files;
-    const quoteData = {
-      customer_name: customerName,
-      customer_email: customerEmail,
-      customer_phone: customerPhone,
-      postal_code: validPostalCode,
-      street_address: addressData.street,
-      square_footage: parseInt(size?.split('-')[0] || "500"),
-      brand_requested: brand,
-      project_type: size,
-      installation_required: installationRequired,
-      notes: notes,
-      address_formatted: addressData.formatted_address,
-      address_city: addressData.city,
-      address_province: addressData.province,
-      files: files
-    };
-
-    setPendingQuoteData(quoteData);
-    setShowVerificationModal(true);
-  };
-
-  const handleVerificationSuccess = async () => {
-    if (!pendingQuoteData) return;
-
+    // Submit lead through secure handler
     setIsSubmitting(true);
     setSubmissionProgress(25);
 
     try {
-      // 1. Upload Attachments first if any
-      let attachmentUrls: string[] = [];
-      if (pendingQuoteData.files && pendingQuoteData.files.length > 0) {
-        attachmentUrls = await uploadAttachments(pendingQuoteData.files, 'temp');
-      }
-      setSubmissionProgress(50);
-
-      // 2. Create verified lead with distribution using edge function
-      const leadData = {
-        customer_name: pendingQuoteData.customer_name,
-        customer_email: pendingQuoteData.customer_email,
-        customer_phone: pendingQuoteData.customer_phone,
-        postalCode: pendingQuoteData.postal_code, // Use validated postal code
-        street_address: pendingQuoteData.street_address,
-        address_city: pendingQuoteData.address_city,
-        address_province: pendingQuoteData.address_province,
-        address_formatted: pendingQuoteData.address_formatted,
-        brand_requested: pendingQuoteData.brand_requested, // Use validated brand
-        projectSize: pendingQuoteData.project_type,
-        square_footage: pendingQuoteData.square_footage,
-        installation_required: pendingQuoteData.installation_required,
-        notes: pendingQuoteData.notes,
-        attachment_urls: attachmentUrls.length > 0 ? attachmentUrls : null
+      // Prepare secure submission data
+      const secureData = {
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        postal_code: validPostalCode,
+        brand_requested: brand,
+        project_size: size || '',
+        installation_required: installationRequired,
+        notes: notes
       };
 
-      const { data: result, error: leadError } = await supabase.functions.invoke('create-verified-lead', {
-        body: leadData
+      // Submit through secure edge function
+      const { data: result, error: submitError } = await supabase.functions.invoke('secure-lead-handler', {
+        body: secureData
       });
 
-      if (leadError) {
-        console.error('Error creating verified lead:', leadError);
-        throw new Error('Failed to create lead');
+      if (submitError) {
+        console.error('Error submitting lead:', submitError);
+        throw new Error(submitError.message || 'Failed to submit lead');
       }
 
       setSubmissionProgress(100);
       setIsSubmitted(true);
-      setIsVerified(true);
       
       toast({
-        title: "Quote submitted successfully!",
-        description: `We've matched you with ${result.matched_retailers || 0} qualified installers in your area.`,
+        title: "Quote request submitted!",
+        description: result.message || "Please check your email to verify your request.",
       });
 
     } catch (error: any) {
-      console.error("Submission error:", error);
+      console.error("Secure submission error:", error);
       toast({
         title: "Submission Failed",
         description: error.message || "An error occurred. Please try again.",
@@ -294,6 +254,8 @@ const Quote = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Remove the verification success handler as we now handle everything in submit
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
@@ -392,10 +354,9 @@ const Quote = () => {
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                     <CheckCircle className="w-10 h-10 text-green-600" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-4">Quote Submitted Successfully!</h2>
+                  <h2 className="text-3xl font-bold mb-4">Quote Request Submitted!</h2>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    Your verified quote request has been sent to qualified retailers in your area. 
-                    You should receive responses within 24 hours.
+                    Please check your email to verify your request. Once verified, we'll match you with qualified retailers in your area.
                   </p>
                   <p className="text-sm text-gray-500">
                     Thank you for using PriceMyFloor!
@@ -502,13 +463,7 @@ const Quote = () => {
         </motion.div>
       </div>
 
-      <VerificationModal
-        open={showVerificationModal}
-        onOpenChange={setShowVerificationModal}
-        email={customerEmail}
-        phone={customerPhone}
-        onVerificationSuccess={handleVerificationSuccess}
-      />
+      {/* Removed VerificationModal - now using direct secure submission */}
     </div>
   );
 };
