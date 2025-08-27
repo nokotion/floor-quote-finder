@@ -67,11 +67,11 @@ const ContactPage = () => (
 
 function App() {
   return (
-    <DevModeProvider>
-      <AuthProvider>
-        <Router>
-          <BrandProvider>
-            <HelmetProvider>
+    <HelmetProvider>
+      <DevModeProvider>
+        <AuthProvider>
+          <Router>
+            <BrandProvider>
               <DevModeBanner />
               <LayoutWrapper>
                 <Toaster />
@@ -166,11 +166,11 @@ function App() {
             } />
                 </Routes>
               </LayoutWrapper>
-            </HelmetProvider>
-          </BrandProvider>
-        </Router>
-      </AuthProvider>
-    </DevModeProvider>
+            </BrandProvider>
+          </Router>
+        </AuthProvider>
+      </DevModeProvider>
+    </HelmetProvider>
   );
 }
 
