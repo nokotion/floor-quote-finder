@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import RetailerSubscriptionCard from '@/components/retailer/RetailerSubscription
 import { useDebounce } from '@/hooks/useDebounce';
 import { SQFT_TIERS } from '@/constants/flooringData';
 import { useAuth } from '@/components/auth/AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 
 interface FlooringBrand {
   id: string;
@@ -43,27 +43,37 @@ const RetailerSubscriptions = () => {
   const [savingStates, setSavingStates] = useState<{[key: string]: boolean}>({});
   
   const { user, profile } = useAuth();
+  const { isDevMode, mockProfile } = useDevMode();
+
+  // Get the effective profile (dev mode or real)
+  const effectiveProfile = isDevMode ? mockProfile : profile;
 
   useEffect(() => {
-    console.log('RetailerSubscriptions mounted with user:', user?.id, 'profile:', profile);
-    if (user && profile) {
+    console.log('RetailerSubscriptions mounted with user:', user?.id, 'profile:', effectiveProfile, 'devMode:', isDevMode);
+    
+    // In dev mode, we can proceed without real authentication
+    if (isDevMode || (user && effectiveProfile)) {
       fetchData();
     }
-  }, [user, profile]);
+  }, [user, effectiveProfile, isDevMode]);
 
   const fetchData = async () => {
     try {
-      console.log('Fetching data for retailer:', profile?.retailer_id);
+      console.log('Fetching data for retailer:', effectiveProfile?.retailer_id);
       
-      if (!profile?.retailer_id) {
+      // In dev mode, use a mock retailer_id if none exists
+      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
+      
+      if (!currentRetailerId) {
         console.error('No retailer_id found in profile');
         setLoading(false);
         return;
       }
 
-      setRetailerId(profile.retailer_id);
+      setRetailerId(currentRetailerId);
 
       // Fetch available brands
+      console.log('Fetching brands from Supabase...');
       const { data: brandsData, error: brandsError } = await supabase
         .from('flooring_brands')
         .select('*')
@@ -75,15 +85,26 @@ const RetailerSubscriptions = () => {
         throw brandsError;
       }
 
-      // Fetch current subscriptions
-      const { data: subscriptionsData, error: subscriptionsError } = await supabase
-        .from('brand_subscriptions')
-        .select('*')
-        .eq('retailer_id', profile.retailer_id);
+      console.log('Successfully fetched brands:', brandsData?.length);
 
-      if (subscriptionsError) {
-        console.error('Error fetching subscriptions:', subscriptionsError);
-        throw subscriptionsError;
+      // In dev mode, we might not have real subscriptions, so we can skip this or use mock data
+      let subscriptionsData = [];
+      if (!isDevMode) {
+        // Only fetch real subscriptions if not in dev mode
+        const { data: subData, error: subscriptionsError } = await supabase
+          .from('brand_subscriptions')
+          .select('*')
+          .eq('retailer_id', currentRetailerId);
+
+        if (subscriptionsError) {
+          console.error('Error fetching subscriptions:', subscriptionsError);
+          // Don't throw error in dev mode, just log it
+          if (!isDevMode) {
+            throw subscriptionsError;
+          }
+        } else {
+          subscriptionsData = subData || [];
+        }
       }
 
       console.log('Fetched brands:', brandsData?.length, 'subscriptions:', subscriptionsData?.length);
@@ -139,7 +160,9 @@ const RetailerSubscriptions = () => {
     setSavingState(tierKey, true);
 
     try {
-      if (!profile?.retailer_id) {
+      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
+      
+      if (!currentRetailerId) {
         throw new Error('No retailer ID found');
       }
 
@@ -178,7 +201,7 @@ const RetailerSubscriptions = () => {
         // Create new subscription with calculated lead_price
         const tierInfo = SQFT_TIERS.find(t => t.value === tier);
         const newSubscription = {
-          retailer_id: profile.retailer_id,
+          retailer_id: currentRetailerId,
           brand_name: brandName,
           sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
           is_active: true,
