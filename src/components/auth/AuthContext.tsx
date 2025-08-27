@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useDevMode } from '@/contexts/DevModeContext';
 
 interface Profile {
   id: string;
@@ -34,6 +35,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isDevMode, mockUser, mockProfile } = useDevMode();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -212,15 +214,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Memoize the context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
-    user,
-    session,
-    profile,
-    loading,
+    user: isDevMode ? mockUser : user,
+    session: isDevMode ? ({ user: mockUser } as Session) : session,
+    profile: isDevMode ? mockProfile : profile,
+    loading: isDevMode ? false : loading,
     signIn,
     signUp,
     signOut,
     refreshProfile
-  }), [user, session, profile, loading]);
+  }), [user, session, profile, loading, isDevMode, mockUser, mockProfile]);
 
   return (
     <AuthContext.Provider value={contextValue}>

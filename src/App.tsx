@@ -9,6 +9,11 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
 import { BrandProvider } from './contexts/BrandContext';
+import { DevModeProvider } from './contexts/DevModeContext';
+import { DevModeBanner } from './components/dev/DevModeBanner';
+import { DevModePanel } from './components/dev/DevModePanel';
+import { Toaster } from './components/ui/sonner';
+import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages/Index';
 import Quote from './pages/Quote';
 import Browse from './pages/Browse';
@@ -26,6 +31,8 @@ import AdminRetailers from './pages/admin/AdminRetailers';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminBrands from './pages/admin/AdminBrands';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminApplications from './pages/admin/AdminApplications';
+import AdminLeads from './pages/admin/AdminLeads';
 
 // Create missing page components that are still needed
 const AboutPage = () => (
@@ -60,11 +67,16 @@ const ContactPage = () => (
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <BrandProvider>
-          <LayoutWrapper>
-          <Routes>
+    <DevModeProvider>
+      <AuthProvider>
+        <Router>
+          <BrandProvider>
+            <HelmetProvider>
+              <DevModeBanner />
+              <LayoutWrapper>
+                <Toaster />
+                <DevModePanel />
+                <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/quote" element={<Quote />} />
@@ -84,7 +96,7 @@ function App() {
             {/* Retailer routes */}
             <Route path="/retailer/login" element={<RetailerLogin />} />
             <Route path="/retailer/apply" element={<RetailerApply />} />
-            <Route path="/retailer" element={
+            <Route path="/retailer/dashboard" element={
               <ProtectedRoute requireRole="retailer">
                 <RetailerDashboard />
               </ProtectedRoute>
@@ -99,7 +111,7 @@ function App() {
                 <RetailerSubscriptions />
               </ProtectedRoute>
             } />
-            <Route path="/retailer/coverage-map" element={
+            <Route path="/retailer/coverage" element={
               <ProtectedRoute requireRole="retailer">
                 <RetailerCoverageMap />
               </ProtectedRoute>
@@ -117,7 +129,7 @@ function App() {
             
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={
+            <Route path="/admin/dashboard" element={
               <ProtectedRoute requireRole="admin">
                 <AdminDashboard />
               </ProtectedRoute>
@@ -137,16 +149,28 @@ function App() {
                 <AdminUsers />
               </ProtectedRoute>
             } />
+            <Route path="/admin/applications" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminApplications />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/leads" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminLeads />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/settings" element={
               <ProtectedRoute requireRole="admin">
                 <AdminSettings />
               </ProtectedRoute>
             } />
-          </Routes>
-          </LayoutWrapper>
-        </BrandProvider>
-      </Router>
-    </AuthProvider>
+                </Routes>
+              </LayoutWrapper>
+            </HelmetProvider>
+          </BrandProvider>
+        </Router>
+      </AuthProvider>
+    </DevModeProvider>
   );
 }
 

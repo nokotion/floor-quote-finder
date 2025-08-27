@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
@@ -11,6 +12,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole = 'retailer' }) => {
   const { user, profile, loading } = useAuth();
+  const { isDevMode, currentRole } = useDevMode();
   const navigate = useNavigate();
   const [roleChecking, setRoleChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
@@ -20,7 +22,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    const debugMessage = `ProtectedRoute: user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}`;
+    const debugMessage = `ProtectedRoute: user=${user?.id}, profile=${!!profile}, loading=${loading}, role=${requireRole}, devMode=${isDevMode}`;
     setDebugInfo(debugMessage);
 
     // Clear any existing timeout
@@ -32,6 +34,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
     setError(null);
     setHasAccess(false);
     checkExecutedRef.current = false;
+
+    // Dev mode bypass - immediate access if role matches
+    if (isDevMode) {
+      if ((requireRole === 'admin' && currentRole === 'admin') || 
+          (requireRole === 'retailer' && (currentRole === 'retailer' || currentRole === 'admin')) ||
+          (requireRole === 'public')) {
+        setHasAccess(true);
+        setRoleChecking(false);
+        return;
+      }
+    }
 
     // If still loading, wait a bit more but don't wait indefinitely
     if (loading) {
@@ -127,7 +140,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireRole =
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [user, profile, loading, navigate, requireRole]);
+  }, [user, profile, loading, navigate, requireRole, isDevMode, currentRole]);
 
   if (loading || roleChecking) {
     return (
