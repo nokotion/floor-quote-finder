@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/components/auth/AuthContext';
@@ -10,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
+import { useDevMode } from '@/contexts/DevModeContext';
 
 
 const RetailerLogin = () => {
@@ -21,10 +21,17 @@ const RetailerLogin = () => {
   
   const { signIn, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  const { isDevMode, currentRole } = useDevMode();
 
   useEffect(() => {
     const checkUserAccess = async () => {
-      console.log('RetailerLogin checking user access:', user?.id, profile);
+      console.log('RetailerLogin checking user access:', user?.id, profile, { isDevMode, currentRole });
+
+      // Dev Mode: bypass login if role is retailer or admin
+      if (isDevMode && (currentRole === 'retailer' || currentRole === 'admin')) {
+        navigate('/retailer/dashboard');
+        return;
+      }
       
       if (user && profile) {
         if (profile.retailer_id) {
@@ -36,7 +43,7 @@ const RetailerLogin = () => {
           }
           
           // User is authenticated and has retailer profile, redirect to dashboard
-          navigate('/retailer');
+          navigate('/retailer/dashboard');
         } else {
           setError('No retailer account found. Please apply to join our network first.');
         }
@@ -44,7 +51,7 @@ const RetailerLogin = () => {
     };
 
     checkUserAccess();
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, isDevMode, currentRole]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +79,7 @@ const RetailerLogin = () => {
   const handlePasswordResetSuccess = async () => {
     setShowPasswordReset(false);
     await refreshProfile();
-    navigate('/retailer');
+    navigate('/retailer/dashboard');
   };
 
   return (

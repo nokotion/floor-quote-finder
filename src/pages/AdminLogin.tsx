@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { useDevMode } from '@/contexts/DevModeContext';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -18,12 +19,17 @@ const AdminLogin = () => {
   
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const { isDevMode, currentRole } = useDevMode();
 
   useEffect(() => {
+    if (isDevMode && currentRole === 'admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
     if (user) {
       checkAdminStatusAndRedirect();
     }
-  }, [user, navigate]);
+  }, [user, navigate, isDevMode, currentRole]);
 
   const checkAdminStatusAndRedirect = async () => {
     if (!user) return;
@@ -36,7 +42,7 @@ const AdminLogin = () => {
         .single();
 
       if (profile?.role === 'admin') {
-        navigate('/admin');
+        navigate('/admin/dashboard');
       } else {
         setError('Access denied. Admin privileges required.');
       }
