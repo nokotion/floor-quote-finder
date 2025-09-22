@@ -42,15 +42,15 @@ const FlooringPathTabs = memo(() => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-            Get <span className="inline-block min-w-[280px] text-left">
-              <ContainerTextFlip 
-                words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} 
-                className="bg-transparent shadow-none border-none"
-                textClassName="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
-                interval={2500}
-              />
-            </span> Flooring Quotes from Verified Retailers
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-tight">
+            Get{' '}
+            <ContainerTextFlip 
+              words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} 
+              className="bg-transparent shadow-none border-none"
+              textClassName="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
+              interval={2500}
+            />
+            {' '}Flooring Quotes from Verified Retailers
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Compare prices, quality, and service from trusted flooring stores across Canada
