@@ -4,13 +4,15 @@ import vinylIcon from "@/assets/categories/vinyl.png";
 import hardwoodIcon from "@/assets/categories/hardwood.png";
 import laminateIcon from "@/assets/categories/laminate.png";
 import carpetIcon from "@/assets/categories/carpet.png";
+import sportsIcon from "@/assets/categories/sports.png";
 
 export const flooringTypes = [
   { name: "Tile", icon: tileIcon, description: "Ceramic, porcelain, and natural stone" },
   { name: "Vinyl", icon: vinylIcon, description: "Luxury vinyl plank and sheet vinyl" },
   { name: "Hardwood", icon: hardwoodIcon, description: "Solid and engineered hardwood floors" },
   { name: "Laminate", icon: laminateIcon, description: "Durable and affordable wood-look floors" },
-  { name: "Carpet", icon: carpetIcon, description: "Soft and comfortable floor coverings" }
+  { name: "Carpet", icon: carpetIcon, description: "Soft and comfortable floor coverings" },
+  { name: "Sports", icon: sportsIcon, description: "Athletic and commercial sport flooring" }
 ];
 
 export const projectSizes = [

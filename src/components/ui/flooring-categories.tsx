@@ -30,6 +30,10 @@ const categories = [
     title: "Tile",
   },
   {
+    id: "sports",
+    title: "Sports",
+  },
+  {
     id: "commercial",
     title: "Commercial",
   },
