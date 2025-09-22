@@ -171,71 +171,62 @@ const BrandExplorer = () => {
             )}
           </div>
         ) : (
-          <div className={isMobile ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"}>
+          <div className={isMobile ? "grid grid-cols-3 gap-2" : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3"}>
             {filteredBrands.map((brand, index) => (
               <motion.div
                 key={brand.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
                 className="h-full"
               >
-                <Card className="h-full group hover:shadow-xl transition-all duration-300 flex flex-col">
+                <Card className="h-full group hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1">
                   <Link to={`/brand/${brand.slug}`} className="flex-1 flex flex-col">
-                    <CardContent className={isMobile ? "p-2 flex-1 flex flex-col" : "p-4 flex-1 flex flex-col"}>
+                    <CardContent className="p-3 flex-1 flex flex-col">
                       {/* Logo Section */}
-                      <div className={isMobile ? "flex flex-col items-center text-center mb-2" : "flex flex-col items-center text-center mb-4"}>
+                      <div className="flex flex-col items-center text-center mb-2">
                         {brand.logo_url ? (
                           <img 
                             src={brand.logo_url} 
                             alt={`${brand.name} logo`}
-                            className={isMobile ? "h-12 w-auto object-contain mb-2" : "h-20 w-auto object-contain mb-3"}
+                            className={isMobile ? "h-8 w-auto object-contain mb-1" : "h-12 w-auto object-contain mb-2"}
                           />
                         ) : (
-                          <div className={isMobile ? "h-12 w-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2" : "h-20 w-20 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-3"}>
-                            <span className={isMobile ? "text-accent-foreground font-bold text-lg" : "text-accent-foreground font-bold text-2xl"}>
+                          <div className={isMobile ? "h-8 w-8 bg-gradient-to-br from-accent/20 to-accent/30 rounded flex items-center justify-center mb-1" : "h-12 w-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-lg flex items-center justify-center mb-2"}>
+                            <span className={isMobile ? "text-accent-foreground font-bold text-xs" : "text-accent-foreground font-bold text-lg"}>
                               {brand.name.charAt(0)}
                             </span>
                           </div>
                         )}
                         
                         {/* Brand Name */}
-                        <h3 className={isMobile ? "text-sm font-bold group-hover:text-accent transition-colors line-clamp-2 text-center leading-tight" : "text-lg font-bold group-hover:text-accent transition-colors line-clamp-2 min-h-[2.5rem] flex items-center"}>
+                        <h3 className={isMobile ? "text-xs font-semibold group-hover:text-accent transition-colors line-clamp-2 text-center leading-tight" : "text-sm font-semibold group-hover:text-accent transition-colors line-clamp-2 text-center leading-tight"}>
                           {brand.name}
                         </h3>
                       </div>
                       
-                      {/* Category Icons - Hidden on mobile or simplified */}
+                      {/* Category Icons - Only show 1-2 on desktop, none on mobile */}
                       {!isMobile && (
-                        <div className="flex justify-center gap-2 mb-4 min-h-[1.5rem]">
+                        <div className="flex justify-center gap-1 mb-2 min-h-[1rem]">
                           {brand.categories && brand.categories.trim() && 
                             brand.categories.split(',')
                               .map(cat => cat.trim().toLowerCase())
                               .filter(cat => categoryIcons[cat])
-                              .slice(0, 3)
+                              .slice(0, 2)
                               .map((category, idx) => (
-                                <span key={idx} className="text-xl" title={category}>
+                                <span key={idx} className="text-sm" title={category}>
                                   {categoryIcons[category]}
                                 </span>
                               ))
                           }
                         </div>
                       )}
-                      
-                      {/* Website Icon - Hidden on mobile */}
-                      {!isMobile && (
-                        <div className="flex justify-center">
-                          {brand.website_url && (
-                            <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-accent transition-colors" />
-                          )}
-                        </div>
-                      )}
                     </CardContent>
                   </Link>
                   
                   {/* Get Quote Button - Always at bottom */}
-                  <div className={isMobile ? "p-2 pt-0 mt-auto" : "p-4 pt-0 mt-auto"}>
-                    <Button asChild className={isMobile ? "w-full text-xs py-1 h-7" : "w-full"}>
+                  <div className="p-2 pt-0 mt-auto">
+                    <Button asChild className={isMobile ? "w-full text-xs py-1 h-6 rounded" : "w-full text-xs py-1.5 h-7 rounded"}>
                       <Link to={`/quote?brand=${encodeURIComponent(brand.name)}`}>
                         {isMobile ? "Quote" : "Get Quote"}
                       </Link>
