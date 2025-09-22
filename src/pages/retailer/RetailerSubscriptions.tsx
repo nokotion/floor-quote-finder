@@ -87,10 +87,32 @@ const RetailerSubscriptions = () => {
 
       console.log('Successfully fetched brands:', brandsData?.length);
 
-      // In dev mode, we might not have real subscriptions, so we can skip this or use mock data
+      // In dev mode, provide some mock subscriptions for testing
       let subscriptionsData = [];
-      if (!isDevMode) {
-        // Only fetch real subscriptions if not in dev mode
+      if (isDevMode) {
+        // Create mock subscriptions for some brands to demonstrate functionality
+        subscriptionsData = [
+          {
+            id: 'mock-1',
+            brand_name: brandsData?.[0]?.name || 'Mohawk',
+            is_active: true,
+            sqft_tier: '100-500',
+            lead_price: 15.00,
+            accepts_installation: false,
+            installation_surcharge: 0.50
+          },
+          {
+            id: 'mock-2', 
+            brand_name: brandsData?.[1]?.name || 'Shaw Floors',
+            is_active: true,
+            sqft_tier: '500-1000',
+            lead_price: 25.00,
+            accepts_installation: true,
+            installation_surcharge: 0.50
+          }
+        ];
+      } else {
+        // Fetch real subscriptions in production mode
         const { data: subData, error: subscriptionsError } = await supabase
           .from('brand_subscriptions')
           .select('*')
@@ -98,10 +120,7 @@ const RetailerSubscriptions = () => {
 
         if (subscriptionsError) {
           console.error('Error fetching subscriptions:', subscriptionsError);
-          // Don't throw error in dev mode, just log it
-          if (!isDevMode) {
-            throw subscriptionsError;
-          }
+          throw subscriptionsError;
         } else {
           subscriptionsData = subData || [];
         }
