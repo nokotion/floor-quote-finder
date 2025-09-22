@@ -34,13 +34,15 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
               className="group block"
             >
               <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-accent">
-                <CardContent className={`text-center relative ${isMobile ? 'p-2' : 'p-4'}`}>
-                  <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-3'}`}>
-                    <img 
-                      src={type.icon} 
-                      alt={`${type.name} flooring icon`}
-                      className={`object-contain ${isMobile ? 'w-10 h-10' : 'w-16 h-16'}`}
-                    />
+                <CardContent className={`text-center relative ${isMobile ? 'p-3' : 'p-6'}`}>
+                  <div className={`flex justify-center ${isMobile ? 'mb-3' : 'mb-4'}`}>
+                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-50 p-2">
+                      <img 
+                        src={type.icon} 
+                        alt={`${type.name} flooring icon`}
+                        className={`object-cover w-full h-full rounded ${isMobile ? 'w-20 h-20' : 'w-24 h-24'}`}
+                      />
+                    </div>
                   </div>
                   <h3 className={`font-semibold group-hover:text-accent transition-colors ${isMobile ? 'text-sm mb-1' : 'text-xl mb-2'}`}>
                     {type.name}
