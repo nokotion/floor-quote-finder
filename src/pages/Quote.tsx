@@ -133,21 +133,37 @@ const Quote = () => {
     return urls;
   };
 
-  const getValidatedPostalCode = () => {
-    // Try multiple sources for postal code
-    const possiblePostalCodes = [
-      addressData.postal_code,
+  const getValidatedPostalCode = (): string | null => {
+    // Try to get postal code from various sources
+    const sources = [
       postal,
-      // Extract from formatted address if available
-      addressData.formatted_address?.match(/[A-Z]\d[A-Z]\s*\d[A-Z]\d/)?.[0]
-    ].filter(Boolean);
+      addressData.postal_code,
+      formatted_address
+    ];
 
-    for (const postalCode of possiblePostalCodes) {
-      if (postalCode && validatePostalCode(postalCode)) {
-        return postalCode.toUpperCase();
+    console.log('Postal code sources:', sources);
+
+    for (const source of sources) {
+      if (source) {
+        // Improved regex to extract Canadian postal code from full address
+        // Matches format like "L5J 1G3" or "L5J1G3" within larger strings
+        const match = source.match(/\b[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\s*\d[ABCEGHJ-NPRSTV-Z]\d\b/i);
+        console.log('Checking source:', source, 'Match:', match);
+        
+        if (match) {
+          const extracted = match[0].replace(/\s/g, '').toUpperCase();
+          const formatted = `${extracted.slice(0, 3)} ${extracted.slice(3)}`;
+          console.log('Extracted postal code:', formatted);
+          
+          if (validatePostalCode(formatted)) {
+            console.log('Valid postal code found:', formatted);
+            return formatted;
+          }
+        }
       }
     }
 
+    console.log('No valid postal code found');
     return null;
   };
 
