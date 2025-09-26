@@ -172,24 +172,25 @@ const handler = async (req: Request): Promise<Response> => {
         console.log(`[${requestId}] SMS verification sent successfully`);
       }
     } catch (verificationError) {
-      console.error(`[${requestId}] Verification send failed:`, verificationError.message);
+      const errorMessage = verificationError instanceof Error ? verificationError.message : String(verificationError);
+      console.error(`[${requestId}] Verification send failed:`, errorMessage);
       
       // Provide more specific error messages based on the error type
       let userFriendlyError = `Failed to send ${method} verification`;
       let errorType = 'VERIFICATION_SEND_FAILED';
       
-      if (verificationError.message.includes('Authentication Error') || 
-          verificationError.message.includes('authentication failed') ||
-          verificationError.message.includes('20003')) {
+      if (errorMessage.includes('Authentication Error') || 
+          errorMessage.includes('authentication failed') ||
+          errorMessage.includes('20003')) {
         userFriendlyError = 'SMS service authentication failed. Please try email verification instead.';
         errorType = 'SMS_AUTH_FAILED';
-      } else if ((verificationError as Error).message.includes('Invalid phone number')) {
+      } else if (errorMessage.includes('Invalid phone number')) {
         userFriendlyError = 'Invalid phone number format. Please check your phone number.';
         errorType = 'INVALID_PHONE';
-      } else if ((verificationError as Error).message.includes('timed out')) {
+      } else if (errorMessage.includes('timed out')) {
         userFriendlyError = 'Request timed out. Please try again in a moment.';
         errorType = 'TIMEOUT';
-      } else if ((verificationError as Error).message.includes('Email service returned error')) {
+      } else if (errorMessage.includes('Email service returned error')) {
         userFriendlyError = 'Email service is currently unavailable. Please try SMS verification instead.';
         errorType = 'EMAIL_SERVICE_FAILED';
       }
@@ -199,7 +200,7 @@ const handler = async (req: Request): Promise<Response> => {
           success: false,
           error: userFriendlyError,
           errorType: errorType,
-          originalError: (verificationError as Error).message // For debugging
+          originalError: errorMessage // For debugging
         }),
         {
           status: 400,
@@ -220,15 +221,11 @@ const handler = async (req: Request): Promise<Response> => {
     };
     
     try {
-      const { data: updateResult, error: updateError } = await withTimeout(
-        supabase
-          .from('leads')
-          .update(updateData)
-          .eq('id', leadId)
-          .select(),
-        10000,
-        'Database update timed out'
-      );
+      const { data: updateResult, error: updateError } = await supabase
+        .from('leads')
+        .update(updateData)
+        .eq('id', leadId)
+        .select();
 
       if (updateError) {
         console.error(`[${requestId}] Database update error:`, updateError);
@@ -264,13 +261,14 @@ const handler = async (req: Request): Promise<Response> => {
         }
       );
     } catch (dbError) {
-      console.error(`[${requestId}] Database operation failed:`, dbError.message);
+      const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      console.error(`[${requestId}] Database operation failed:`, errorMessage);
       
       return new Response(
         JSON.stringify({ 
           success: false,
           error: 'Database operation failed',
-          details: dbError.message.includes('timed out') ? 
+          details: errorMessage.includes('timed out') ? 
             'Database operation timed out. Please try again.' :
             'Database error occurred. Please try again.',
           errorType: 'DATABASE_ERROR'
