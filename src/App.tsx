@@ -34,6 +34,16 @@ import AdminBrands from './pages/admin/AdminBrands';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminApplications from './pages/admin/AdminApplications';
 import AdminLeads from './pages/admin/AdminLeads';
+import Help from './pages/Help';
+import FAQ from './pages/FAQ';
+import Contact from './pages/Contact';
+import HowItWorks from './pages/HowItWorks';
+import Partners from './pages/Partners';
+import FlooringTypes from './pages/FlooringTypes';
+import Installation from './pages/Installation';
+import Reviews from './pages/Reviews';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 // Create missing page components that are still needed
 const AboutPage = () => (
@@ -84,7 +94,16 @@ function App() {
             <Route path="/browse" element={<Browse />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/flooring-types" element={<FlooringTypes />} />
+            <Route path="/installation" element={<Installation />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth" element={
               <div className="flex justify-center items-center h-screen">
                 <Auth

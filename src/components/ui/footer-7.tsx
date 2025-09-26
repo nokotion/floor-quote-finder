@@ -33,16 +33,16 @@ const defaultSections = [
     links: [
       { name: "Get Quote", href: "/quote" },
       { name: "Browse Brands", href: "/browse" },
-      { name: "Flooring Types", href: "#" },
-      { name: "Installation", href: "#" },
+      { name: "Flooring Types", href: "/flooring-types" },
+      { name: "Installation", href: "/installation" },
     ],
   },
   {
     title: "Company",
     links: [
-      { name: "About Us", href: "#" },
-      { name: "How It Works", href: "#" },
-      { name: "Partners", href: "#" },
+      { name: "About Us", href: "/about" },
+      { name: "How It Works", href: "/how-it-works" },
+      { name: "Partners", href: "/partners" },
       { name: "Retailer Login", href: "/retailer/login" },
       { name: "Admin Login", href: "/admin/login" },
       { name: "Apply to Join Network", href: "/retailer/apply" },
@@ -51,10 +51,10 @@ const defaultSections = [
   {
     title: "Support",
     links: [
-      { name: "Help Center", href: "#" },
-      { name: "Contact Us", href: "#" },
-      { name: "FAQ", href: "#" },
-      { name: "Reviews", href: "#" },
+      { name: "Help Center", href: "/help" },
+      { name: "Contact Us", href: "/contact" },
+      { name: "FAQ", href: "/faq" },
+      { name: "Reviews", href: "/reviews" },
     ],
   },
 ];
@@ -67,8 +67,8 @@ const defaultSocialLinks = [
 ];
 
 const defaultLegalLinks = [
-  { name: "Terms and Conditions", href: "#" },
-  { name: "Privacy Policy", href: "#" },
+  { name: "Terms and Conditions", href: "/terms" },
+  { name: "Privacy Policy", href: "/privacy" },
 ];
 
 export const Footer7 = ({
