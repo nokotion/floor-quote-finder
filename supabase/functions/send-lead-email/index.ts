@@ -75,7 +75,7 @@ const formatLeadDetails = (leadData: any, paymentMethod: string, chargeAmount: n
         <div style="background-color: white; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 20px;">
           <h2 style="color: #2c3e50; margin: 0 0 15px 0;">Customer Photos (${leadData.attachment_urls.length})</h2>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-            ${leadData.attachment_urls.map((url, index) => `
+            ${leadData.attachment_urls.map((url: string, index: number) => `
               <div style="text-align: center;">
                 <a href="${url}" target="_blank" style="text-decoration: none;">
                   <img src="${url}" alt="Customer photo ${index + 1}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;" />
@@ -173,9 +173,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    logStep("ERROR", { message: error.message });
+    logStep("ERROR", { message: (error as Error).message });
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: (error as Error).message,
       success: false 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

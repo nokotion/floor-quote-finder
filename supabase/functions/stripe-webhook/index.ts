@@ -43,8 +43,8 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature, Deno.env.get("STRIPE_WEBHOOK_SECRET") || "");
     } catch (err) {
-      logStep("Webhook signature verification failed", { error: err.message });
-      return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+      logStep("Webhook signature verification failed", { error: (err as Error).message });
+      return new Response(`Webhook Error: ${(err as Error).message}`, { status: 400 });
     }
 
     logStep("Event received", { type: event.type, id: event.id });
@@ -150,9 +150,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    logStep("ERROR", { message: error.message, stack: error.stack });
+    logStep("ERROR", { message: (error as Error).message, stack: (error as Error).stack });
     return new Response(JSON.stringify({ 
-      error: error.message 
+      error: (error as Error).message 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

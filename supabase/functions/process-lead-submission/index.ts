@@ -148,15 +148,15 @@ serve(async (req) => {
       const sqftMatch = subscription.sqft_tier === sqftTier;
       
       // Criterion 3: Postal code prefix match (NOW SAFE)
-      const postalMatch = postalCodeMatches(leadData.postalCode, retailer.postal_code_prefixes);
+      const postalMatch = postalCodeMatches(leadData.postalCode, (retailer as any).postal_code_prefixes);
       
       // Criterion 4: Installation preference match
       const installationMatch = requiresInstallation ? 
         subscription.accepts_installation === true : true;
 
       logStep("Matching criteria check", {
-        retailerId: retailer.id,
-        businessName: retailer.business_name,
+        retailerId: (retailer as any).id,
+        businessName: (retailer as any).business_name,
         brandMatch,
         sqftMatch,
         postalMatch,
@@ -177,16 +177,16 @@ serve(async (req) => {
         }
 
         matchingRetailers.push({
-          retailer_id: retailer.id,
-          business_name: retailer.business_name,
+          retailer_id: (retailer as any).id,
+          business_name: (retailer as any).business_name,
           brand_matched: subscription.brand_name,
           lead_price: finalPrice,
           subscription_id: subscription.retailer_id
         });
 
         logStep("Retailer matched", {
-          retailerId: retailer.id,
-          businessName: retailer.business_name,
+          retailerId: (retailer as any).id,
+          businessName: (retailer as any).business_name,
           finalPrice,
           installationSurcharge: requiresInstallation ? (subscription.installation_surcharge || 0.50) : 0
         });
@@ -243,7 +243,7 @@ serve(async (req) => {
       } catch (retailerError) {
         logStep("Error processing retailer", { 
           retailerId: match.retailer_id, 
-          error: retailerError.message 
+          error: (retailerError as Error).message 
         });
       }
     }
@@ -277,9 +277,9 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    logStep("ERROR", { message: error.message, stack: error.stack });
+    logStep("ERROR", { message: (error as Error).message, stack: (error as Error).stack });
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: (error as Error).message,
       success: false 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

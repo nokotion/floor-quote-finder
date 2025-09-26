@@ -183,13 +183,13 @@ const handler = async (req: Request): Promise<Response> => {
           verificationError.message.includes('20003')) {
         userFriendlyError = 'SMS service authentication failed. Please try email verification instead.';
         errorType = 'SMS_AUTH_FAILED';
-      } else if (verificationError.message.includes('Invalid phone number')) {
+      } else if ((verificationError as Error).message.includes('Invalid phone number')) {
         userFriendlyError = 'Invalid phone number format. Please check your phone number.';
         errorType = 'INVALID_PHONE';
-      } else if (verificationError.message.includes('timed out')) {
+      } else if ((verificationError as Error).message.includes('timed out')) {
         userFriendlyError = 'Request timed out. Please try again in a moment.';
         errorType = 'TIMEOUT';
-      } else if (verificationError.message.includes('Email service returned error')) {
+      } else if ((verificationError as Error).message.includes('Email service returned error')) {
         userFriendlyError = 'Email service is currently unavailable. Please try SMS verification instead.';
         errorType = 'EMAIL_SERVICE_FAILED';
       }
@@ -199,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
           success: false,
           error: userFriendlyError,
           errorType: errorType,
-          originalError: verificationError.message // For debugging
+          originalError: (verificationError as Error).message // For debugging
         }),
         {
           status: 400,
@@ -310,8 +310,7 @@ async function sendEmailVerification(email: string, token: string, requestId: st
   }
 
   // Get the base URL for verification links  
-  const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/api/v1', '') || 'https://syjxtyvsencbmhuprnyu.supabase.co';
-  const verificationUrl = `${baseUrl.replace('supabase.co', 'lovable.app')}/verify?leadId=${leadId}&method=email&contact=${encodeURIComponent(email)}`;
+  const verificationUrl = `https://syjxtyvsencbmhuprnyu.lovable.app/verify?leadId=${leadId}&method=email&contact=${encodeURIComponent(email)}`;
 
   const emailPayload = {
     from: 'Price My Floor <onboarding@resend.dev>',

@@ -17,6 +17,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import Index from './pages/Index';
 import Quote from './pages/Quote';
 import Browse from './pages/Browse';
+import Verify from './pages/Verify';
 import RetailerLogin from './pages/RetailerLogin';
 import RetailerApply from './pages/RetailerApply';
 import RetailerDashboard from './pages/retailer/RetailerDashboard';
@@ -81,6 +82,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/quote" element={<Quote />} />
             <Route path="/browse" element={<Browse />} />
+            <Route path="/verify" element={<Verify />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={

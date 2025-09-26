@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       const retailer = subscription.retailers
       
       // Check postal code match (first 3 characters)
-      const postalMatches = retailer.postal_code_prefixes?.some((prefix: string) => 
+      const postalMatches = (retailer as any).postal_code_prefixes?.some((prefix: string) => 
         leadPostalPrefix.startsWith(prefix.toUpperCase())
       ) || false
 
@@ -114,15 +114,15 @@ Deno.serve(async (req) => {
 
       // Check installation preference
       const installationMatches = 
-        retailer.installation_preference === 'both' ||
-        retailer.installation_preference === 'any' ||
-        (retailer.installation_preference === 'yes' && leadData.installation_required) ||
-        (retailer.installation_preference === 'no' && !leadData.installation_required)
+        (retailer as any).installation_preference === 'both' ||
+        (retailer as any).installation_preference === 'any' ||
+        ((retailer as any).installation_preference === 'yes' && leadData.installation_required) ||
+        ((retailer as any).installation_preference === 'no' && !leadData.installation_required)
 
       if (postalMatches && sqftMatches && installationMatches) {
         matchedRetailers.push({
-          retailer_id: retailer.id,
-          business_name: retailer.business_name
+          retailer_id: (retailer as any).id,
+          business_name: (retailer as any).business_name
         })
       }
     }
@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
     console.error('Error in create-verified-lead function:', error)
     return new Response(
       JSON.stringify({
-        error: error.message,
+        error: (error as Error).message,
         success: false
       }),
       {
