@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MapPin, Plus, X, Info, Save } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useDevMode } from '@/contexts/DevModeContext';
 import {
   validatePostalPrefix,
   getPostalPrefixInfo,
@@ -18,7 +19,20 @@ import {
 
 const MAX_COVERAGE_AREAS = 3;
 
+// Generate proper UUID for dev mode
+const generateDevUuid = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+// Dev mode storage key
+const DEV_COVERAGE_KEY = 'dev-retailer-coverage';
+
 const RetailerCoverageMap = () => {
+  const { isDevMode } = useDevMode();
   const [postalPrefixes, setPostalPrefixes] = useState<string[]>([]);
   const [selectedPrefixes, setSelectedPrefixes] = useState<string[]>([]);
   const [newPrefix, setNewPrefix] = useState('');
@@ -26,8 +40,35 @@ const RetailerCoverageMap = () => {
   const [retailerId, setRetailerId] = useState<string>('');
 
   useEffect(() => {
-    fetchRetailerData();
-  }, []);
+    if (isDevMode) {
+      // Load from localStorage in dev mode
+      const devRetailerId = generateDevUuid();
+      setRetailerId(devRetailerId);
+      
+      const savedCoverage = localStorage.getItem(DEV_COVERAGE_KEY);
+      if (savedCoverage) {
+        try {
+          const coverage = JSON.parse(savedCoverage);
+          setPostalPrefixes(coverage);
+          setSelectedPrefixes(coverage);
+        } catch (error) {
+          console.error('Error loading dev coverage:', error);
+          // Set default dev coverage areas
+          const defaultCoverage = ['M5V', 'L5J', 'K1A'];
+          setPostalPrefixes(defaultCoverage);
+          setSelectedPrefixes(defaultCoverage);
+        }
+      } else {
+        // Set default dev coverage areas
+        const defaultCoverage = ['M5V', 'L5J', 'K1A'];
+        setPostalPrefixes(defaultCoverage);
+        setSelectedPrefixes(defaultCoverage);
+        localStorage.setItem(DEV_COVERAGE_KEY, JSON.stringify(defaultCoverage));
+      }
+    } else {
+      fetchRetailerData();
+    }
+  }, [isDevMode]);
 
   const fetchRetailerData = async () => {
     try {
@@ -123,18 +164,29 @@ const RetailerCoverageMap = () => {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from('retailers')
-        .update({ postal_code_prefixes: selectedPrefixes })
-        .eq('id', retailerId);
+      if (isDevMode) {
+        // Save to localStorage in dev mode
+        localStorage.setItem(DEV_COVERAGE_KEY, JSON.stringify(selectedPrefixes));
+        setPostalPrefixes(selectedPrefixes);
+        toast({
+          title: "Coverage Saved (Dev Mode)",
+          description: "Your coverage areas have been saved locally for testing.",
+        });
+      } else {
+        // Save to database in production
+        const { error } = await supabase
+          .from('retailers')
+          .update({ postal_code_prefixes: selectedPrefixes })
+          .eq('id', retailerId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setPostalPrefixes(selectedPrefixes);
-      toast({
-        title: "Coverage Saved",
-        description: "Your coverage areas have been updated successfully.",
-      });
+        setPostalPrefixes(selectedPrefixes);
+        toast({
+          title: "Coverage Saved",
+          description: "Your coverage areas have been updated successfully.",
+        });
+      }
     } catch (error) {
       console.error('Error saving coverage:', error);
       toast({
@@ -187,6 +239,15 @@ const RetailerCoverageMap = () => {
 
   return (
     <div className="space-y-6">
+      {isDevMode && (
+        <Alert className="border-accent bg-accent/10 border-l-4 border-l-accent">
+          <Info className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-accent">
+            <strong>Dev Mode:</strong> Coverage areas are saved locally for testing. Lead matching will work with your selected areas.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Coverage Areas</h1>
