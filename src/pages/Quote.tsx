@@ -134,6 +134,26 @@ const Quote = () => {
     return urls;
   };
 
+  const getBrandSpecificExample = (brandName: string | null): string => {
+    if (!brandName) return "e.g., Product Collection, Color/Style, SKU: ABC-123, Batch #12345";
+    
+    const brandExamples: { [key: string]: string } = {
+      'bruce hardwood': "e.g., Bruce Countryside Oak Solid, Gunstock, SKU: CB1210, Batch #BC4567",
+      'biyork': "e.g., Biyork Element Collection, Natural Oak, SKU: BIY-ELM-NO-001, Batch #12345",
+      'shaw': "e.g., Shaw Epic Plus, Reclaimed Oak, SKU: SL425-00923, Lot #SW8901",
+      'mohawk': "e.g., Mohawk RevWood Plus, Refined Oak, SKU: CDL74-10, Batch #MH2345",
+      'coretec': "e.g., CoreTec Pro Plus, Blackstone Oak, SKU: VV012-00103, Batch #CT6789",
+      'armstrong': "e.g., Armstrong Prime Harvest Oak, Natural, SKU: APK2410, Lot #AR8901",
+      'pergo': "e.g., Pergo Outlast+ Vintage Pewter Oak, SKU: LF000847, Batch #PG3456",
+      'lifeproof': "e.g., LifeProof Sterling Oak, SKU: I966109L, Carton #LP7890",
+      'home decorators': "e.g., Home Decorators Cottage Oak, SKU: 34074, Batch #HD5678",
+      'trafficmaster': "e.g., TrafficMaster Allure Ultra, Aspen Oak Gray, SKU: 7.5x47.6, Lot #TM9012"
+    };
+    
+    const normalizedBrand = brandName.toLowerCase();
+    return brandExamples[normalizedBrand] || `e.g., ${brandName} Collection, Style/Color, SKU: ABC-123, Batch #12345`;
+  };
+
   const getValidatedPostalCode = (): string | null => {
     // Try to get postal code from various sources
     const sources = [
@@ -369,7 +389,7 @@ const Quote = () => {
                     </Label>
                     <Input
                       id="productDetails"
-                      placeholder="e.g., Biyork Element Collection, Natural Oak, SKU: BIY-ELM-NO-001, Batch #12345"
+                      placeholder={getBrandSpecificExample(brand)}
                       value={productDetails}
                       onChange={(e) => setProductDetails(e.target.value)}
                       className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
