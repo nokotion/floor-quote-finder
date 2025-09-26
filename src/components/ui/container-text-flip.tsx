@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,23 @@ export function ContainerTextFlip({
   animationDuration = 700,
 }: ContainerTextFlipProps) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
+  const measureRef = useRef<HTMLSpanElement>(null);
+
+  // Measure the width of the longest word on mount
+  useEffect(() => {
+    if (measureRef.current) {
+      let maxWidth = 0;
+      words.forEach(word => {
+        if (measureRef.current) {
+          measureRef.current.textContent = word;
+          const width = measureRef.current.getBoundingClientRect().width;
+          maxWidth = Math.max(maxWidth, width);
+        }
+      });
+      setContainerWidth(Math.ceil(maxWidth));
+    }
+  }, [words, textClassName]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -35,34 +52,47 @@ export function ContainerTextFlip({
   }, [words, interval]);
 
   return (
-    <span className={cn("relative inline-block", className)}>
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={words[currentWordIndex]}
-          initial={{ 
-            opacity: 0,
-            y: 20,
-            filter: "blur(8px)"
-          }}
-          animate={{ 
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)"
-          }}
-          exit={{ 
-            opacity: 0,
-            y: -20,
-            filter: "blur(8px)"
-          }}
-          transition={{
-            duration: animationDuration / 1000,
-            ease: "easeInOut",
-          }}
-          className={cn("inline-block whitespace-nowrap", textClassName)}
-        >
-          {words[currentWordIndex]}
-        </motion.span>
-      </AnimatePresence>
+    <span 
+      className={cn("relative inline-block", className)}
+      style={{ width: containerWidth ? `${containerWidth}px` : 'auto' }}
+    >
+      {/* Invisible measuring element */}
+      <span
+        ref={measureRef}
+        className={cn("absolute opacity-0 pointer-events-none whitespace-nowrap", textClassName)}
+        aria-hidden="true"
+      />
+      
+      {/* Animated text container */}
+      <span className="relative block w-full">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={words[currentWordIndex]}
+            initial={{ 
+              opacity: 0,
+              y: 20,
+              filter: "blur(8px)"
+            }}
+            animate={{ 
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)"
+            }}
+            exit={{ 
+              opacity: 0,
+              y: -20,
+              filter: "blur(8px)"
+            }}
+            transition={{
+              duration: animationDuration / 1000,
+              ease: "easeInOut",
+            }}
+            className={cn("absolute inset-0 flex items-center whitespace-nowrap", textClassName)}
+          >
+            {words[currentWordIndex]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
     </span>
   );
 }
