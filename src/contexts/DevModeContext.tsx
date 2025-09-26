@@ -24,17 +24,17 @@ export const DevModeProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentRole, setCurrentRole] = useState<DevRole>('public');
   const isDevMode = import.meta.env.VITE_DEV_MODE === 'true';
 
-  // Mock user object for dev mode
+  // Mock user object for dev mode - use real admin ID for RLS to work
   const mockUser = isDevMode ? {
-    id: 'dev-user-id',
+    id: currentRole === 'admin' ? '03c68991-ed22-482a-9d66-b8bcdbe6c524' : 'dev-user-id',
     email: currentRole === 'admin' ? 'admin@dev.com' : 'retailer@dev.com',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   } : null;
 
-  // Mock profile based on current role
+  // Mock profile based on current role - use real admin ID for RLS to work
   const mockProfile = isDevMode ? {
-    id: 'dev-user-id',
+    id: currentRole === 'admin' ? '03c68991-ed22-482a-9d66-b8bcdbe6c524' : 'dev-user-id',
     retailer_id: currentRole === 'retailer' ? 'dev-retailer-id' : null,
     role: currentRole === 'admin' ? 'admin' : 'retailer',
     first_name: 'Dev',
