@@ -25,17 +25,17 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
   const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch API key securely from our proxy
+    // Fetch API key securely from google-maps-config
     const fetchApiKey = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('google-maps-proxy?service=places-api');
+        const { data, error } = await supabase.functions.invoke('google-maps-config');
 
         if (error) throw error;
         
         if (data?.apiKey) {
           setApiKey(data.apiKey);
         } else {
-          console.error("❌ No API key returned from proxy");
+          console.error("❌ No API key returned from google-maps-config");
         }
       } catch (error) {
         console.error("❌ Failed to fetch Google Maps API key:", error);
