@@ -77,8 +77,12 @@ const RetailerApply = () => {
           <nav className="bg-white/90 backdrop-blur-sm border-b">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-16">
-                <Link to="/" className="font-bold text-2xl text-blue-600">
-                  Price My Floor
+                <Link to="/" className="flex items-center">
+                  <img 
+                    src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+                    alt="Price My Floor Logo" 
+                    className="h-10 sm:h-12 w-auto"
+                  />
                 </Link>
                 <Button variant="ghost" asChild>
                   <Link to="/" className="flex items-center gap-2">
@@ -134,8 +138,12 @@ const RetailerApply = () => {
       <nav className="bg-white/90 backdrop-blur-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link to="/" className="font-bold text-2xl text-blue-600">
-              Price My Floor
+            <Link to="/" className="flex items-center">
+              <img 
+                src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+                alt="Price My Floor Logo" 
+                className="h-10 sm:h-12 w-auto"
+              />
             </Link>
             <Button variant="ghost" asChild>
               <Link to="/" className="flex items-center gap-2">
