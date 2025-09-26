@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -35,15 +35,65 @@ const useAutoSave = (callback: (...args: any[]) => Promise<void>, delay: number 
   return debouncedCallback;
 };
 
+// Request queue for managing concurrent operations per brand
+class BrandRequestQueue {
+  private queues: Map<string, Array<() => Promise<void>>> = new Map();
+  private processing: Set<string> = new Set();
+
+  async enqueue(brandName: string, operation: () => Promise<void>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const wrappedOperation = async () => {
+        try {
+          await operation();
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      if (!this.queues.has(brandName)) {
+        this.queues.set(brandName, []);
+      }
+
+      this.queues.get(brandName)!.push(wrappedOperation);
+      this.processQueue(brandName);
+    });
+  }
+
+  private async processQueue(brandName: string): Promise<void> {
+    if (this.processing.has(brandName)) {
+      return; // Already processing this brand's queue
+    }
+
+    this.processing.add(brandName);
+    const queue = this.queues.get(brandName);
+
+    while (queue && queue.length > 0) {
+      const operation = queue.shift();
+      if (operation) {
+        try {
+          await operation();
+        } catch (error) {
+          console.error(`Queue operation failed for brand ${brandName}:`, error);
+        }
+      }
+    }
+
+    this.processing.delete(brandName);
+  }
+}
+
 const RetailerSubscriptions = () => {
   const [brands, setBrands] = useState<FlooringBrand[]>([]);
   const [subscriptions, setSubscriptions] = useState<BrandSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [retailerId, setRetailerId] = useState<string>('');
   const [savingStates, setSavingStates] = useState<{[key: string]: boolean}>({});
+  const [pendingOperations, setPendingOperations] = useState<Set<string>>(new Set());
   
   const { user, profile } = useAuth();
   const { isDevMode, mockProfile } = useDevMode();
+  const requestQueueRef = useRef(new BrandRequestQueue());
 
   // Get the effective profile (dev mode or real)
   const effectiveProfile = isDevMode ? mockProfile : profile;
@@ -176,71 +226,73 @@ const RetailerSubscriptions = () => {
 
   const handleToggleTier = async (brandName: string, tier: string, isActive: boolean) => {
     const tierKey = `${brandName}-${tier}`;
+    const operationId = `${tierKey}-${Date.now()}`;
+    
+    // Prevent multiple operations on the same tier
+    if (pendingOperations.has(tierKey)) {
+      console.log('Operation already pending for', tierKey);
+      return;
+    }
+    
+    // Add to pending operations
+    setPendingOperations(prev => new Set([...prev, tierKey]));
     setSavingState(tierKey, true);
 
     try {
-      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
-      
-      if (!currentRetailerId) {
-        throw new Error('No retailer ID found');
-      }
+      await requestQueueRef.current.enqueue(brandName, async () => {
+        const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
+        
+        if (!currentRetailerId) {
+          throw new Error('No retailer ID found');
+        }
 
-      const existingSubscription = subscriptions.find(s => 
-        s.brand_name === brandName && s.sqft_tier === tier
-      );
+        // Get fresh subscription data to avoid stale state
+        const currentSubscriptions = subscriptions.filter(s => s.brand_name === brandName);
+        const existingSubscription = currentSubscriptions.find(s => s.sqft_tier === tier);
 
-      if (existingSubscription) {
-        // Optimistic update
-        setSubscriptions(prev => 
-          prev.map(sub => 
-            sub.id === existingSubscription.id 
-              ? { ...sub, is_active: isActive } 
-              : sub
-          )
-        );
+        if (existingSubscription) {
+          // Update existing subscription
+          const { error } = await supabase
+            .from('brand_subscriptions')
+            .update({ is_active: isActive })
+            .eq('id', existingSubscription.id);
 
-        // Update existing subscription
-        const { error } = await supabase
-          .from('brand_subscriptions')
-          .update({ is_active: isActive })
-          .eq('id', existingSubscription.id);
+          if (error) throw error;
 
-        if (error) {
-          // Revert optimistic update on error
+          // Update state after successful database operation
           setSubscriptions(prev => 
             prev.map(sub => 
               sub.id === existingSubscription.id 
-                ? { ...sub, is_active: !isActive } 
+                ? { ...sub, is_active: isActive } 
                 : sub
             )
           );
-          throw error;
+        } else if (isActive) {
+          // Create new subscription
+          const tierInfo = SQFT_TIERS.find(t => t.value === tier);
+          const newSubscription = {
+            retailer_id: currentRetailerId,
+            brand_name: brandName,
+            sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
+            is_active: true,
+            lead_price: tierInfo?.basePrice || 0,
+            accepts_installation: false,
+            installation_surcharge: 0.50
+          };
+
+          const { data, error } = await supabase
+            .from('brand_subscriptions')
+            .insert(newSubscription)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            setSubscriptions(prev => [...prev, data]);
+          }
         }
-      } else if (isActive) {
-        // Create new subscription with calculated lead_price
-        const tierInfo = SQFT_TIERS.find(t => t.value === tier);
-        const newSubscription = {
-          retailer_id: currentRetailerId,
-          brand_name: brandName,
-          sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
-          is_active: true,
-          lead_price: tierInfo?.basePrice || 0,
-          accepts_installation: false,
-          installation_surcharge: 0.50
-        };
-
-        const { data, error } = await supabase
-          .from('brand_subscriptions')
-          .insert(newSubscription)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        if (data) {
-          setSubscriptions(prev => [...prev, data]);
-        }
-      }
+      });
 
       toast({
         title: isActive ? "Subscription Activated" : "Subscription Deactivated",
@@ -255,6 +307,11 @@ const RetailerSubscriptions = () => {
       });
     } finally {
       setSavingState(tierKey, false);
+      setPendingOperations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(tierKey);
+        return newSet;
+      });
     }
   };
 
