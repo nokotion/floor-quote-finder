@@ -31,18 +31,12 @@ const Quote = () => {
   const brand = searchParams.get('brand');
   const size = searchParams.get('size');
   const postal = searchParams.get('postal');
-  const street = searchParams.get('street');
-  const city = searchParams.get('city');
-  const province = searchParams.get('province');
-  const formatted_address = searchParams.get('formatted_address');
+  const formatted_address = searchParams.get('formatted');
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [addressData, setAddressData] = useState<AddressData>({
-    street: street || "",
-    city: city || "",
-    province: province || "",
     postal_code: postal || "",
     formatted_address: formatted_address || ""
   });
@@ -328,7 +322,7 @@ const Quote = () => {
                       <div className="h-12 px-3 py-2 bg-gray-100 border border-gray-200 rounded-md flex items-center font-medium text-gray-900">
                         <MapPin className="w-4 h-4 mr-2 text-orange-600" />
                         <div className="truncate">
-                          {formatted_address || `${city}, ${province} ${postal}`}
+                          {formatted_address || postal}
                         </div>
                       </div>
                     </div>
