@@ -301,10 +301,17 @@ const handler = async (req: Request): Promise<Response> => {
 async function sendEmailVerification(email: string, token: string, requestId: string) {
   console.log(`[${requestId}] Sending email to ${email}`);
   
+  // Use the leadId from secure-lead-handler (passed as requestId parameter)
+  const leadId = requestId;
+  
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   if (!resendApiKey) {
     throw new Error('Email service not configured - missing API key');
   }
+
+  // Get the base URL for verification links  
+  const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/api/v1', '') || 'https://syjxtyvsencbmhuprnyu.supabase.co';
+  const verificationUrl = `${baseUrl.replace('supabase.co', 'lovable.app')}/verify?leadId=${leadId}&method=email&contact=${encodeURIComponent(email)}`;
 
   const emailPayload = {
     from: 'Price My Floor <onboarding@resend.dev>',
@@ -318,6 +325,13 @@ async function sendEmailVerification(email: string, token: string, requestId: st
         <div style="background: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
           <h1 style="font-size: 36px; color: #EA580C; margin: 0; letter-spacing: 5px;">${token}</h1>
         </div>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${verificationUrl}" style="background-color: #EA580C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Click Here to Verify
+          </a>
+        </div>
+        <p>Or copy and paste this link in your browser:</p>
+        <p style="word-break: break-all; color: #666; font-size: 14px;">${verificationUrl}</p>
         <p>This code will expire in 10 minutes.</p>
         <p>If you didn't request this quote, you can safely ignore this email.</p>
         <hr style="margin: 30px 0;">

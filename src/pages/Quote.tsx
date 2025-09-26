@@ -248,10 +248,18 @@ const Quote = () => {
       setSubmissionProgress(100);
       setIsSubmitted(true);
       
+      // Show success message
       toast({
         title: "Quote request submitted!",
         description: result.message || "Please check your email to verify your request.",
       });
+
+      // Redirect to verification page with the returned lead_id
+      if (result.lead_id) {
+        const verifyUrl = `/verify?leadId=${result.lead_id}&method=email&contact=${encodeURIComponent(customerEmail)}`;
+        console.log('Redirecting to verification page:', verifyUrl);
+        navigate(verifyUrl);
+      }
 
     } catch (error: any) {
       console.error("Secure submission error:", error);

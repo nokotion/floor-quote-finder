@@ -1,12 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = null; // Will use fetch API instead
 
 interface WelcomeEmailRequest {
   email: string;
@@ -97,13 +96,24 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     console.log('Attempting to send email via Resend...');
-    const { data, error } = await resend.emails.send(emailContent);
     
-    if (error) {
-      console.error('Resend API error:', error);
-      throw new Error(`Resend API error: ${error.message}`);
+    // Use fetch API instead of Resend SDK
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailContent),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Resend API error:', errorText);
+      throw new Error(`Resend API error: ${response.status} - ${errorText}`);
     }
 
+    const data = await response.json();
     console.log('Email sent successfully via Resend. Email ID:', data?.id);
 
     return new Response(JSON.stringify({
