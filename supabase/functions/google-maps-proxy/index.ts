@@ -23,10 +23,21 @@ serve(async (req) => {
       )
     }
 
+    // Get service from query params or request body
     const url = new URL(req.url)
-    const service = url.searchParams.get('service')
+    let service = url.searchParams.get('service')
     
-    if (service === 'places-api') {
+    // If not in query params, try to get from request body
+    if (!service && req.method === 'POST') {
+      try {
+        const body = await req.json()
+        service = body.service
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+    }
+    
+    if (service === 'places-api' || !service) {
       // Return API key for Places API initialization
       return new Response(
         JSON.stringify({ apiKey: googleMapsApiKey }),
