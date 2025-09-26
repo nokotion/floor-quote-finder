@@ -33,11 +33,11 @@ const FlooringPathTabs = memo(() => {
   console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading, "Error:", error);
 
   return (
-    <section className="py-16 px-4">
+    <section className="py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -61,7 +61,7 @@ const FlooringPathTabs = memo(() => {
           
           {/* Statistics */}
           <motion.div 
-            className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-12"
+            className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
