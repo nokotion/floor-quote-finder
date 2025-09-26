@@ -23,7 +23,11 @@ const AdminSidebar = () => {
   return (
     <div className="flex flex-col w-64 bg-white border-r border-gray-200">
       <div className="flex items-center h-16 px-6 border-b border-gray-200">
-        <Building2 className="h-8 w-8 text-primary mr-3" />
+        <img 
+          src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
+          alt="Price My Floor Logo" 
+          className="h-12 md:h-14 w-auto mr-3"
+        />
         <h1 className="text-xl font-semibold text-gray-900">Admin Portal</h1>
       </div>
       
