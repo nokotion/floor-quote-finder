@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Footer7 } from "@/components/ui/footer-7";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -40,6 +41,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       </nav>
 
       {children}
+      
+      <Footer7 />
     </div>
   );
 };
