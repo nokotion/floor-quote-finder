@@ -69,10 +69,10 @@ export function ContainerTextFlip({
 
   return (
     <span 
-      className={cn("relative inline-block overflow-hidden", className)}
+      className={cn("relative inline-block", className)}
       style={{ 
         width: `${containerWidth}px`,
-        minHeight: '1.2em' // Prevent height collapse
+        minHeight: '1.8em' // Increased height to prevent clipping of descenders
       }}
     >
       {/* Measuring reference - hidden but maintains font properties */}
@@ -88,7 +88,7 @@ export function ContainerTextFlip({
           key={words[currentWordIndex]}
           initial={{ 
             opacity: 0,
-            y: 20,
+            y: 8,
             filter: "blur(8px)"
           }}
           animate={{ 
@@ -98,7 +98,7 @@ export function ContainerTextFlip({
           }}
           exit={{ 
             opacity: 0,
-            y: -20,
+            y: -8,
             filter: "blur(8px)"
           }}
           transition={{
