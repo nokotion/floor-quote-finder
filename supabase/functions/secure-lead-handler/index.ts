@@ -16,6 +16,7 @@ interface LeadSubmission {
   brand_requested: string
   project_size: string
   installation_required?: boolean
+  product_details?: string
   notes?: string
   client_ip?: string
   user_agent?: string
@@ -213,6 +214,7 @@ Deno.serve(async (req) => {
       brand_requested: sanitizeInput(leadData.brand_requested),
       project_size: sanitizeInput(leadData.project_size || ''),
       installation_required: Boolean(leadData.installation_required),
+      product_details: leadData.product_details ? sanitizeInput(leadData.product_details) : null,
       notes: leadData.notes ? sanitizeInput(leadData.notes) : null
     }
 
@@ -231,6 +233,7 @@ Deno.serve(async (req) => {
         brand_requested: sanitizedData.brand_requested,
         timeline: sanitizedData.project_size,
         installation_required: sanitizedData.installation_required,
+        product_details: sanitizedData.product_details,
         notes: sanitizedData.notes,
         status: 'pending_verification',
         is_verified: false,

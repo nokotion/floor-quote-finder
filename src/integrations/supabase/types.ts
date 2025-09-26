@@ -483,6 +483,7 @@ export type Database = {
           lock_price: number | null
           notes: string | null
           postal_code: string
+          product_details: string | null
           referrer: string | null
           session_id: string | null
           square_footage: number | null
@@ -520,6 +521,7 @@ export type Database = {
           lock_price?: number | null
           notes?: string | null
           postal_code: string
+          product_details?: string | null
           referrer?: string | null
           session_id?: string | null
           square_footage?: number | null
@@ -557,6 +559,7 @@ export type Database = {
           lock_price?: number | null
           notes?: string | null
           postal_code?: string
+          product_details?: string | null
           referrer?: string | null
           session_id?: string | null
           square_footage?: number | null

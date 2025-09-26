@@ -41,6 +41,7 @@ const Quote = () => {
     formatted_address: formatted_address || ""
   });
   const [notes, setNotes] = useState("");
+  const [productDetails, setProductDetails] = useState("");
   const [installationRequired, setInstallationRequired] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -232,6 +233,7 @@ const Quote = () => {
         brand_requested: brand,
         project_size: size || '',
         installation_required: installationRequired,
+        product_details: productDetails,
         notes: notes
       };
 
@@ -350,6 +352,31 @@ const Quote = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Product Specifications */}
+              <Card className="shadow-xl border-0 bg-white mb-6">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <Tag className="w-4 h-4 mr-2" />
+                    Product Specifications
+                  </h3>
+                  <div>
+                    <Label htmlFor="productDetails">
+                      Product Details (Optional)
+                    </Label>
+                    <Input
+                      id="productDetails"
+                      placeholder="e.g., Biyork Element Collection, Natural Oak, SKU: BIY-ELM-NO-001, Batch #12345"
+                      value={productDetails}
+                      onChange={(e) => setProductDetails(e.target.value)}
+                      className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                    />
+                    <p className="text-gray-500 text-sm mt-1">
+                      Include specific product names, colors, SKU numbers, or batch numbers to get more accurate quotes.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
