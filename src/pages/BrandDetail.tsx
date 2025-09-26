@@ -55,34 +55,10 @@ const BrandDetail = () => {
     fetchBrand();
   }, [slug]);
 
-  const NavigationBar = () => (
-    <nav className="bg-white/90 backdrop-blur-sm border-b sticky top-0 z-50 mb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center">
-            <img 
-              src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
-              alt="Price My Floor Logo" 
-              className="h-12 md:h-16 lg:h-20 w-auto"
-            />
-          </Link>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" asChild>
-              <Link to="/browse">Browse</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/quote">Get Quote</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
 
   if (loading) {
     return (
       <div className="min-h-screen py-16 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
-        <NavigationBar />
         <div className="max-w-4xl mx-auto">
           <Skeleton className="h-8 w-32 mb-6" />
           <Card>
@@ -106,7 +82,6 @@ const BrandDetail = () => {
   if (notFound || !brand) {
     return (
       <div className="min-h-screen py-16 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
-        <NavigationBar />
         <div className="max-w-4xl mx-auto text-center py-20">
           <div className="text-6xl mb-4">🔍</div>
           <h1 className="text-3xl font-bold mb-4">Brand Not Found</h1>
@@ -126,7 +101,6 @@ const BrandDetail = () => {
 
   return (
     <div className="min-h-screen py-16 px-4 bg-gradient-to-br from-slate-50 to-blue-50">
-      <NavigationBar />
 
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
