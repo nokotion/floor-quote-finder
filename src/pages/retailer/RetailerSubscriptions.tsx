@@ -11,6 +11,18 @@ import { SQFT_TIERS } from '@/constants/flooringData';
 import { useAuth } from '@/components/auth/AuthContext';
 import { useDevMode } from '@/contexts/DevModeContext';
 
+// Generate proper UUID for dev mode
+const generateDevUuid = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+// Dev mode storage key
+const DEV_SUBSCRIPTIONS_KEY = 'dev-retailer-subscriptions';
+
 interface FlooringBrand {
   id: string;
   name: string;
@@ -63,7 +75,7 @@ const RetailerSubscriptions = () => {
       console.log('Fetching data for retailer:', effectiveProfile?.retailer_id);
       
       // In dev mode, use a mock retailer_id if none exists
-      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
+      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? generateDevUuid() : null);
       
       if (!currentRetailerId) {
         console.error('No retailer_id found in profile');
@@ -91,27 +103,35 @@ const RetailerSubscriptions = () => {
       // In dev mode, provide some mock subscriptions for testing
       let subscriptionsData = [];
       if (isDevMode) {
-        // Create mock subscriptions for some brands to demonstrate functionality
-        subscriptionsData = [
-          {
-            id: 'mock-1',
-            brand_name: brandsData?.[0]?.name || 'Mohawk',
-            is_active: true,
-            sqft_tier: '100-500',
-            lead_price: 15.00,
-            accepts_installation: false,
-            installation_surcharge: 0.50
-          },
-          {
-            id: 'mock-2', 
-            brand_name: brandsData?.[1]?.name || 'Shaw Floors',
-            is_active: true,
-            sqft_tier: '500-1000',
-            lead_price: 25.00,
-            accepts_installation: true,
-            installation_surcharge: 0.50
-          }
-        ];
+        // Load existing dev subscriptions from localStorage or create defaults
+        const storedSubscriptions = localStorage.getItem(DEV_SUBSCRIPTIONS_KEY);
+        if (storedSubscriptions) {
+          subscriptionsData = JSON.parse(storedSubscriptions);
+        } else {
+          // Create mock subscriptions for some brands to demonstrate functionality
+          subscriptionsData = [
+            {
+              id: generateDevUuid(),
+              brand_name: brandsData?.[0]?.name || 'Mohawk',
+              is_active: true,
+              sqft_tier: '100-500',
+              lead_price: 15.00,
+              accepts_installation: false,
+              installation_surcharge: 0.50
+            },
+            {
+              id: generateDevUuid(), 
+              brand_name: brandsData?.[1]?.name || 'Shaw Floors',
+              is_active: true,
+              sqft_tier: '500-1000',
+              lead_price: 25.00,
+              accepts_installation: true,
+              installation_surcharge: 0.50
+            }
+          ];
+          // Save initial dev subscriptions
+          localStorage.setItem(DEV_SUBSCRIPTIONS_KEY, JSON.stringify(subscriptionsData));
+        }
       } else {
         // Fetch real subscriptions in production mode
         const { data: subData, error: subscriptionsError } = await supabase
@@ -150,17 +170,31 @@ const RetailerSubscriptions = () => {
   const autoSaveSubscription = useCallback(async (subscriptionId: string, updates: Partial<BrandSubscription>): Promise<void> => {
     setSavingState(subscriptionId, true);
     try {
-      const { error } = await supabase
-        .from('brand_subscriptions')
-        .update(updates)
-        .eq('id', subscriptionId);
+      if (isDevMode) {
+        // Handle dev mode updates in local state
+        const currentSubscriptions = JSON.parse(localStorage.getItem(DEV_SUBSCRIPTIONS_KEY) || '[]');
+        const updatedSubscriptions = currentSubscriptions.map((sub: BrandSubscription) =>
+          sub.id === subscriptionId ? { ...sub, ...updates } : sub
+        );
+        localStorage.setItem(DEV_SUBSCRIPTIONS_KEY, JSON.stringify(updatedSubscriptions));
+        
+        toast({
+          title: "Saved (Dev Mode)",
+          description: "Subscription settings updated successfully.",
+        });
+      } else {
+        const { error } = await supabase
+          .from('brand_subscriptions')
+          .update(updates)
+          .eq('id', subscriptionId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Saved",
-        description: "Subscription settings updated successfully.",
-      });
+        toast({
+          title: "Saved",
+          description: "Subscription settings updated successfully.",
+        });
+      }
     } catch (error) {
       console.error('Error updating subscription:', error);
       toast({
@@ -171,7 +205,7 @@ const RetailerSubscriptions = () => {
     } finally {
       setSavingState(subscriptionId, false);
     }
-  }, []);
+  }, [isDevMode]);
 
   const debouncedAutoSave = useAutoSave(autoSaveSubscription);
 
@@ -216,52 +250,86 @@ const RetailerSubscriptions = () => {
     }
 
     try {
-      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? 'dev-retailer-id' : null);
+      const currentRetailerId = effectiveProfile?.retailer_id || (isDevMode ? generateDevUuid() : null);
       
       if (!currentRetailerId) {
         throw new Error('No retailer ID found');
       }
 
-      if (existingSubscription) {
-        // Update existing subscription
-        const { error } = await supabase
-          .from('brand_subscriptions')
-          .update({ is_active: isActive })
-          .eq('id', existingSubscription.id);
-
-        if (error) throw error;
-      } else if (isActive) {
-        // Create new subscription
-        const tierInfo = SQFT_TIERS.find(t => t.value === tier);
-        const newSubscription = {
-          retailer_id: currentRetailerId,
-          brand_name: brandName,
-          sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
-          is_active: true,
-          lead_price: tierInfo?.basePrice || 0,
-          accepts_installation: false,
-          installation_surcharge: 0.50
-        };
-
-        const { data, error } = await supabase
-          .from('brand_subscriptions')
-          .insert(newSubscription)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Replace optimistic subscription with real one
-        if (data) {
-          setSubscriptions(prev => 
-            prev.map(sub => sub.id.startsWith('temp-') && sub.brand_name === brandName && sub.sqft_tier === tier ? data : sub)
+      if (isDevMode) {
+        // Handle dev mode completely in local state
+        const currentSubscriptions = JSON.parse(localStorage.getItem(DEV_SUBSCRIPTIONS_KEY) || '[]');
+        
+        if (existingSubscription) {
+          // Update existing subscription in dev mode
+          const updatedSubscriptions = currentSubscriptions.map((sub: BrandSubscription) =>
+            sub.id === existingSubscription.id ? { ...sub, is_active: isActive } : sub
           );
+          localStorage.setItem(DEV_SUBSCRIPTIONS_KEY, JSON.stringify(updatedSubscriptions));
+        } else if (isActive) {
+          // Create new subscription in dev mode
+          const tierInfo = SQFT_TIERS.find(t => t.value === tier);
+          const newSubscription = {
+            id: generateDevUuid(),
+            brand_name: brandName,
+            sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
+            is_active: true,
+            lead_price: tierInfo?.basePrice || 0,
+            accepts_installation: false,
+            installation_surcharge: 0.50
+          };
+          
+          const updatedSubscriptions = [...currentSubscriptions, newSubscription];
+          localStorage.setItem(DEV_SUBSCRIPTIONS_KEY, JSON.stringify(updatedSubscriptions));
+          
+          // Replace optimistic subscription with real one
+          setSubscriptions(prev => 
+            prev.map(sub => sub.id.startsWith('temp-') && sub.brand_name === brandName && sub.sqft_tier === tier ? newSubscription : sub)
+          );
+        }
+      } else {
+        // Production mode - use Supabase
+        if (existingSubscription) {
+          // Update existing subscription
+          const { error } = await supabase
+            .from('brand_subscriptions')
+            .update({ is_active: isActive })
+            .eq('id', existingSubscription.id);
+
+          if (error) throw error;
+        } else if (isActive) {
+          // Create new subscription
+          const tierInfo = SQFT_TIERS.find(t => t.value === tier);
+          const newSubscription = {
+            retailer_id: currentRetailerId,
+            brand_name: brandName,
+            sqft_tier: tier as '0-100' | '100-500' | '500-1000' | '1000-5000' | '5000+',
+            is_active: true,
+            lead_price: tierInfo?.basePrice || 0,
+            accepts_installation: false,
+            installation_surcharge: 0.50
+          };
+
+          const { data, error } = await supabase
+            .from('brand_subscriptions')
+            .insert(newSubscription)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          // Replace optimistic subscription with real one
+          if (data) {
+            setSubscriptions(prev => 
+              prev.map(sub => sub.id.startsWith('temp-') && sub.brand_name === brandName && sub.sqft_tier === tier ? data : sub)
+            );
+          }
         }
       }
 
       toast({
-        title: isActive ? "Subscription Activated" : "Subscription Deactivated",
-        description: `${brandName} - ${tier} subscription has been ${isActive ? 'activated' : 'deactivated'}.`,
+        title: isActive ? "Subscription Activated" : "Subscription Deactivated", 
+        description: `${brandName} - ${tier} subscription has been ${isActive ? 'activated' : 'deactivated'}${isDevMode ? ' (Dev Mode)' : ''}.`,
       });
     } catch (error) {
       console.error('Error updating subscription:', error);
