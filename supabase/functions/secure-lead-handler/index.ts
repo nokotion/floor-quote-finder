@@ -259,10 +259,9 @@ Deno.serve(async (req) => {
     // 7. Send verification email (without exposing sensitive data)
     const { error: emailError } = await supabase.functions.invoke('send-verification', {
       body: {
-        email: sanitizedData.customer_email,
-        name: sanitizedData.customer_name,
-        verification_token: verificationToken,
-        lead_id: tempLead.id
+        leadId: tempLead.id,
+        method: 'email',
+        contact: sanitizedData.customer_email
       }
     })
 
