@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, Search } from "lucide-react";
 import { slugify } from "@/utils/slugUtils";
@@ -18,7 +18,8 @@ const categoryIcons: Record<string, string> = {
   hardwood: "🌳",
   tile: "🔲",
   carpet: "🧶",
-  commercial: "🏢"
+  commercial: "🏢",
+  sports: "⚽"
 };
 
 interface Brand {
@@ -32,6 +33,7 @@ interface Brand {
 }
 
 const BrandExplorer = () => {
+  const [searchParams] = useSearchParams();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [filteredBrands, setFilteredBrands] = useState<Brand[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -46,12 +48,24 @@ const BrandExplorer = () => {
     { id: "hardwood", name: "Hardwood" },
     { id: "tile", name: "Tile" },
     { id: "commercial", name: "Commercial" },
-    { id: "carpet", name: "Carpet" }
+    { id: "carpet", name: "Carpet" },
+    { id: "sports", name: "Sports" }
   ];
 
   useEffect(() => {
     fetchBrands();
   }, []);
+
+  // Set initial category from URL parameter
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      const validCategories = ['vinyl', 'laminate', 'hardwood', 'tile', 'commercial', 'carpet', 'sports'];
+      if (validCategories.includes(categoryParam.toLowerCase())) {
+        setSelectedCategory(categoryParam.toLowerCase());
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     filterBrands();
