@@ -21,7 +21,7 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>Choose a flooring type to explore available brands</p>
       </div>
       
-      <div className={`grid gap-2 ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2'}`}>
+      <div className={`grid gap-2 ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2'}`}>
         {flooringTypes.map((type, index) => (
           <motion.div
             key={type.name}
@@ -40,7 +40,7 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
                       <img 
                         src={type.icon} 
                         alt={`${type.name} flooring icon`}
-                        className={`object-cover w-full h-full rounded ${isMobile ? 'w-14 h-14' : 'w-12 h-12'}`}
+                        className="object-cover w-full h-full rounded"
                       />
                     </div>
                   </div>
