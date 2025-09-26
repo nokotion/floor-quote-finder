@@ -132,7 +132,7 @@ function App() {
                 <RetailerSubscriptions />
               </ProtectedRoute>
             } />
-            <Route path="/retailer/coverage" element={
+            <Route path="/retailer/coverage-map" element={
               <ProtectedRoute requireRole="retailer">
                 <RetailerCoverageMap />
               </ProtectedRoute>
