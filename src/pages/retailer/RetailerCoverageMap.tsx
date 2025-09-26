@@ -1,12 +1,12 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, Search, Info, Save } from 'lucide-react';
+import { MapPin, Plus, X, Info, Save } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   validatePostalPrefix,
@@ -16,24 +16,16 @@ import {
   POSTAL_CODE_PRESETS
 } from '@/utils/enhancedPostalCodeUtils';
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+const MAX_COVERAGE_AREAS = 3;
 
 const RetailerCoverageMap = () => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [postalPrefixes, setPostalPrefixes] = useState<string[]>([]);
   const [selectedPrefixes, setSelectedPrefixes] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [newPrefix, setNewPrefix] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [retailerId, setRetailerId] = useState<string>('');
 
   useEffect(() => {
-    initializeMap();
     fetchRetailerData();
   }, []);
 
@@ -59,143 +51,70 @@ const RetailerCoverageMap = () => {
         .single();
 
       if (retailer) {
-        setPostalPrefixes(retailer.postal_code_prefixes || []);
-        setSelectedPrefixes(retailer.postal_code_prefixes || []);
+        const currentPrefixes = retailer.postal_code_prefixes || [];
+        setPostalPrefixes(currentPrefixes);
+        setSelectedPrefixes(currentPrefixes);
       }
     } catch (error) {
       console.error('Error fetching retailer data:', error);
     }
   };
 
-  const initializeMap = async () => {
-    try {
-      const { data } = await supabase.functions.invoke('google-maps-config');
-      
-      if (!data?.apiKey) {
-        toast({
-          title: "Configuration Error",
-          description: "Google Maps API key not configured",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Load Google Maps API
-      if (!window.google) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${data.apiKey}&libraries=geometry,places`;
-        script.async = true;
-        script.onload = () => initMap();
-        document.head.appendChild(script);
-      } else {
-        initMap();
-      }
-    } catch (error) {
-      console.error('Error loading Google Maps:', error);
+  const addPostalPrefix = () => {
+    const trimmedPrefix = newPrefix.trim().toUpperCase();
+    
+    if (!trimmedPrefix) return;
+    
+    // Check 3-area limit
+    if (selectedPrefixes.length >= MAX_COVERAGE_AREAS) {
       toast({
-        title: "Map Error",
-        description: "Failed to load Google Maps",
+        title: "Coverage Limit Reached",
+        description: `You can only select up to ${MAX_COVERAGE_AREAS} coverage areas. Remove an existing area to add a new one.`,
         variant: "destructive",
       });
+      return;
     }
-  };
-
-  const initMap = () => {
-    if (!mapRef.current || !window.google) return;
-
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 45.4215, lng: -75.6972 }, // Ottawa, Canada
-      zoom: 6,
-      styles: [
-        {
-          featureType: "administrative.country",
-          elementType: "geometry.stroke",
-          stylers: [{ color: "#4285F4" }]
-        }
-      ]
-    });
-
-    mapInstance.current = map;
-    setIsMapLoaded(true);
-
-    // Add click listener for postal code selection
-    map.addListener('click', (event: any) => {
-      handleMapClick(event.latLng);
-    });
-
-    // Load existing coverage areas
-    loadCoverageAreas();
-  };
-
-  const handleMapClick = async (latLng: any) => {
-    try {
-      const geocoder = new window.google.maps.Geocoder();
-      const response = await geocoder.geocode({ location: latLng });
-      
-      if (response.results && response.results.length > 0) {
-        const addressComponents = response.results[0].address_components;
-        const postalCodeComponent = addressComponents.find(
-          (component: any) => component.types.includes('postal_code')
-        );
-        
-        if (postalCodeComponent) {
-          const postalCode = postalCodeComponent.long_name;
-          const prefix = postalCode.substring(0, 3); // Get first 3 characters
-          handlePrefixSelection(prefix);
-        }
-      }
-    } catch (error) {
-      console.error('Error geocoding location:', error);
-    }
-  };
-
-  const handlePrefixSelection = (prefix: string) => {
-    const formattedPrefix = formatPostalPrefix(prefix);
-    const validation = validatePostalPrefix(formattedPrefix);
     
+    const validation = validatePostalPrefix(trimmedPrefix);
     if (!validation.isValid) {
       toast({
-        title: "Invalid Postal Code",
+        title: "Invalid Format",
         description: validation.error,
         variant: "destructive",
       });
       return;
     }
 
-    if (selectedPrefixes.includes(formattedPrefix)) {
-      setSelectedPrefixes(prev => prev.filter(p => p !== formattedPrefix));
-    } else {
-      setSelectedPrefixes(prev => [...prev, formattedPrefix]);
+    if (selectedPrefixes.includes(trimmedPrefix)) {
+      toast({
+        title: "Already Added",
+        description: "This postal code area is already in your coverage.",
+        variant: "destructive",
+      });
+      return;
     }
-  };
 
-  const loadCoverageAreas = () => {
-    if (!mapInstance.current) return;
-
-    // Clear existing overlays
-    // This is a simplified implementation - in a real app you'd use postal code boundary data
-    postalPrefixes.forEach(prefix => {
-      // Create visual representation of coverage areas
-      // This would require postal code boundary data from a service like Statistics Canada
-      console.log(`Loading coverage for ${prefix}`);
+    setSelectedPrefixes(prev => [...prev, trimmedPrefix]);
+    setNewPrefix('');
+    
+    toast({
+      title: "Area Added",
+      description: `Added ${trimmedPrefix} to your coverage areas.`,
     });
   };
 
-  const handleSearchPostalCode = () => {
-    if (!searchQuery.trim()) return;
+  const removePostalPrefix = (prefixToRemove: string) => {
+    setSelectedPrefixes(prev => prev.filter(p => p !== prefixToRemove));
+    toast({
+      title: "Area Removed",
+      description: `Removed ${prefixToRemove} from your coverage areas.`,
+    });
+  };
 
-    const formattedQuery = formatPostalPrefix(searchQuery);
-    const validation = validatePostalPrefix(formattedQuery);
-    
-    if (validation.isValid) {
-      handlePrefixSelection(formattedQuery);
-      setSearchQuery('');
-    } else {
-      toast({
-        title: "Invalid Format",
-        description: validation.error,
-        variant: "destructive",
-      });
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addPostalPrefix();
     }
   };
 
@@ -232,22 +151,47 @@ const RetailerCoverageMap = () => {
     const presetPrefixes = POSTAL_CODE_PRESETS[presetName as keyof typeof POSTAL_CODE_PRESETS];
     if (!presetPrefixes) return;
 
-    const newPrefixes = [...new Set([...selectedPrefixes, ...presetPrefixes])];
-    setSelectedPrefixes(newPrefixes);
+    const availableSlots = MAX_COVERAGE_AREAS - selectedPrefixes.length;
+    if (availableSlots === 0) {
+      toast({
+        title: "Coverage Limit Reached",
+        description: `You already have ${MAX_COVERAGE_AREAS} areas selected. Remove some areas first.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPrefixes = presetPrefixes.slice(0, availableSlots);
+    const uniquePrefixes = newPrefixes.filter(prefix => !selectedPrefixes.includes(prefix));
+    
+    if (uniquePrefixes.length === 0) {
+      toast({
+        title: "Already Added",
+        description: "These coverage areas are already selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedPrefixes(prev => [...prev, ...uniquePrefixes]);
     
     toast({
-      title: "Preset Added",
-      description: `Added ${presetName} coverage areas.`,
+      title: "Areas Added",
+      description: `Added ${uniquePrefixes.length} coverage area(s) from ${presetName}.`,
     });
   };
 
   const coverage = calculateTotalCoverage(selectedPrefixes);
   const hasChanges = JSON.stringify(selectedPrefixes.sort()) !== JSON.stringify(postalPrefixes.sort());
+  const remainingSlots = MAX_COVERAGE_AREAS - selectedPrefixes.length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Coverage Map</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Coverage Areas</h1>
+          <p className="text-muted-foreground">Manage your service coverage areas (FSA - Forward Sortation Areas)</p>
+        </div>
         <Button 
           onClick={handleSaveCoverage}
           disabled={isLoading || !hasChanges}
@@ -258,151 +202,203 @@ const RetailerCoverageMap = () => {
         </Button>
       </div>
 
-      {/* Coverage Summary */}
+      {/* Coverage Limit Status */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-2xl font-bold">{selectedPrefixes.length} / {MAX_COVERAGE_AREAS}</div>
+              <div className="text-sm text-muted-foreground">Coverage Areas Used</div>
+            </div>
+            <div className="flex gap-1">
+              {Array.from({ length: MAX_COVERAGE_AREAS }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-4 h-4 rounded-full ${
+                    index < selectedPrefixes.length 
+                      ? 'bg-primary' 
+                      : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          {remainingSlots > 0 && (
+            <p className="text-sm text-muted-foreground mt-2">
+              You can add {remainingSlots} more coverage area{remainingSlots !== 1 ? 's' : ''}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Canadian Postal Code Education */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="w-5 h-5" />
-            Coverage Summary
+            Canadian Postal Code System
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{selectedPrefixes.length}</div>
-              <div className="text-sm text-gray-600">Active Areas</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{coverage.totalAreas}</div>
-              <div className="text-sm text-gray-600">Est. Postal Areas</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{coverage.coverageLevel}</div>
-              <div className="text-sm text-gray-600">Coverage Level</div>
-            </div>
+        <CardContent className="space-y-3">
+          <div className="text-sm space-y-2">
+            <p><strong>Forward Sortation Area (FSA)</strong> - The first 3 characters of a postal code:</p>
+            <ul className="list-disc list-inside space-y-1 ml-4 text-muted-foreground">
+              <li><strong>1st character:</strong> Province/Territory (L=Central Ontario, M=Toronto, K=Eastern Ontario, etc.)</li>
+              <li><strong>2nd character:</strong> Urban (1-9) or Rural (0) area</li> 
+              <li><strong>3rd character:</strong> Specific geographic area within the region</li>
+            </ul>
+            <p className="text-muted-foreground">
+              <strong>Examples:</strong> L5J covers Mississauga area, M1C covers Toronto Scarborough, K1A covers Ottawa downtown
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Map */}
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Add Coverage Area */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Interactive Coverage Map
+              <Plus className="w-5 h-5" />
+              Add Coverage Area
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div 
-              ref={mapRef}
-              className="w-full h-96 bg-gray-100 rounded-lg"
-              style={{ minHeight: '400px' }}
-            >
-              {!isMapLoaded && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-gray-500">Loading map...</div>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter FSA code (e.g., L5J, M1C, K1A)"
+                  value={newPrefix}
+                  onChange={(e) => setNewPrefix(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  maxLength={3}
+                  className="flex-1"
+                  disabled={remainingSlots === 0}
+                />
+                <Button 
+                  onClick={addPostalPrefix}
+                  disabled={isLoading || !newPrefix.trim() || remainingSlots === 0}
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {remainingSlots === 0 && (
+                <p className="text-sm text-destructive">
+                  Coverage limit reached. Remove an area to add a new one.
+                </p>
               )}
+            </div>
+
+            {/* Quick Add Presets */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Quick Add Major Cities:</h4>
+              <div className="grid grid-cols-1 gap-1">
+                {Object.entries(POSTAL_CODE_PRESETS)
+                  .slice(0, 6)
+                  .map(([presetName, prefixes]) => (
+                  <Button
+                    key={presetName}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addPresetCoverage(presetName)}
+                    disabled={remainingSlots === 0}
+                    className="justify-start text-xs h-8"
+                  >
+                    {presetName} ({prefixes.slice(0, 3).join(', ')}{prefixes.length > 3 ? '...' : ''})
+                  </Button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Controls */}
-        <div className="space-y-4">
-          {/* Search */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Search Postal Code</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g., L5J, M1C, K1A"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearchPostalCode()}
-                  maxLength={3}
-                />
-                <Button 
-                  onClick={handleSearchPostalCode}
-                  size="sm"
-                  variant="outline"
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Add Presets */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Add Regions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {Object.keys(POSTAL_CODE_PRESETS).slice(0, 5).map((preset) => (
-                <Button
-                  key={preset}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addPresetCoverage(preset)}
-                  className="w-full justify-start"
-                >
-                  {preset}
-                </Button>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Selected Areas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Selected Areas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {selectedPrefixes.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">
-                    No areas selected. Click on the map or search to add coverage areas.
-                  </p>
-                ) : (
-                  selectedPrefixes.map((prefix) => {
-                    const info = getPostalPrefixInfo(prefix);
-                    return (
-                      <div
-                        key={prefix}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                      >
-                        <div>
-                          <Badge variant="outline" className="mr-2">
-                            {prefix}*
+        {/* Selected Areas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Your Coverage Areas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {selectedPrefixes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No coverage areas selected</p>
+                  <p className="text-xs">Add up to {MAX_COVERAGE_AREAS} FSA codes to start receiving leads</p>
+                </div>
+              ) : (
+                selectedPrefixes.map((prefix) => {
+                  const info = getPostalPrefixInfo(prefix);
+                  return (
+                    <div
+                      key={prefix}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default" className="font-mono">
+                            {prefix}
                           </Badge>
-                          <span className="text-xs text-gray-600">{info.type}</span>
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {info.type} coverage
+                          </span>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePrefixSelection(prefix)}
-                        >
-                          Remove
-                        </Button>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {info.coverageDescription}
+                        </p>
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePostalPrefix(prefix)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Coverage Summary */}
+      {selectedPrefixes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Coverage Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-primary">{selectedPrefixes.length}</div>
+                <div className="text-sm text-muted-foreground">FSA Areas</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">{coverage.totalAreas}</div>
+                <div className="text-sm text-muted-foreground">Est. Neighborhoods</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-primary">{coverage.coverageLevel}</div>
+                <div className="text-sm text-muted-foreground">Coverage Level</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Help */}
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          <strong>How to use:</strong> Click on the map to select postal code areas, or use the search box to add specific prefixes. 
-          Selected areas will be highlighted and you can remove them by clicking the "Remove" button.
+          <strong>Tips:</strong> FSA codes cover broad geographic areas. For example, "L5J" covers Mississauga areas, 
+          "M1C" covers Toronto Scarborough, and "K1A" covers Ottawa downtown. Choose strategically to maximize your lead coverage.
         </AlertDescription>
       </Alert>
     </div>

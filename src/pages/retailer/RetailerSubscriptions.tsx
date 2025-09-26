@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import PostalCodeCoverage from '@/components/retailer/PostalCodeCoverage';
 import RetailerSubscriptionCard from '@/components/retailer/RetailerSubscriptionCard';
 import { useDebounce } from '@/hooks/useDebounce';
 import { SQFT_TIERS } from '@/constants/flooringData';
@@ -420,8 +419,6 @@ const RetailerSubscriptions = () => {
         </Badge>
       </div>
 
-      {/* Postal Code Coverage Section */}
-      <PostalCodeCoverage retailerId={retailerId} />
 
       {/* Compact Brand Subscriptions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
