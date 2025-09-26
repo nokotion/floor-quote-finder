@@ -21,7 +21,7 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>Choose a flooring type to explore available brands</p>
       </div>
       
-      <div className={`grid gap-3 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'}`}>
+      <div className={`grid gap-2 ${isMobile ? 'grid-cols-2 gap-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2'}`}>
         {flooringTypes.map((type, index) => (
           <motion.div
             key={type.name}
@@ -34,24 +34,24 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
               className="group block"
             >
               <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white border-2 hover:border-accent">
-                <CardContent className={`text-center relative ${isMobile ? 'p-3' : 'p-4'}`}>
-                  <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-3'}`}>
-                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-50 p-2">
+                <CardContent className={`text-center relative ${isMobile ? 'p-3' : 'p-3'}`}>
+                  <div className={`flex justify-center ${isMobile ? 'mb-2' : 'mb-2'}`}>
+                    <div className="aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 p-1.5">
                       <img 
                         src={type.icon} 
                         alt={`${type.name} flooring icon`}
-                        className={`object-cover w-full h-full rounded ${isMobile ? 'w-16 h-16' : 'w-16 h-16'}`}
+                        className={`object-cover w-full h-full rounded ${isMobile ? 'w-14 h-14' : 'w-12 h-12'}`}
                       />
                     </div>
                   </div>
-                  <h3 className={`font-semibold group-hover:text-accent transition-colors ${isMobile ? 'text-sm mb-1' : 'text-lg mb-2'}`}>
+                  <h3 className={`font-semibold group-hover:text-accent transition-colors ${isMobile ? 'text-sm mb-1' : 'text-sm mb-1'}`}>
                     {type.name}
                   </h3>
                   {!isMobile && (
-                    <p className="text-xs text-gray-600 mb-2">{type.description}</p>
+                    <p className="text-xs text-muted-foreground mb-1.5 leading-tight">{type.description}</p>
                   )}
                   {!brandCountsLoading && (
-                    <Badge variant="secondary" className={`bg-accent/10 text-accent-foreground ${isMobile ? 'text-xs px-2 py-0.5' : ''}`}>
+                    <Badge variant="secondary" className={`bg-accent/10 text-accent-foreground text-xs px-2 py-0.5`}>
                       {brandCounts[type.name] || 0} brands
                     </Badge>
                   )}
