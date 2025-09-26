@@ -193,6 +193,10 @@ const handler = async (req: Request): Promise<Response> => {
       } else if (errorMessage.includes('Email service returned error')) {
         userFriendlyError = 'Email service is currently unavailable. Please try SMS verification instead.';
         errorType = 'EMAIL_SERVICE_FAILED';
+      } else if (errorMessage.includes('verify a domain at resend.com/domains') || 
+                 errorMessage.includes('You can only send testing emails')) {
+        userFriendlyError = 'Email verification is currently limited to verified addresses. Please try SMS verification instead or contact support.';
+        errorType = 'EMAIL_DOMAIN_RESTRICTION';
       }
       
       return new Response(
