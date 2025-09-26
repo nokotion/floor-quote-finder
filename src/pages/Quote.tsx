@@ -191,7 +191,7 @@ const Quote = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!customerName || !customerEmail || !customerPhone) {
+    if (!customerName || !customerEmail || !customerPhone || !productDetails) {
       toast({
         title: "Missing Information",
         description: "Please fill out all required fields.",
@@ -385,7 +385,7 @@ const Quote = () => {
                   </h3>
                   <div>
                     <Label htmlFor="productDetails">
-                      Product Details (Optional)
+                      Product Details *
                     </Label>
                     <Input
                       id="productDetails"
@@ -393,6 +393,7 @@ const Quote = () => {
                       value={productDetails}
                       onChange={(e) => setProductDetails(e.target.value)}
                       className="h-12 text-base focus:ring-2 focus:ring-orange-500 focus:border-orange-500 border-gray-200 font-medium"
+                      required
                     />
                     <p className="text-gray-500 text-sm mt-1">
                       Include specific product names, colors, SKU numbers, or batch numbers to get more accurate quotes.
