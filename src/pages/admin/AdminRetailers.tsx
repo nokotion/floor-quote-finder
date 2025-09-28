@@ -30,6 +30,7 @@ const AdminRetailers = () => {
   const [retailers, setRetailers] = useState<Retailer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -117,11 +118,9 @@ const AdminRetailers = () => {
             <h1 className="text-3xl font-bold text-gray-900">Retailers</h1>
             <p className="text-gray-600 mt-2">Manage all registered retailers and their accounts</p>
           </div>
-          <Button asChild>
-            <Link to="/admin/retailers/new">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Retailer
-            </Link>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Retailer
           </Button>
         </div>
 
@@ -286,6 +285,30 @@ const AdminRetailers = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Add Retailer Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg w-96 max-w-md">
+              <h3 className="text-lg font-semibold mb-4">Add New Retailer</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                To add a new retailer, they should submit a retailer application through the normal process. 
+                This ensures proper verification and documentation.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowAddModal(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  window.open('/retailer/apply', '_blank');
+                  setShowAddModal(false);
+                }}>
+                  Go to Application Form
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

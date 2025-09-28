@@ -150,6 +150,11 @@ function App() {
             
             {/* Admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requireRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/dashboard" element={
               <ProtectedRoute requireRole="admin">
                 <AdminDashboard />

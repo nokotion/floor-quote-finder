@@ -83,16 +83,15 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Update application status
-      const { error: updateError } = await supabase
-        .from('retailer_applications')
-        .update({ 
-          status: 'approved',
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', applicationId);
+      // Call the create retailer account edge function
+      const { data, error } = await supabase.functions.invoke('create-retailer-account', {
+        body: { 
+          applicationId,
+          adminId: '03c68991-ed22-482a-9d66-b8bcdbe6c524' // Current admin ID
+        }
+      });
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       // Refresh data
       await fetchDashboardData();
