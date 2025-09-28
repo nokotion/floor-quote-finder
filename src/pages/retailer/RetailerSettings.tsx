@@ -30,6 +30,9 @@ interface RetailerProfile {
   auto_pay_enabled: boolean;
   monthly_budget_cap: number;
   status: string;
+  lead_notification_email?: string;
+  lead_forwarding_emails?: string[];
+  email_notification_preference?: string;
 }
 
 const RetailerSettings = () => {
@@ -112,6 +115,9 @@ const RetailerSettings = () => {
           business_description: profile.business_description,
           auto_pay_enabled: profile.auto_pay_enabled,
           monthly_budget_cap: profile.monthly_budget_cap,
+          lead_notification_email: profile.lead_notification_email,
+          lead_forwarding_emails: profile.lead_forwarding_emails,
+          email_notification_preference: profile.email_notification_preference,
         })
         .eq('id', profile.id);
 
@@ -179,6 +185,62 @@ const RetailerSettings = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Lead Notification Settings */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Mail className="w-5 h-5 mr-2" />
+              Lead Notification Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="lead_notification_email">Primary Lead Notification Email</Label>
+              <Input
+                id="lead_notification_email"
+                type="email"
+                value={profile.lead_notification_email || profile.email}
+                onChange={(e) => updateProfile('lead_notification_email', e.target.value)}
+                placeholder={profile.email}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Email address where lead notifications will be sent (defaults to account email)
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="lead_forwarding_emails">Additional Forwarding Emails</Label>
+              <Textarea
+                id="lead_forwarding_emails"
+                value={profile.lead_forwarding_emails?.join(', ') || ''}
+                onChange={(e) => {
+                  const emails = e.target.value.split(',').map(email => email.trim()).filter(email => email);
+                  updateProfile('lead_forwarding_emails', emails);
+                }}
+                placeholder="additional@email.com, team@company.com"
+                rows={2}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Comma-separated list of additional emails to forward leads to
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="email_notification_preference">Notification Frequency</Label>
+              <select
+                id="email_notification_preference"
+                value={profile.email_notification_preference || 'immediate'}
+                onChange={(e) => updateProfile('email_notification_preference', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="immediate">Immediate (as leads come in)</option>
+                <option value="daily_digest">Daily Digest</option>
+                <option value="disabled">Disabled</option>
+              </select>
+              <p className="text-sm text-gray-500 mt-1">
+                How often you want to receive lead notifications
+              </p>
+            </div>
+          </CardContent>
+        </Card>
         {/* Business Information */}
         <Card>
           <CardHeader>
@@ -258,57 +320,6 @@ const RetailerSettings = () => {
           </CardContent>
         </Card>
 
-        {/* Address Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MapPin className="w-5 h-5 mr-2" />
-              Address Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="address">Street Address</Label>
-              <Input
-                id="address"
-                value={profile.address || ''}
-                onChange={(e) => updateProfile('address', e.target.value)}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={profile.city || ''}
-                  onChange={(e) => updateProfile('city', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="province">Province</Label>
-                <Input
-                  id="province"
-                  value={profile.province || ''}
-                  onChange={(e) => updateProfile('province', e.target.value)}
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="postal_code">Postal Code</Label>
-              <Input
-                id="postal_code"
-                value={profile.postal_code || ''}
-                onChange={(e) => {
-                  const formatted = formatAndValidatePostalCode(e.target.value, profile.postal_code || '');
-                  updateProfile('postal_code', formatted);
-                }}
-                placeholder="A1A 1A1"
-                maxLength={7}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Billing Settings */}
         <Card>
           <CardHeader>
@@ -350,8 +361,19 @@ const RetailerSettings = () => {
         </Card>
       </div>
 
-      {/* Enhanced Postal Code Coverage - Full Width */}
-      <EnhancedPostalCodeCoverage retailerId={profile.id} />
+      {/* Coverage Selection - Full Width */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Service Coverage Areas</h2>
+        <div className="grid gap-6">
+          {/* Map-based coverage (primary) */}
+          <div id="map-coverage">
+            {/* Map component will be loaded here */}
+          </div>
+          
+          {/* Text-based coverage (fallback) */}
+          <EnhancedPostalCodeCoverage retailerId={profile.id} />
+        </div>
+      </div>
 
       {/* Save Button */}
       <div className="flex justify-end">

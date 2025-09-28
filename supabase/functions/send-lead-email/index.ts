@@ -1,4 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,51 +128,59 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { retailerEmail, retailerName, leadData, paymentMethod, chargeAmount } = await req.json();
+    const { retailerEmails, leadData, paymentMethod, chargeAmount } = await req.json();
 
-    if (!retailerEmail || !leadData) {
-      throw new Error("Missing required email data");
+    if (!retailerEmails || !leadData) {
+      throw new Error("Missing required email data: retailerEmails and leadData are required");
     }
 
-    logStep("Preparing email", { retailerEmail, leadId: leadData.id });
+    // Normalize retailerEmails to array
+    const emailList = Array.isArray(retailerEmails) ? retailerEmails : [retailerEmails];
+    
+    logStep("Preparing emails", { emailCount: emailList.length, leadId: leadData.id });
 
-    // For now, we'll use a simple email service
-    // In production, you'd want to integrate with Resend, SendGrid, or similar
-    const emailContent = formatLeadDetails(leadData, paymentMethod, chargeAmount);
-    const subject = `New Flooring Lead: ${leadData.contactInfo?.name || 'Customer'} - ${leadData.projectSize}`;
+    const emailContent = formatLeadDetails(leadData, paymentMethod || 'unknown', chargeAmount || 0);
+    const subject = `New Lead: ${leadData.customer_name} - ${leadData.flooring_type || 'Flooring'} Project`;
 
-    // Log the email content for now (in production, actually send the email)
-    logStep("Email prepared", {
-      to: retailerEmail,
-      subject: subject,
-      paymentMethod: paymentMethod,
-      chargeAmount: chargeAmount
+    // Send emails using Resend
+    const emailResults = [];
+    for (const email of emailList) {
+      try {
+        logStep(`Sending email to ${email}`);
+        
+        const emailResponse = await resend.emails.send({
+          from: "PriceMyFloor <leads@pricemyfloor.ca>",
+          to: [email],
+          subject: subject,
+          html: emailContent,
+        });
+
+        logStep(`Email sent successfully to ${email}`, { id: emailResponse.data?.id });
+        emailResults.push({ email, success: true, id: emailResponse.data?.id });
+      } catch (emailError) {
+        logStep(`Failed to send email to ${email}`, { error: emailError.message });
+        emailResults.push({ email, success: false, error: emailError.message });
+      }
+    }
+
+    const successfulSends = emailResults.filter(r => r.success).length;
+    const totalEmails = emailResults.length;
+
+    logStep("Email sending completed", { 
+      successful: successfulSends, 
+      total: totalEmails,
+      results: emailResults 
     });
-
-    // Here you would integrate with your email service
-    // For example with Resend:
-    /*
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    const emailResponse = await resend.emails.send({
-      from: "leads@pricemyfloor.ca",
-      to: [retailerEmail],
-      subject: subject,
-      html: emailContent,
-    });
-    */
-
-    // For now, we'll simulate successful email sending
-    console.log(`EMAIL TO: ${retailerEmail}`);
-    console.log(`SUBJECT: ${subject}`);
-    console.log(`CONTENT: ${emailContent}`);
 
     return new Response(JSON.stringify({
-      success: true,
-      message: "Email sent successfully",
-      retailer_email: retailerEmail
+      success: successfulSends > 0,
+      message: `Lead emails sent: ${successfulSends}/${totalEmails} successful`,
+      emailResults,
+      emailsSent: successfulSends,
+      totalEmails
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
+      status: successfulSends > 0 ? 200 : 500,
     });
 
   } catch (error) {

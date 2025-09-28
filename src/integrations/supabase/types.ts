@@ -1062,10 +1062,13 @@ export type Database = {
           created_at: string
           current_balance: number | null
           email: string
+          email_notification_preference: string | null
           id: string
           installation_preference: string | null
           insurance_provider: string | null
           last_billing_date: string | null
+          lead_forwarding_emails: string[] | null
+          lead_notification_email: string | null
           lead_types: string[] | null
           leads_used_this_month: number | null
           monthly_budget_cap: number | null
@@ -1105,10 +1108,13 @@ export type Database = {
           created_at?: string
           current_balance?: number | null
           email: string
+          email_notification_preference?: string | null
           id?: string
           installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
+          lead_forwarding_emails?: string[] | null
+          lead_notification_email?: string | null
           lead_types?: string[] | null
           leads_used_this_month?: number | null
           monthly_budget_cap?: number | null
@@ -1148,10 +1154,13 @@ export type Database = {
           created_at?: string
           current_balance?: number | null
           email?: string
+          email_notification_preference?: string | null
           id?: string
           installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
+          lead_forwarding_emails?: string[] | null
+          lead_notification_email?: string | null
           lead_types?: string[] | null
           leads_used_this_month?: number | null
           monthly_budget_cap?: number | null
