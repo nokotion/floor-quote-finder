@@ -58,6 +58,15 @@ verify_jwt = false
 [functions.secure-lead-handler]
 verify_jwt = false
 
+[functions.create-retailer-account]
+verify_jwt = false
+
+[functions.send-retailer-welcome]
+verify_jwt = false
+
+[functions.resend-retailer-credentials]
+verify_jwt = false
+
 [storage]
 enabled = true
 port = 54323
