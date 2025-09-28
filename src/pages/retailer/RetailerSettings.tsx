@@ -31,7 +31,7 @@ interface RetailerProfile {
   monthly_budget_cap: number;
   status: string;
   lead_notification_email?: string;
-  lead_forwarding_emails?: string[];
+  lead_forwarding_email?: string;
   email_notification_preference?: string;
 }
 
@@ -116,7 +116,7 @@ const RetailerSettings = () => {
           auto_pay_enabled: profile.auto_pay_enabled,
           monthly_budget_cap: profile.monthly_budget_cap,
           lead_notification_email: profile.lead_notification_email,
-          lead_forwarding_emails: profile.lead_forwarding_emails,
+          lead_forwarding_email: profile.lead_forwarding_email,
           email_notification_preference: profile.email_notification_preference,
         })
         .eq('id', profile.id);
@@ -208,19 +208,16 @@ const RetailerSettings = () => {
               </p>
             </div>
             <div>
-              <Label htmlFor="lead_forwarding_emails">Additional Forwarding Emails</Label>
-              <Textarea
-                id="lead_forwarding_emails"
-                value={profile.lead_forwarding_emails?.join(', ') || ''}
-                onChange={(e) => {
-                  const emails = e.target.value.split(',').map(email => email.trim()).filter(email => email);
-                  updateProfile('lead_forwarding_emails', emails);
-                }}
-                placeholder="additional@email.com, team@company.com"
-                rows={2}
+              <Label htmlFor="lead_forwarding_email">Lead Forwarding Email</Label>
+              <Input
+                id="lead_forwarding_email"
+                type="email"
+                value={profile.lead_forwarding_email || ''}
+                onChange={(e) => updateProfile('lead_forwarding_email', e.target.value)}
+                placeholder="leads@yourcompany.com"
               />
               <p className="text-sm text-gray-500 mt-1">
-                Comma-separated list of additional emails to forward leads to
+                Optional: Forward lead notifications to a different email address
               </p>
             </div>
             <div>

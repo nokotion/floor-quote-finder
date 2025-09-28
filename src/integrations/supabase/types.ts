@@ -307,6 +307,7 @@ export type Database = {
           installation: string | null
           logo_url: string | null
           name: string | null
+          provinces: string[] | null
           slug: string
           updated_at: string | null
           website: string | null
@@ -320,6 +321,7 @@ export type Database = {
           installation?: string | null
           logo_url?: string | null
           name?: string | null
+          provinces?: string[] | null
           slug: string
           updated_at?: string | null
           website?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           installation?: string | null
           logo_url?: string | null
           name?: string | null
+          provinces?: string[] | null
           slug?: string
           updated_at?: string | null
           website?: string | null
@@ -1067,7 +1070,7 @@ export type Database = {
           installation_preference: string | null
           insurance_provider: string | null
           last_billing_date: string | null
-          lead_forwarding_emails: string[] | null
+          lead_forwarding_email: string | null
           lead_notification_email: string | null
           lead_types: string[] | null
           leads_used_this_month: number | null
@@ -1113,7 +1116,7 @@ export type Database = {
           installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
-          lead_forwarding_emails?: string[] | null
+          lead_forwarding_email?: string | null
           lead_notification_email?: string | null
           lead_types?: string[] | null
           leads_used_this_month?: number | null
@@ -1159,7 +1162,7 @@ export type Database = {
           installation_preference?: string | null
           insurance_provider?: string | null
           last_billing_date?: string | null
-          lead_forwarding_emails?: string[] | null
+          lead_forwarding_email?: string | null
           lead_notification_email?: string | null
           lead_types?: string[] | null
           leads_used_this_month?: number | null

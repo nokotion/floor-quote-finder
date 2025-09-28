@@ -9,7 +9,7 @@ import { AuthProvider } from './components/auth/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
 import RetailerLayout from './components/retailer/RetailerLayout';
-import AdminLayout from './components/admin/AdminLayout';
+import { AdminLayout } from './components/admin/AdminLayout';
 import { BrandProvider } from './contexts/BrandContext';
 import { DevModeProvider } from './contexts/DevModeContext';
 import { DevModeBanner } from './components/dev/DevModeBanner';
