@@ -1,5 +1,7 @@
 
 import { useState, useEffect } from "react";
+import { useAuth } from '@/components/auth/AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,8 @@ interface LeadDistribution {
 }
 
 const RetailerLeads = () => {
+  const { user } = useAuth();
+  const { isDevMode, mockLeads } = useDevMode();
   const [leadDistributions, setLeadDistributions] = useState<LeadDistribution[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -48,6 +52,23 @@ const RetailerLeads = () => {
 
   const fetchLeadDistributions = async () => {
     try {
+      setLoading(true);
+      
+      if (isDevMode && mockLeads) {
+        // Transform mock leads to match LeadDistribution format
+        const mockDistributions = mockLeads.map((lead, index) => ({
+          id: `dist-${lead.id}`,
+          lead_price: lead.lead_price,
+          sent_at: lead.created_at,
+          status: lead.distribution_status,
+          brand_matched: lead.brand_matched,
+          was_paid: index === 0, // First lead is paid
+          leads: lead
+        }));
+        setLeadDistributions(mockDistributions);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('lead_distributions')
         .select(`

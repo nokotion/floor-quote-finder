@@ -1,5 +1,7 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/components/auth/AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +12,7 @@ import { CreditCard, DollarSign, Calendar, Package, TrendingUp } from 'lucide-re
 interface BillingStats {
   currentBalance: number;
   monthlySpend: number;
-  leadsThisMonth: number;
-  subscriptionStatus: string;
+  leadsGenerated: number;
   nextBillingDate?: string;
 }
 
@@ -26,11 +27,12 @@ interface BillingRecord {
 }
 
 const RetailerBilling = () => {
+  const { user } = useAuth();
+  const { isDevMode, mockBillingData } = useDevMode();
   const [stats, setStats] = useState<BillingStats>({
     currentBalance: 0,
     monthlySpend: 0,
-    leadsThisMonth: 0,
-    subscriptionStatus: 'active'
+    leadsGenerated: 0
   });
   const [billingHistory, setBillingHistory] = useState<BillingRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,20 @@ const RetailerBilling = () => {
 
   const fetchBillingData = async () => {
     try {
+      setLoading(true);
+      
+      if (isDevMode && mockBillingData) {
+        // Use mock data in dev mode
+        setStats({
+          currentBalance: mockBillingData.currentBalance,
+          monthlySpend: mockBillingData.monthlySpend,
+          leadsGenerated: mockBillingData.leadsThisMonth,
+          nextBillingDate: mockBillingData.nextBillingDate
+        });
+        setBillingHistory(mockBillingData.billingHistory);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -88,8 +104,7 @@ const RetailerBilling = () => {
       setStats({
         currentBalance: retailer?.current_balance || 0,
         monthlySpend,
-        leadsThisMonth: leadsCount || 0,
-        subscriptionStatus: retailer?.subscription_tier || 'basic',
+        leadsGenerated: leadsCount || 0,
         nextBillingDate: retailer?.next_billing_date
       });
 
@@ -140,8 +155,8 @@ const RetailerBilling = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Billing & Payments</h1>
-        <Badge variant={stats.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-          {stats.subscriptionStatus}
+        <Badge variant="default">
+          Active
         </Badge>
       </div>
 
@@ -190,7 +205,7 @@ const RetailerBilling = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">
-              {stats.leadsThisMonth}
+              {stats.leadsGenerated}
             </div>
             <p className="text-xs text-gray-500 mt-1">
               Leads received

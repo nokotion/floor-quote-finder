@@ -1,11 +1,16 @@
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/components/auth/AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Users, Package, TrendingUp } from 'lucide-react';
+import { DollarSign, Users, Package, TrendingUp, Plus, Mail, Settings } from 'lucide-react';
 
 const RetailerDashboard = () => {
+  const { user } = useAuth();
+  const { isDevMode, mockBillingData, mockLeads, mockSubscriptions } = useDevMode();
   const [stats, setStats] = useState({
     totalLeads: 0,
     activeSubscriptions: 0,
@@ -20,6 +25,19 @@ const RetailerDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
+      setLoading(true);
+      
+      if (isDevMode) {
+        // Use mock data in dev mode
+        setStats({
+          totalLeads: mockLeads?.length || 0,
+          activeSubscriptions: mockSubscriptions?.filter(s => s.is_active).length || 0,
+          monthlySpend: mockBillingData?.monthlySpend || 0,
+          conversionRate: 25 // Mock conversion rate
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -145,8 +163,24 @@ const RetailerDashboard = () => {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-500">
-              No recent activity to display.
+            <div className="space-y-3">
+              {isDevMode && mockLeads && mockLeads.length > 0 ? (
+                mockLeads.slice(0, 3).map((lead, index) => (
+                  <div key={lead.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-sm">{lead.customer_name}</div>
+                      <div className="text-xs text-gray-600">{lead.flooring_type} • {lead.square_footage} sqft</div>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {lead.distribution_status}
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-gray-500">
+                  No recent activity to display.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -156,15 +190,18 @@ const RetailerDashboard = () => {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-sm text-gray-500">
-              • View new leads
-            </div>
-            <div className="text-sm text-gray-500">
-              • Manage subscriptions
-            </div>
-            <div className="text-sm text-gray-500">
-              • Update billing information
-            </div>
+            <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/retailer/leads'}>
+              <Users className="w-4 h-4 mr-2" />
+              View New Leads
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/retailer/subscriptions'}>
+              <Package className="w-4 h-4 mr-2" />
+              Manage Subscriptions
+            </Button>
+            <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/retailer/billing'}>
+              <DollarSign className="w-4 h-4 mr-2" />
+              Update Billing Information
+            </Button>
           </CardContent>
         </Card>
       </div>

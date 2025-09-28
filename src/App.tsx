@@ -117,6 +117,12 @@ function App() {
             {/* Retailer routes */}
             <Route path="/retailer/login" element={<RetailerLogin />} />
             <Route path="/retailer/apply" element={<RetailerApply />} />
+            {/* Retailer routes */}
+            <Route path="/retailer" element={
+              <ProtectedRoute requireRole="retailer">
+                <RetailerDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/retailer/dashboard" element={
               <ProtectedRoute requireRole="retailer">
                 <RetailerDashboard />

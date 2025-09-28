@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/components/auth/AuthContext';
+import { useDevMode } from '@/contexts/DevModeContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,10 +33,12 @@ interface RetailerProfile {
 }
 
 const RetailerSettings = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { isDevMode, mockRetailerData } = useDevMode();
   const [profile, setProfile] = useState<RetailerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchProfile();
@@ -42,6 +46,14 @@ const RetailerSettings = () => {
 
   const fetchProfile = async () => {
     try {
+      setLoading(true);
+      
+      if (isDevMode && mockRetailerData) {
+        // Use mock data in dev mode
+        setProfile(mockRetailerData as RetailerProfile);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -77,6 +89,15 @@ const RetailerSettings = () => {
 
     setSaving(true);
     try {
+      if (isDevMode) {
+        // In dev mode, just show success toast
+        toast({
+          title: "Success",
+          description: "Profile updated successfully (dev mode)",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('retailers')
         .update({
