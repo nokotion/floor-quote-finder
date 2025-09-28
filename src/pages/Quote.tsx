@@ -190,8 +190,15 @@ const Quote = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🚀 Quote form submission started');
 
     if (!customerName || !customerEmail || !customerPhone || !productDetails) {
+      console.log('❌ Missing required fields', {
+        customerName: !!customerName,
+        customerEmail: !!customerEmail,
+        customerPhone: !!customerPhone,
+        productDetails: !!productDetails
+      });
       toast({
         title: "Missing Information",
         description: "Please fill out all required fields.",
@@ -201,6 +208,7 @@ const Quote = () => {
     }
 
     if (emailError) {
+      console.log('❌ Email validation error:', emailError);
       toast({
         title: "Invalid Email",
         description: emailError,
@@ -210,6 +218,7 @@ const Quote = () => {
     }
 
     if (phoneError) {
+      console.log('❌ Phone validation error:', phoneError);
       toast({
         title: "Invalid Phone",
         description: phoneError,
@@ -221,6 +230,7 @@ const Quote = () => {
     // Validate postal code
     const validPostalCode = getValidatedPostalCode();
     if (!validPostalCode) {
+      console.log('❌ Invalid postal code');
       toast({
         title: "Invalid Postal Code",
         description: "Please ensure you have a valid Canadian postal code.",
@@ -231,6 +241,7 @@ const Quote = () => {
 
     // Validate brand selection
     if (!brand) {
+      console.log('❌ Missing brand selection');
       toast({
         title: "Brand Selection Required",
         description: "Please ensure a brand is selected.",
@@ -238,6 +249,8 @@ const Quote = () => {
       });
       return;
     }
+
+    console.log('✅ All validations passed, submitting lead...');
 
     // Submit lead through secure handler
     setIsSubmitting(true);
@@ -257,18 +270,24 @@ const Quote = () => {
         notes: notes
       };
 
+      console.log('📋 Submitting data:', { ...secureData, customer_phone: '***' });
+
       // Submit through secure edge function
       const { data: result, error: submitError } = await supabase.functions.invoke('secure-lead-handler', {
         body: secureData
       });
 
+      console.log('📨 Supabase response:', { result, submitError });
+
       if (submitError) {
-        console.error('Error submitting lead:', submitError);
+        console.error('❌ Error submitting lead:', submitError);
         throw new Error(submitError.message || 'Failed to submit lead');
       }
 
       setSubmissionProgress(100);
       setIsSubmitted(true);
+      
+      console.log('🎉 Lead submitted successfully!');
       
       // Show success message
       toast({
@@ -279,12 +298,12 @@ const Quote = () => {
       // Redirect to verification page with the returned lead_id
       if (result.lead_id) {
         const verifyUrl = `/verify?leadId=${result.lead_id}&method=email&contact=${encodeURIComponent(customerEmail)}`;
-        console.log('Redirecting to verification page:', verifyUrl);
+        console.log('🔄 Redirecting to verification page:', verifyUrl);
         navigate(verifyUrl);
       }
 
     } catch (error: any) {
-      console.error("Secure submission error:", error);
+      console.error("💥 Secure submission error:", error);
       toast({
         title: "Submission Failed",
         description: error.message || "An error occurred. Please try again.",

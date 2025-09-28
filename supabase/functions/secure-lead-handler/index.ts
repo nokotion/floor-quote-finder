@@ -101,13 +101,24 @@ const generateSecureToken = (): string => {
 }
 
 Deno.serve(async (req) => {
+  console.log('🔥 Secure lead handler started');
+  
   if (req.method === 'OPTIONS') {
+    console.log('⚙️ CORS preflight request');
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    console.log('📡 Supabase client created');
+    
     const leadData: LeadSubmission = await req.json()
+    console.log('📋 Lead data received:', { 
+      customer_name: leadData.customer_name,
+      customer_email: leadData.customer_email, 
+      brand_requested: leadData.brand_requested,
+      postal_code: leadData.postal_code 
+    });
     
     // Extract client information for security monitoring
     const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
@@ -116,7 +127,7 @@ Deno.serve(async (req) => {
     leadData.client_ip = clientIp
     leadData.user_agent = userAgent
 
-    console.log('Secure lead submission received from IP:', clientIp)
+    console.log('🔍 Security info extracted - IP:', clientIp);
 
     // 1. Input validation and sanitization
     if (!leadData.customer_name || !leadData.customer_email || !leadData.postal_code || !leadData.brand_requested) {

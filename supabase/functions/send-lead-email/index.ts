@@ -1,11 +1,37 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Send email using Resend API directly
+const sendEmail = async (to: string, subject: string, html: string) => {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    throw new Error("RESEND_API_KEY not configured");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "PriceMyFloor <leads@pricemyfloor.ca>",
+      to: [to],
+      subject: subject,
+      html: html,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Resend API error: ${response.status} ${error}`);
+  }
+
+  return await response.json();
 };
 
 // Helper logging function
@@ -142,22 +168,17 @@ serve(async (req) => {
     const emailContent = formatLeadDetails(leadData, paymentMethod || 'unknown', chargeAmount || 0);
     const subject = `New Lead: ${leadData.customer_name} - ${leadData.flooring_type || 'Flooring'} Project`;
 
-    // Send emails using Resend
+    // Send emails using direct Resend API calls
     const emailResults = [];
     for (const email of emailList) {
       try {
         logStep(`Sending email to ${email}`);
         
-        const emailResponse = await resend.emails.send({
-          from: "PriceMyFloor <leads@pricemyfloor.ca>",
-          to: [email],
-          subject: subject,
-          html: emailContent,
-        });
+        const emailResponse = await sendEmail(email, subject, emailContent);
 
-        logStep(`Email sent successfully to ${email}`, { id: emailResponse.data?.id });
-        emailResults.push({ email, success: true, id: emailResponse.data?.id });
-      } catch (emailError) {
+        logStep(`Email sent successfully to ${email}`, { id: emailResponse.id });
+        emailResults.push({ email, success: true, id: emailResponse.id });
+      } catch (emailError: any) {
         logStep(`Failed to send email to ${email}`, { error: emailError.message });
         emailResults.push({ email, success: false, error: emailError.message });
       }
