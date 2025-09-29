@@ -18,10 +18,12 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  isRecoveringPassword: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  clearPasswordRecovery: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRecoveringPassword, setIsRecoveringPassword] = useState(false);
   
   // Track ongoing profile fetch to prevent race conditions
   const currentFetchRef = useRef<{ userId: string; promise: Promise<any> } | null>(null);
@@ -109,6 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
+
+        // Detect password recovery mode
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsRecoveringPassword(true);
+        }
 
         setSession(session);
         setUser(session?.user ?? null);
@@ -209,7 +217,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     setProfile(null);
+    setIsRecoveringPassword(false);
     await supabase.auth.signOut();
+  };
+
+  const clearPasswordRecovery = () => {
+    setIsRecoveringPassword(false);
   };
 
   // Memoize the context value to prevent unnecessary re-renders
@@ -218,11 +231,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session: isDevMode ? ({ user: mockUser } as Session) : session,
     profile: isDevMode ? mockProfile : profile,
     loading: isDevMode ? false : loading,
+    isRecoveringPassword: isDevMode ? false : isRecoveringPassword,
     signIn,
     signUp,
     signOut,
-    refreshProfile
-  }), [user, session, profile, loading, isDevMode, mockUser, mockProfile]);
+    refreshProfile,
+    clearPasswordRecovery
+  }), [user, session, profile, loading, isRecoveringPassword, isDevMode, mockUser, mockProfile]);
 
   return (
     <AuthContext.Provider value={contextValue}>

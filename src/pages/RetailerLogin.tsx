@@ -19,7 +19,7 @@ const RetailerLogin = () => {
   const [error, setError] = useState('');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   
-  const { signIn, user, profile, refreshProfile } = useAuth();
+  const { signIn, user, profile, refreshProfile, isRecoveringPassword, clearPasswordRecovery } = useAuth();
   const navigate = useNavigate();
   const { isDevMode, currentRole } = useDevMode();
 
@@ -35,8 +35,8 @@ const RetailerLogin = () => {
       
       if (user && profile) {
         if (profile.retailer_id) {
-          // Check if password reset is required
-          if (profile.password_reset_required) {
+          // Check if password reset is required (temp password or recovery email)
+          if (profile.password_reset_required || isRecoveringPassword) {
             setShowPasswordReset(true);
             setError('');
             return;
@@ -78,6 +78,7 @@ const RetailerLogin = () => {
 
   const handlePasswordResetSuccess = async () => {
     setShowPasswordReset(false);
+    clearPasswordRecovery();
     await refreshProfile();
     navigate('/retailer/dashboard');
   };
