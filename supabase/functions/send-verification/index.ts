@@ -315,7 +315,7 @@ async function sendEmailVerification(email: string, token: string, requestId: st
   const verificationUrl = `https://syjxtyvsencbmhuprnyu.lovable.app/verify?leadId=${leadId}&method=email&contact=${encodeURIComponent(email)}`;
 
   const emailPayload = {
-    from: 'Price My Floor <onboarding@resend.dev>',
+    from: 'Price My Floor <noreply@pricemyfloor.ca>',
     to: [email],
     subject: 'Verify Your Quote Request',
     html: `
