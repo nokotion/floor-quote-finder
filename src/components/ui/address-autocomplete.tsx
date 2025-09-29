@@ -69,18 +69,19 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
     // Use the modern approach with better error handling
     try {
       const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-        types: ["address"],
+        types: ["geocode"], // More comprehensive than "address"
         componentRestrictions: { country: "ca" },
-        fields: ["formatted_address", "address_components"]
+        fields: ["formatted_address", "address_components", "geometry", "place_id"]
       });
 
-      const placeChangedListener = autocomplete.addListener("place_changed", () => {
+      const placeChangedListener = autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace();
         if (!place?.formatted_address) return;
 
         console.log("🗺️ Google Places API Response:", {
           formatted_address: place.formatted_address,
-          address_components: place.address_components
+          address_components: place.address_components,
+          geometry: place.geometry
         });
 
         const data: AddressData = { 
@@ -99,9 +100,32 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
           if (t.includes("country")) data.country = c.long_name;
         });
 
-        // Fallback: Extract postal code from formatted_address if not found in components
+        // If no postal code found, try Geocoding API fallback
+        if (!data.postal_code && place.geometry?.location) {
+          console.log("⚠️ No postal code in components, trying Geocoding API fallback");
+          try {
+            const geocoder = new google.maps.Geocoder();
+            const result = await geocoder.geocode({ 
+              location: place.geometry.location 
+            });
+            
+            if (result.results[0]) {
+              console.log("🌍 Geocoding API Response:", result.results[0]);
+              result.results[0].address_components?.forEach((c) => {
+                if (c.types.includes("postal_code") && !data.postal_code) {
+                  data.postal_code = c.long_name;
+                  console.log("✅ Found postal code via Geocoding API:", data.postal_code);
+                }
+              });
+            }
+          } catch (geocodeError) {
+            console.error("❌ Geocoding API error:", geocodeError);
+          }
+        }
+
+        // Final fallback: Extract postal code from formatted_address using regex
         if (!data.postal_code) {
-          console.log("⚠️ No postal code in components, trying fallback extraction from formatted address");
+          console.log("⚠️ Still no postal code, trying regex extraction from formatted address");
           const canadianPostalPattern = /([A-Z]\d[A-Z]\s?\d[A-Z]\d)/i;
           const match = place.formatted_address.match(canadianPostalPattern);
           if (match) {
