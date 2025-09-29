@@ -78,12 +78,20 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
         const place = autocomplete.getPlace();
         if (!place?.formatted_address) return;
 
+        console.log("🗺️ Google Places API Response:", {
+          formatted_address: place.formatted_address,
+          address_components: place.address_components
+        });
+
         const data: AddressData = { 
           formatted_address: place.formatted_address,
           fromGoogleSuggestion: true 
         };
+
+        // Extract data from address components
         place.address_components?.forEach((c) => {
           const t = c.types;
+          console.log("📍 Address component:", { types: t, long_name: c.long_name, short_name: c.short_name });
           if (t.includes("postal_code")) data.postal_code = c.long_name;
           if (t.includes("route")) data.route = c.long_name;
           if (t.includes("locality")) data.locality = c.long_name;
@@ -91,6 +99,20 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
           if (t.includes("country")) data.country = c.long_name;
         });
 
+        // Fallback: Extract postal code from formatted_address if not found in components
+        if (!data.postal_code) {
+          console.log("⚠️ No postal code in components, trying fallback extraction from formatted address");
+          const canadianPostalPattern = /([A-Z]\d[A-Z]\s?\d[A-Z]\d)/i;
+          const match = place.formatted_address.match(canadianPostalPattern);
+          if (match) {
+            data.postal_code = match[1].replace(/\s/g, '').replace(/(.{3})(.{3})/, '$1 $2').toUpperCase();
+            console.log("✅ Extracted postal code from formatted address:", data.postal_code);
+          } else {
+            console.log("❌ Could not extract postal code from formatted address:", place.formatted_address);
+          }
+        }
+
+        console.log("📤 Final address data being passed:", data);
         onChange(place.formatted_address, data);
       });
 

@@ -33,13 +33,18 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
 
   // Validate if address is complete
   const validateAddress = (address: string, data?: AddressData): boolean => {
-    // If Google suggestion was selected, it's valid
+    // If Google suggestion was selected and has postal code, it's valid
+    if (data?.fromGoogleSuggestion && data?.postal_code) {
+      return true;
+    }
+
+    // If Google suggestion was selected but no postal code, still allow it 
+    // (Quote page will handle postal code extraction as fallback)
     if (data?.fromGoogleSuggestion) {
       return true;
     }
 
     // For manual entry, check if it looks like a complete Canadian address
-    // Should contain at least postal code pattern or be reasonably complete
     const canadianPostalPattern = /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i;
     const hasPostalCode = canadianPostalPattern.test(address);
     const isReasonablyComplete = address.length > 10 && address.includes(" ");
