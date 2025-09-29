@@ -19,7 +19,8 @@ const sendEmail = async (to: string, subject: string, html: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "PriceMyFloor <leads@pricemyfloor.ca>",
+        from: "PriceMyFloor <onboarding@resend.dev>",
+        reply_to: "info@pricemyfloor.ca",
       to: [to],
       subject: subject,
       html: html,
