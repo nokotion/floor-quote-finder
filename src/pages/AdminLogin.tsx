@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 import { useDevMode } from '@/contexts/DevModeContext';
 
 const AdminLogin = () => {
@@ -16,40 +17,44 @@ const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
-  const { signIn, user } = useAuth();
+  const { signIn, user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { isDevMode, currentRole } = useDevMode();
 
   useEffect(() => {
-    if (isDevMode && currentRole === 'admin') {
-      navigate('/admin/dashboard');
-      return;
-    }
-    if (user) {
-      checkAdminStatusAndRedirect();
-    }
-  }, [user, navigate, isDevMode, currentRole]);
-
-  const checkAdminStatusAndRedirect = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role === 'admin') {
+    const checkUserAccess = async () => {
+      if (isDevMode && currentRole === 'admin') {
         navigate('/admin/dashboard');
-      } else {
-        setError('Access denied. Admin privileges required.');
+        return;
       }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      setError('Error verifying admin access. Please try again.');
-    }
+      
+      if (user && profile) {
+        // Check if user is admin
+        if (profile.role === 'admin') {
+          // Check if password reset is required
+          if (profile.password_reset_required) {
+            setShowPasswordReset(true);
+            setError('');
+            return;
+          }
+          
+          // User is authenticated and is admin, redirect to dashboard
+          navigate('/admin/dashboard');
+        } else {
+          setError('Access denied. Admin privileges required.');
+        }
+      }
+    };
+
+    checkUserAccess();
+  }, [user, profile, navigate, isDevMode, currentRole]);
+
+  const handlePasswordResetSuccess = async () => {
+    setShowPasswordReset(false);
+    await refreshProfile();
+    navigate('/admin/dashboard');
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -61,6 +66,9 @@ const AdminLogin = () => {
       const { error } = await signIn(email, password);
       if (error) {
         setError(error.message);
+      } else {
+        // Refresh profile after successful login
+        await refreshProfile();
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -99,65 +107,72 @@ const AdminLogin = () => {
 
       <div className="py-12 px-4">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Main Auth Card */}
-          <Card className="shadow-xl border-amber-200">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-amber-600" />
+          {/* Show password reset form if required */}
+          {showPasswordReset ? (
+            <PasswordResetForm onSuccess={handlePasswordResetSuccess} />
+          ) : (
+            <>
+              {/* Main Auth Card */}
+              <Card className="shadow-xl border-amber-200">
+                <CardHeader className="text-center">
+                  <div className="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <Shield className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <CardTitle className="text-2xl">Admin Access</CardTitle>
+                  <CardDescription>Administrative login required</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {error && (
+                    <Alert className="border-red-200 bg-red-50 mb-4">
+                      <AlertDescription className="text-red-600">
+                        {error}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div>
+                      <Label htmlFor="email">Admin Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="mt-1"
+                        placeholder="admin@pricefloor.dev"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-amber-600 hover:bg-amber-700" 
+                      disabled={loading}
+                    >
+                      {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Admin Sign In
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <div className="text-center text-sm text-gray-600">
+                <p className="text-xs">
+                  This area is restricted to authorized administrators only.
+                </p>
               </div>
-              <CardTitle className="text-2xl">Admin Access</CardTitle>
-              <CardDescription>Administrative login required</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error && (
-                <Alert className="border-red-200 bg-red-50 mb-4">
-                  <AlertDescription className="text-red-600">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Admin Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="mt-1"
-                    placeholder="admin@pricefloor.dev"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="mt-1"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-amber-600 hover:bg-amber-700" 
-                  disabled={loading}
-                >
-                  {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Admin Sign In
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <div className="text-center text-sm text-gray-600">
-            <p className="text-xs">
-              This area is restricted to authorized administrators only.
-            </p>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>
