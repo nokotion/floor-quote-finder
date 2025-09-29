@@ -24,21 +24,52 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
   const [postalCode, setPostalCode] = useState("");
   const [addressData, setAddressData] = useState<AddressData | null>(null);
   const [postalCodeError, setPostalCodeError] = useState("");
+  const [addressError, setAddressError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Add logging for debugging brands
   console.log("QuickQuoteForm - Brands received:", brands?.length, "Loading:", brandsLoading);
 
+  // Validate if address is complete
+  const validateAddress = (address: string, data?: AddressData): boolean => {
+    // If Google suggestion was selected, it's valid
+    if (data?.fromGoogleSuggestion) {
+      return true;
+    }
+
+    // For manual entry, check if it looks like a complete Canadian address
+    // Should contain at least postal code pattern or be reasonably complete
+    const canadianPostalPattern = /[A-Z]\d[A-Z]\s?\d[A-Z]\d/i;
+    const hasPostalCode = canadianPostalPattern.test(address);
+    const isReasonablyComplete = address.length > 10 && address.includes(" ");
+
+    return hasPostalCode || isReasonablyComplete;
+  };
+
   const handleAddressChange = (address: string, data?: AddressData) => {
     setPostalCode(address);
     setAddressData(data || null);
     setPostalCodeError("");
+    setAddressError("");
+
+    // Validate address if user has typed something substantial
+    if (address.length > 3 && !validateAddress(address, data)) {
+      if (data?.fromGoogleSuggestion === false || (!data && address.length > 3)) {
+        setAddressError("Please select an address from the suggestions or enter a complete Canadian address");
+      }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBrand || !projectSize || !postalCode) return;
+
+    // Validate address before submission
+    if (!validateAddress(postalCode, addressData)) {
+      setAddressError("Please select an address from the suggestions or enter a complete Canadian address");
+      return;
+    }
 
     setLoading(true);
     const params = new URLSearchParams({
@@ -51,7 +82,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
     navigate(`/quote?${params.toString()}`);
   };
 
-  const isFormValid = selectedBrand && projectSize && postalCode;
+  const isFormValid = selectedBrand && projectSize && postalCode && !addressError && validateAddress(postalCode, addressData);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -103,6 +134,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
                     value={postalCode}
                     onChange={handleAddressChange}
                     placeholder="Enter address or postal code"
+                    error={addressError}
                   />
                   {postalCodeError && <p className="text-sm text-red-500">{postalCodeError}</p>}
                 </div>

@@ -11,6 +11,7 @@ export interface AddressData {
   locality?: string;
   administrative_area_level_1?: string;
   country?: string;
+  fromGoogleSuggestion?: boolean;
 }
 
 interface Props {
@@ -18,9 +19,10 @@ interface Props {
   onChange: (address: string, data?: AddressData) => void;
   placeholder?: string;
   id?: string;
+  error?: string;
 }
 
-const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id }) => {
+const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id, error }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,10 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
         const place = autocomplete.getPlace();
         if (!place?.formatted_address) return;
 
-        const data: AddressData = { formatted_address: place.formatted_address };
+        const data: AddressData = { 
+          formatted_address: place.formatted_address,
+          fromGoogleSuggestion: true 
+        };
         place.address_components?.forEach((c) => {
           const t = c.types;
           if (t.includes("postal_code")) data.postal_code = c.long_name;
@@ -109,9 +114,11 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || "Enter your address"}
         disabled={loading}
+        className={error ? "border-red-500" : ""}
       />
       {loading && <p className="text-xs text-muted-foreground">Loading address suggestions...</p>}
       {!googleLoaded && !loading && <p className="text-xs text-muted-foreground">Address suggestions unavailable – manual entry only</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 };
