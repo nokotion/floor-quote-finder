@@ -118,8 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('🔐 Password recovery token detected in URL');
         setIsRecoveringPassword(true);
         
-        // Clear the URL parameters to prevent confusion
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Don't clear URL yet - Supabase needs the tokens to authenticate
+        // The tokens will be cleared after Supabase processes them
         return true;
       }
       return false;
@@ -246,6 +246,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearPasswordRecovery = () => {
     setIsRecoveringPassword(false);
+    // Clean up the URL hash after recovery is complete
+    if (window.location.hash) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   };
 
   // Memoize the context value to prevent unnecessary re-renders
