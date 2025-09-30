@@ -25,9 +25,26 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { isDevMode, currentRole } = useDevMode();
 
+  // PRIORITY CHECK: Detect recovery tokens in URL IMMEDIATELY on component mount
+  useEffect(() => {
+    const urlHash = window.location.hash;
+    const hasRecoveryToken = urlHash.includes('type=recovery') && urlHash.includes('access_token=');
+    
+    if (hasRecoveryToken) {
+      console.log('🔐 DIRECT URL CHECK: Recovery tokens detected in URL - blocking all redirects and showing password reset form');
+      setShowPasswordReset(true);
+      setError('');
+    }
+  }, []); // Run once on mount
+
   useEffect(() => {
     const checkUserAccess = async () => {
+      // Check for recovery tokens in URL FIRST (highest priority)
+      const urlHash = window.location.hash;
+      const hasRecoveryToken = urlHash.includes('type=recovery') && urlHash.includes('access_token=');
+      
       console.log('🔍 AdminLogin useEffect - State check:', {
+        hasRecoveryTokenInURL: hasRecoveryToken,
         user: !!user,
         profile: !!profile,
         profileRole: profile?.role,
@@ -37,7 +54,15 @@ const AdminLogin = () => {
         currentRole
       });
 
-      // CRITICAL SECURITY: Check if password reset is required FIRST before any redirects
+      // CRITICAL SECURITY: If recovery tokens are in URL, BLOCK ALL OTHER LOGIC
+      if (hasRecoveryToken) {
+        console.log('🔐 Recovery tokens in URL - showing password reset form and blocking all redirects');
+        setShowPasswordReset(true);
+        setError('');
+        return;
+      }
+
+      // CRITICAL SECURITY: Check if password reset is required SECOND
       // This prevents the security bypass where recovery links grant immediate access
       if (user && profile) {
         if (profile.password_reset_required) {
@@ -48,9 +73,9 @@ const AdminLogin = () => {
         }
       }
 
-      // Check if user is in password recovery mode (from URL token)
+      // Check if user is in password recovery mode (from AuthContext state)
       if (isRecoveringPassword) {
-        console.log('🔐 Password recovery mode detected - showing reset form');
+        console.log('🔐 Password recovery mode detected from context - showing reset form');
         setShowPasswordReset(true);
         setError('');
         return;
