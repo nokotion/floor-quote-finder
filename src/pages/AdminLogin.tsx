@@ -51,7 +51,7 @@ const AdminLogin = () => {
     };
 
     checkUserAccess();
-  }, [user, profile, navigate, isDevMode, currentRole]);
+  }, [user, profile, navigate, isDevMode, currentRole, isRecoveringPassword]);
 
   const handlePasswordResetSuccess = async () => {
     setShowPasswordReset(false);
