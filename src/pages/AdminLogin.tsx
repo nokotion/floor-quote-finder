@@ -27,24 +27,48 @@ const AdminLogin = () => {
 
   useEffect(() => {
     const checkUserAccess = async () => {
+      console.log('🔍 AdminLogin useEffect - State check:', {
+        user: !!user,
+        profile: !!profile,
+        profileRole: profile?.role,
+        isRecoveringPassword,
+        passwordResetRequired: profile?.password_reset_required,
+        isDevMode,
+        currentRole
+      });
+
+      // CRITICAL: Check password recovery state FIRST before any redirects
+      if (isRecoveringPassword) {
+        console.log('🔐 Password recovery mode detected - showing reset form');
+        setShowPasswordReset(true);
+        setError('');
+        return;
+      }
+
       if (isDevMode && currentRole === 'admin') {
+        console.log('🧪 Dev mode admin access - redirecting to dashboard');
         navigate('/admin/dashboard');
         return;
       }
       
       if (user && profile) {
+        console.log('👤 User and profile loaded');
+        
         // Check if user is admin
         if (profile.role === 'admin') {
-          // Check if password reset is required (temp password or recovery email)
-          if (profile.password_reset_required || isRecoveringPassword) {
+          // Check if password reset is required (temp password)
+          if (profile.password_reset_required) {
+            console.log('🔒 Password reset required - showing reset form');
             setShowPasswordReset(true);
             setError('');
             return;
           }
           
           // User is authenticated and is admin, redirect to dashboard
+          console.log('✅ Admin authenticated - redirecting to dashboard');
           navigate('/admin/dashboard');
         } else {
+          console.log('❌ Not an admin user');
           setError('Access denied. Admin privileges required.');
         }
       }
