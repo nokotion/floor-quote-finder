@@ -18,6 +18,8 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
   
   const { signIn, user, profile, refreshProfile, isRecoveringPassword, clearPasswordRecovery } = useAuth();
   const navigate = useNavigate();
@@ -78,6 +80,33 @@ const AdminLogin = () => {
     }
   };
 
+  const handlePasswordResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setResetMessage('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://floor-quote-match.vercel.app/admin/login',
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setResetMessage('Password reset link sent! Check your email.');
+        setTimeout(() => {
+          setShowForgotPassword(false);
+          setResetMessage('');
+        }, 3000);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -111,6 +140,67 @@ const AdminLogin = () => {
           {/* Show password reset form if required */}
           {showPasswordReset ? (
             <PasswordResetForm onSuccess={handlePasswordResetSuccess} />
+          ) : showForgotPassword ? (
+            <Card className="shadow-xl border-amber-200">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-amber-600" />
+                </div>
+                <CardTitle className="text-2xl">Reset Password</CardTitle>
+                <CardDescription>Enter your admin email to receive a password reset link</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {error && (
+                  <Alert className="border-red-200 bg-red-50 mb-4">
+                    <AlertDescription className="text-red-600">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {resetMessage && (
+                  <Alert className="border-green-200 bg-green-50 mb-4">
+                    <AlertDescription className="text-green-600">
+                      {resetMessage}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <form onSubmit={handlePasswordResetRequest} className="space-y-4">
+                  <div>
+                    <Label htmlFor="reset-email">Admin Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="mt-1"
+                      placeholder="admin@pricefloor.dev"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-amber-600 hover:bg-amber-700" 
+                    disabled={loading}
+                  >
+                    {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Send Reset Link
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setError('');
+                      setResetMessage('');
+                    }}
+                  >
+                    Back to Login
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           ) : (
             <>
               {/* Main Auth Card */}
@@ -162,6 +252,17 @@ const AdminLogin = () => {
                     >
                       {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                       Admin Sign In
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="w-full text-sm text-amber-600"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setError('');
+                      }}
+                    >
+                      Forgot Password?
                     </Button>
                   </form>
                 </CardContent>
