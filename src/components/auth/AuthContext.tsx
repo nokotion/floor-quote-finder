@@ -108,13 +108,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
+    // Check for password recovery tokens in URL
+    const checkRecoveryToken = () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (accessToken && type === 'recovery') {
+        console.log('🔐 Password recovery token detected in URL');
+        setIsRecoveringPassword(true);
+        
+        // Clear the URL parameters to prevent confusion
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return true;
+      }
+      return false;
+    };
+
+    // Check immediately on mount
+    const hasRecoveryToken = checkRecoveryToken();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
 
+        console.log('🔔 Auth event:', event);
+
         // Detect password recovery mode
         if (event === 'PASSWORD_RECOVERY') {
+          console.log('🔐 PASSWORD_RECOVERY event triggered');
           setIsRecoveringPassword(true);
         }
 
