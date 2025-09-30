@@ -25,6 +25,43 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { isDevMode, currentRole } = useDevMode();
 
+  // Check URL for recovery tokens immediately on mount
+  useEffect(() => {
+    const checkRecoveryToken = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery') {
+        console.log('🔐 Recovery token detected in URL - validating...');
+        
+        // Validate the recovery token with Supabase
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('❌ Recovery token validation failed:', error);
+            setError('Invalid or expired password reset link. Please request a new one.');
+            // Clear the hash to prevent retry loops
+            window.history.replaceState(null, '', window.location.pathname);
+            return;
+          }
+          
+          if (data?.session) {
+            console.log('✅ Valid recovery token - showing password reset form');
+            setShowPasswordReset(true);
+            setError('');
+            return;
+          }
+        } catch (err) {
+          console.error('❌ Error validating recovery token:', err);
+          setError('An error occurred validating the reset link.');
+        }
+      }
+    };
+
+    checkRecoveryToken();
+  }, []); // Run once on mount
+
   useEffect(() => {
     const checkUserAccess = async () => {
       console.log('🔍 AdminLogin useEffect - State check:', {
@@ -34,8 +71,15 @@ const AdminLogin = () => {
         isRecoveringPassword,
         passwordResetRequired: profile?.password_reset_required,
         isDevMode,
-        currentRole
+        currentRole,
+        showPasswordReset
       });
+
+      // CRITICAL: If password reset form is already shown, don't redirect
+      if (showPasswordReset) {
+        console.log('🔐 Password reset form active - blocking redirects');
+        return;
+      }
 
       // CRITICAL: Check password recovery state FIRST before any redirects
       if (isRecoveringPassword) {
@@ -75,7 +119,7 @@ const AdminLogin = () => {
     };
 
     checkUserAccess();
-  }, [user, profile, navigate, isDevMode, currentRole, isRecoveringPassword]);
+  }, [user, profile, navigate, isDevMode, currentRole, isRecoveringPassword, showPasswordReset]);
 
   const handlePasswordResetSuccess = async () => {
     setShowPasswordReset(false);
