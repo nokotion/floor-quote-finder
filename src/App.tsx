@@ -8,8 +8,6 @@ import { supabase } from './integrations/supabase/client';
 import { AuthProvider } from './components/auth/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
-import RetailerLayout from './components/retailer/RetailerLayout';
-import { AdminLayout } from './components/admin/AdminLayout';
 import { BrandProvider } from './contexts/BrandContext';
 import { DevModeProvider } from './contexts/DevModeContext';
 import { DevModeBanner } from './components/dev/DevModeBanner';
@@ -127,37 +125,27 @@ function App() {
                     <Route path="/retailer" element={<Navigate to="/retailer/dashboard" replace />} />
                     <Route path="/retailer/dashboard" element={
                       <ProtectedRoute requireRole="retailer">
-                        <RetailerLayout>
-                          <RetailerDashboard />
-                        </RetailerLayout>
+                        <RetailerDashboard />
                       </ProtectedRoute>
                     } />
                     <Route path="/retailer/leads" element={
                       <ProtectedRoute requireRole="retailer">
-                        <RetailerLayout>
-                          <RetailerLeadsList />
-                        </RetailerLayout>
+                        <RetailerLeadsList />
                       </ProtectedRoute>
                     } />
                     <Route path="/retailer/subscriptions" element={
                       <ProtectedRoute requireRole="retailer">
-                        <RetailerLayout>
-                          <RetailerSubscriptions />
-                        </RetailerLayout>
+                        <RetailerSubscriptions />
                       </ProtectedRoute>
                     } />
                     <Route path="/retailer/billing" element={
                       <ProtectedRoute requireRole="retailer">
-                        <RetailerLayout>
-                          <RetailerBilling />
-                        </RetailerLayout>
+                        <RetailerBilling />
                       </ProtectedRoute>
                     } />
                     <Route path="/retailer/settings" element={
                       <ProtectedRoute requireRole="retailer">
-                        <RetailerLayout>
-                          <RetailerSettings />
-                        </RetailerLayout>
+                        <RetailerSettings />
                       </ProtectedRoute>
                     } />
                     
@@ -166,51 +154,37 @@ function App() {
                     <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                     <Route path="/admin/dashboard" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminDashboard />
-                        </AdminLayout>
+                        <AdminDashboard />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/retailers" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminRetailers />
-                        </AdminLayout>
+                        <AdminRetailers />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/brands" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminBrands />
-                        </AdminLayout>
+                        <AdminBrands />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/users" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminUsers />
-                        </AdminLayout>
+                        <AdminUsers />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/applications" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminApplications />
-                        </AdminLayout>
+                        <AdminApplications />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/leads" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminLeads />
-                        </AdminLayout>
+                        <AdminLeads />
                       </ProtectedRoute>
                     } />
                     <Route path="/admin/settings" element={
                       <ProtectedRoute requireRole="admin">
-                        <AdminLayout>
-                          <AdminSettings />
-                        </AdminLayout>
+                        <AdminSettings />
                       </ProtectedRoute>
                     } />
                   </Routes>
