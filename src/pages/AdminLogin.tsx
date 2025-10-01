@@ -146,8 +146,9 @@ const AdminLogin = () => {
     setResetMessage('');
 
     try {
+      const redirectUrl = `${window.location.origin}/admin/login`;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://floor-quote-match.vercel.app/admin/login',
+        redirectTo: redirectUrl,
       });
 
       if (error) {
