@@ -12,6 +12,7 @@ export interface AddressData {
   administrative_area_level_1?: string;
   country?: string;
   fromGoogleSuggestion?: boolean;
+  isProcessing?: boolean;
 }
 
 interface Props {
@@ -20,9 +21,10 @@ interface Props {
   placeholder?: string;
   id?: string;
   error?: string;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
-const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id, error }) => {
+const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id, error, onLoadingChange }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [googleLoaded, setGoogleLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
     // Use the modern approach with better error handling
     try {
       const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-        types: ["geocode"], // More comprehensive than "address"
+        types: ["address"], // More specific than "geocode"
         componentRestrictions: { country: "ca" },
         fields: ["formatted_address", "address_components", "geometry", "place_id"]
       });
@@ -77,6 +79,9 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
       const placeChangedListener = autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace();
         if (!place?.formatted_address) return;
+
+        // Signal that we're processing Google Places data
+        onLoadingChange?.(true);
 
         console.log("🗺️ Google Places API Response:", {
           formatted_address: place.formatted_address,
@@ -86,7 +91,8 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
 
         const data: AddressData = { 
           formatted_address: place.formatted_address,
-          fromGoogleSuggestion: true 
+          fromGoogleSuggestion: true,
+          isProcessing: true
         };
 
         // Extract data from address components
@@ -136,8 +142,16 @@ const AddressAutocomplete: React.FC<Props> = ({ value, onChange, placeholder, id
           }
         }
 
+        // Mark processing as complete
+        data.isProcessing = false;
+
         console.log("📤 Final address data being passed:", data);
+        
+        // Call onChange only after ALL async operations are complete
         onChange(place.formatted_address, data);
+        
+        // Signal that processing is complete
+        onLoadingChange?.(false);
       });
 
       // Cleanup listener on unmount

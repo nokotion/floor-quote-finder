@@ -26,6 +26,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
   const [postalCodeError, setPostalCodeError] = useState("");
   const [addressError, setAddressError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [addressProcessing, setAddressProcessing] = useState(false);
   const navigate = useNavigate();
 
   // Add logging for debugging brands
@@ -58,11 +59,23 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
     setPostalCodeError("");
     setAddressError("");
 
-    // Validate address if user has typed something substantial
-    if (address.length > 3 && !validateAddress(address, data)) {
-      if (data?.fromGoogleSuggestion === false || (!data && address.length > 3)) {
-        setAddressError("Please select an address from the suggestions or enter a complete Canadian address");
-      }
+    // Don't validate while Google Places is processing
+    if (data?.isProcessing) {
+      return;
+    }
+
+    // Don't validate immediately after Google suggestion selection
+    // Give the component time to finish processing
+    if (data?.fromGoogleSuggestion && !data.isProcessing) {
+      // Google suggestion was selected and processing is complete
+      // Clear any errors
+      setAddressError("");
+      return;
+    }
+
+    // Only validate manual entry after user has typed something substantial
+    if (!data?.fromGoogleSuggestion && address.length > 3 && !validateAddress(address, data)) {
+      setAddressError("Please select an address from the suggestions or enter a complete Canadian address");
     }
   };
 
@@ -87,7 +100,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
     navigate(`/quote?${params.toString()}`);
   };
 
-  const isFormValid = selectedBrand && projectSize && postalCode && !addressError && validateAddress(postalCode, addressData);
+  const isFormValid = selectedBrand && projectSize && postalCode && !addressError && !addressProcessing && validateAddress(postalCode, addressData);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -138,6 +151,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
                   <AddressAutocomplete
                     value={postalCode}
                     onChange={handleAddressChange}
+                    onLoadingChange={setAddressProcessing}
                     placeholder="Enter address or postal code"
                     error={addressError}
                   />
@@ -149,10 +163,10 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
                 <Button
                   type="submit"
                   size="lg"
-                  disabled={!isFormValid || loading}
+                  disabled={!isFormValid || loading || addressProcessing}
                   className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50"
                 >
-                  {loading ? "Processing..." : "Get My Quote"}
+                  {addressProcessing ? "Processing address..." : loading ? "Processing..." : "Get My Quote"}
                 </Button>
               </div>
             </form>
