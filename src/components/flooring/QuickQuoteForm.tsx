@@ -27,6 +27,7 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
   const [addressError, setAddressError] = useState("");
   const [loading, setLoading] = useState(false);
   const [addressProcessing, setAddressProcessing] = useState(false);
+  const [hasValidGoogleSelection, setHasValidGoogleSelection] = useState(false);
   const navigate = useNavigate();
 
   // Add logging for debugging brands
@@ -68,19 +69,24 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
     // Don't validate while Google Places is processing
     if (data?.isProcessing) {
       console.log("Still processing, skipping validation");
+      setHasValidGoogleSelection(false);
       setAddressError("");
       return;
     }
 
-    // If Google suggestion was selected and processing is complete, clear errors
+    // If Google suggestion was selected and processing is complete, mark as valid
     if (data?.fromGoogleSuggestion && !data.isProcessing) {
-      console.log("Google suggestion selected, clearing errors");
+      console.log("Google suggestion selected, marking as valid");
+      setHasValidGoogleSelection(true);
       setAddressError("");
       return;
     }
 
+    // Manual entry - not from Google
+    setHasValidGoogleSelection(false);
+    
     // Only validate manual entry after user has typed something substantial
-    if (!data?.fromGoogleSuggestion && address.length > 3) {
+    if (address.length > 3) {
       const isValid = validateAddress(address, data);
       console.log("Manual entry validation:", { address, isValid });
       if (!isValid) {
@@ -112,28 +118,13 @@ const QuickQuoteForm: React.FC<QuickQuoteFormProps> = ({ brands, brandsLoading }
     navigate(`/quote?${params.toString()}`);
   };
 
-  // Check if form is valid - for Google suggestions, just check if we have the data
-  // For manual entry, validate the address format
-  const isAddressValid = () => {
-    if (addressProcessing) return false;
-    if (!postalCode) return false;
-    if (addressError) return false;
-    
-    // If from Google and has postal code, it's valid
-    if (addressData?.fromGoogleSuggestion && addressData?.postal_code) {
-      return true;
-    }
-    
-    // If from Google but no postal code yet, still allow it (we'll extract on backend)
-    if (addressData?.fromGoogleSuggestion) {
-      return true;
-    }
-    
-    // For manual entry, validate format
-    return validateAddress(postalCode, addressData);
-  };
-
-  const isFormValid = selectedBrand && projectSize && postalCode && isAddressValid();
+  // Form validation - use the flag set immediately when Google selection is made
+  const isFormValid = selectedBrand && 
+    projectSize && 
+    postalCode && 
+    !addressProcessing && 
+    !addressError && 
+    (hasValidGoogleSelection || validateAddress(postalCode, addressData));
 
   return (
     <div className="max-w-4xl mx-auto">
