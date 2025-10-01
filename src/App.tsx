@@ -40,6 +40,7 @@ const RetailerLeadsList = lazy(() => import('./pages/retailer/RetailerLeadsList'
 const RetailerBilling = lazy(() => import('./pages/retailer/RetailerBilling'));
 const RetailerSettings = lazy(() => import('./pages/retailer/RetailerSettings'));
 const RetailerSubscriptions = lazy(() => import('./pages/retailer/RetailerSubscriptions'));
+const RetailerCoverageMap = lazy(() => import('./pages/retailer/RetailerCoverageMap'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -146,6 +147,11 @@ function App() {
                     <Route path="/retailer/settings" element={
                       <ProtectedRoute requireRole="retailer">
                         <RetailerSettings />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/retailer/coverage-map" element={
+                      <ProtectedRoute requireRole="retailer">
+                        <RetailerCoverageMap />
                       </ProtectedRoute>
                     } />
                     
