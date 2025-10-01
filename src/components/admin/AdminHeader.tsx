@@ -22,16 +22,19 @@ const AdminHeader = () => {
   const userInitials = user?.email?.charAt(0).toUpperCase() || 'A';
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50">
+    <header className="bg-white border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Site
-          </Link>
+          <div className="flex items-center gap-8">
+            <h1 className="text-xl font-bold text-primary">Price My Floor Admin Panel</h1>
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Site
+            </Link>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

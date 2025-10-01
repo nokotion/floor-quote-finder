@@ -5,7 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Users, FileText, TrendingUp, Settings } from 'lucide-react';
+import { 
+  Loader2, 
+  Users, 
+  FileText, 
+  TrendingUp, 
+  Clock,
+  CheckCircle2,
+  Store,
+  Activity
+} from 'lucide-react';
 
 interface RetailerApplication {
   id: string;
@@ -132,8 +141,8 @@ const AdminDashboard = () => {
       <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-2">Manage retailer applications and system overview</p>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Welcome to your admin control center</p>
       </div>
 
       {error && (
@@ -146,43 +155,140 @@ const AdminDashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Applications</CardTitle>
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FileText className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalApplications}</div>
+            <div className="text-3xl font-bold">{stats.totalApplications}</div>
+            <p className="text-xs text-muted-foreground mt-1">This Month</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-amber-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <Clock className="h-5 w-5 text-amber-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats.pendingApplications}</div>
+            <p className="text-xs text-muted-foreground mt-1">Awaiting Action</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Approved Retailers</CardTitle>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats.approvedRetailers}</div>
+            <p className="text-xs text-muted-foreground mt-1">Active Partners</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Leads</CardTitle>
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{stats.totalLeads}</div>
+            <p className="text-xs text-muted-foreground mt-1">All Time</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Platform Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              <CardTitle>Recent Activity</CardTitle>
+            </div>
+            <CardDescription>Latest system activities</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-100 rounded">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">New Applications</p>
+                  <p className="text-xs text-muted-foreground">{stats.pendingApplications} pending review</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-100 rounded">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Lead Activity</p>
+                  <p className="text-xs text-muted-foreground">{stats.totalLeads} total leads processed</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" />
+              <CardTitle>Partner Network</CardTitle>
+            </div>
+            <CardDescription>Active retail partners</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pendingApplications}</div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Active Retailers</span>
+                <span className="text-2xl font-bold">{stats.approvedRetailers}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Coverage Areas</span>
+                <span className="text-2xl font-bold">-</span>
+              </div>
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">Network growing steadily</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Retailers</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <CardTitle>Pending Reviews</CardTitle>
+            </div>
+            <CardDescription>Applications awaiting approval</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.approvedRetailers}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalLeads}</div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Pending Applications</span>
+                <span className="text-2xl font-bold text-amber-600">{stats.pendingApplications}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Total Submitted</span>
+                <span className="text-2xl font-bold">{stats.totalApplications}</span>
+              </div>
+              <div className="pt-2 border-t">
+                <p className="text-xs text-muted-foreground">Requires immediate attention</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
