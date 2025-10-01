@@ -24,13 +24,12 @@ const RetailerSidebar = () => {
 
   return (
     <div className="flex flex-col w-64 bg-white border-r border-gray-200">
-      <div className="flex items-center h-16 px-6 border-b border-gray-200">
+      <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
         <img 
           src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
-          alt="Price My Floor Logo" 
-          className="h-12 md:h-14 w-auto mr-3"
+          alt="Price My Floor Retailer" 
+          className="h-10 w-auto"
         />
-        <h1 className="text-xl font-semibold text-gray-900">Retailer Portal</h1>
       </div>
       
       <nav className="flex-1 px-4 py-6 space-y-2">
