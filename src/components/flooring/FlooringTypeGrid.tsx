@@ -51,7 +51,7 @@ export const FlooringTypeGrid = ({ brandCounts, brandCountsLoading }: FlooringTy
                     <p className="text-xs text-muted-foreground mb-1.5 leading-tight">{type.description}</p>
                   )}
                   {!brandCountsLoading && (
-                    <Badge variant="secondary" className={`bg-accent/10 text-accent-foreground text-xs px-2 py-0.5`}>
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
                       {brandCounts[type.name] || 0} brands
                     </Badge>
                   )}
