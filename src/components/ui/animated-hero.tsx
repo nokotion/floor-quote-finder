@@ -29,10 +29,10 @@ export function Hero({ onPathSelect }: HeroProps) {
     <div className="w-full bg-muted py-12 md:py-20">
       <div className="container text-center max-w-4xl mx-auto px-4">
         {/* Main Headline with Multi-Line Structure */}
-        <div className="text-center text-4xl sm:text-5xl md:text-6xl font-bold leading-tight space-y-3 mb-4">
+        <div className="text-center text-4xl sm:text-5xl md:text-6xl font-bold leading-snug space-y-3 mb-4">
           <div>Get</div>
 
-          <div className="text-blue-600">
+          <div className="text-blue-600 min-h-[1.5em] flex items-center justify-center">
             <Typewriter
               text={adjectives}
               speed={60}
@@ -43,7 +43,7 @@ export function Hero({ onPathSelect }: HeroProps) {
             />
           </div>
 
-          <div>Flooring Quotes from</div>
+          <div className="py-1">Flooring Quotes from</div>
 
           <div className="font-bold text-blue-600">Verified Local Retailers</div>
         </div>
