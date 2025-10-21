@@ -27,12 +27,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo - Left */}
-            <Link to="/" className="flex-shrink-0">
+            <Link to="/" className="flex-shrink-0 flex items-center">
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-10 sm:h-14 md:h-16 w-auto"
-                style={{ maxHeight: '64px' }}
+                className="h-8 sm:h-10 w-auto"
               />
             </Link>
             
