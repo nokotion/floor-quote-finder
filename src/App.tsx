@@ -33,6 +33,7 @@ const Installation = lazy(() => import('./pages/Installation'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
+const BrandDetail = lazy(() => import('./pages/BrandDetail'));
 
 // Retailer pages
 const RetailerDashboard = lazy(() => import('./pages/retailer/RetailerDashboard'));
@@ -110,6 +111,7 @@ function App() {
                     <Route path="/reviews" element={<Reviews />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/brand/:slug" element={<BrandDetail />} />
                     <Route path="/auth" element={
                       <div className="flex justify-center items-center h-screen">
                         <Auth
