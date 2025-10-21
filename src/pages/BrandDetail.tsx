@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ExternalLink, CheckCircle, MessageCircle, ShoppingBag, Wrench, Link as LinkIcon, Grid3x3 } from "lucide-react";
+import { ArrowLeft, ExternalLink, CheckCircle, MessageCircle, ShoppingBag, Wrench, Lock, Hammer, Droplet, Trees, Layers, LayoutGrid, Package } from "lucide-react";
 
 interface Brand {
   id: string;
@@ -45,6 +45,26 @@ const getFeaturedCollections = (brandName: string) => [
     link: "#"
   }
 ];
+
+// Helper function to get category icons
+const getCategoryIcon = (category: string) => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes('vinyl')) return LayoutGrid;
+  if (categoryLower.includes('hardwood') || categoryLower.includes('wood')) return Trees;
+  if (categoryLower.includes('laminate')) return Layers;
+  if (categoryLower.includes('tile')) return LayoutGrid;
+  if (categoryLower.includes('carpet')) return Package;
+  return Package;
+};
+
+// Helper function to get installation icons
+const getInstallationIcon = (option: string) => {
+  const optionLower = option.toLowerCase();
+  if (optionLower.includes('click') || optionLower.includes('lock')) return Lock;
+  if (optionLower.includes('nail')) return Hammer;
+  if (optionLower.includes('glue')) return Droplet;
+  return Wrench;
+};
 
 const BrandDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -140,7 +160,7 @@ const BrandDetail = () => {
       <div className="max-w-7xl mx-auto px-4 py-12 space-y-16">
         {/* Header Section */}
         <section>
-          <Card className="border-none shadow-lg">
+          <Card className="border-none shadow-lg border-t-4 border-primary">
             <CardContent className="p-12">
               <div className="flex flex-col md:flex-row items-start gap-12">
                 {/* Brand Logo */}
@@ -195,9 +215,9 @@ const BrandDetail = () => {
         </section>
 
         {/* Featured Collections */}
-        <section>
+        <section className="bg-gray-50 rounded-2xl p-8 md:p-12">
           <h2 className="text-3xl font-bold mb-8 text-foreground">Featured Collections</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {collections.map((collection) => (
               <Card key={collection.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6">
@@ -217,39 +237,65 @@ const BrandDetail = () => {
               </Card>
             ))}
           </div>
+          
+          {/* Explore More Link */}
+          {brand.website && (
+            <div className="text-center">
+              <a 
+                href={brand.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors font-medium"
+              >
+                → View all {brand.name} collections on brand website
+              </a>
+            </div>
+          )}
         </section>
 
         {/* Categories and Installation Options */}
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Product Categories */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6 text-foreground">Available Categories</h2>
-            <div className="flex flex-wrap gap-3">
-              {categories.length > 0 ? (
-                categories.map((category, index) => (
-                  <Badge key={index} variant="secondary" className="px-4 py-2 text-sm font-medium">
-                    {category}
+        <section className="bg-gray-50 rounded-2xl p-8 md:p-12">
+          <div className="grid md:grid-cols-2 gap-12">
+            {/* Product Categories */}
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-foreground">Available Categories</h2>
+              <div className="flex flex-wrap gap-3">
+                {categories.length > 0 ? (
+                  categories.map((category, index) => {
+                    const IconComponent = getCategoryIcon(category);
+                    return (
+                      <Badge key={index} variant="secondary" className="px-4 py-2 text-sm font-medium inline-flex items-center gap-2">
+                        <IconComponent className="w-4 h-4" />
+                        {category}
+                      </Badge>
+                    );
+                  })
+                ) : (
+                  <Badge variant="secondary" className="px-4 py-2 text-sm inline-flex items-center gap-2">
+                    <Trees className="w-4 h-4" />
+                    Hardwood
                   </Badge>
-                ))
-              ) : (
-                <Badge variant="secondary" className="px-4 py-2 text-sm">Hardwood</Badge>
-              )}
+                )}
+              </div>
             </div>
-          </section>
 
-          {/* Installation Options */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6 text-foreground">Installation Options</h2>
-            <div className="flex flex-wrap gap-4">
-              {installationOptions.map((option, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Wrench className="w-4 h-4 text-primary" />
-                  {option}
-                </div>
-              ))}
+            {/* Installation Options */}
+            <div>
+              <h2 className="text-2xl font-bold mb-6 text-foreground">Installation Options</h2>
+              <div className="flex flex-wrap gap-4">
+                {installationOptions.map((option, index) => {
+                  const IconComponent = getInstallationIcon(option);
+                  return (
+                    <div key={index} className="flex items-center gap-2 text-sm font-medium text-foreground bg-background px-4 py-2 rounded-lg">
+                      <IconComponent className="w-4 h-4 text-primary" />
+                      {option}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
 
         {/* Why Choose PriceMyFloor */}
         <section className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl p-12">
@@ -311,23 +357,23 @@ const BrandDetail = () => {
 
         {/* Final CTA */}
         <section className="relative">
-          <Card className="border-none shadow-2xl overflow-hidden">
-            <CardContent className="p-16 text-center relative">
-              {/* Faded Brand Logo Background */}
+          <Card className="border-none shadow-2xl overflow-hidden bg-gradient-to-br from-card to-muted/20">
+            <CardContent className="p-12 md:p-20 text-center relative">
+              {/* Faded Brand Logo Background - More Visible */}
               {brand.logo_url && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-                  <img src={brand.logo_url} alt="" className="h-64 w-64 object-contain" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                  <img src={brand.logo_url} alt="" className="h-80 w-80 object-contain" />
                 </div>
               )}
               
               <div className="relative z-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                  Ready to find a retailer that carries {brand.name}?
+                <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">
+                  Ready to find a local retailer for {brand.name}?
                 </h2>
-                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
                   Get instant quotes from verified local retailers and compare pricing for {brand.name} products.
                 </p>
-                <Button asChild size="lg" className="text-lg px-12 py-6 h-auto font-semibold">
+                <Button asChild size="lg" className="text-lg px-12 py-7 h-auto font-bold shadow-lg hover:shadow-xl transition-all">
                   <Link to={`/quote?brand=${encodeURIComponent(brand.name)}`}>
                     Get Quote for {brand.name}
                   </Link>
