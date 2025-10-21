@@ -15,6 +15,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       <nav className="bg-white/90 backdrop-blur-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-20">
+            {/* Logo - Left */}
             <Link to="/" className="flex items-center">
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
@@ -23,6 +24,20 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                 style={{ maxHeight: '72px' }}
               />
             </Link>
+            
+            {/* Tagline - Center */}
+            <div className="hidden md:flex flex-1 justify-center items-center px-4">
+              <div className="text-center">
+                <div className="text-sm lg:text-lg font-bold text-orange-600 leading-tight">
+                  No MSRP Markups
+                </div>
+                <div className="text-xs lg:text-sm font-medium text-orange-700 leading-tight">
+                  Just Local Prices
+                </div>
+              </div>
+            </div>
+            
+            {/* Actions - Right */}
             <div className="flex items-center space-x-1 sm:space-x-4">
               <Badge variant="secondary" className="hidden sm:flex bg-green-100 text-green-800 text-xs">
                 <Shield className="w-3 h-3 mr-1" />
@@ -32,14 +47,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               <Button variant="outline" size="sm" className="text-sm px-2 sm:px-4" asChild>
                 <Link to="/browse">Browse</Link>
               </Button>
-              <div className="hidden md:flex flex-col items-end text-right ml-2">
-                <span className="text-xs font-semibold text-primary leading-tight">
-                  No MSRP Markups
-                </span>
-                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
-                  Just Local Prices
-                </span>
-              </div>
             </div>
           </div>
         </div>
