@@ -11,17 +11,6 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Announcement Bar */}
-      <div className="bg-orange-50 border-b border-orange-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="h-10 flex items-center justify-center">
-            <p className="text-xs sm:text-sm font-medium text-orange-600">
-              🚫 No MSRP Markups — Just Local Prices
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Main Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,7 +20,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-8 sm:h-10 w-auto"
+                className="h-12 sm:h-14 w-auto"
               />
             </Link>
             
