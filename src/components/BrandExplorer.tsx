@@ -94,7 +94,12 @@ const BrandExplorer = () => {
     if (selectedCategory !== "all") {
       filtered = filtered.filter(brand => {
         if (!brand.categories) return false;
-        const brandCategories = brand.categories.split(',').map(cat => cat.trim().toLowerCase());
+        const brandCategories = brand.categories
+          .replace(/[{}]/g, '')  // Remove curly braces
+          .split(',')
+          .map(cat => cat.trim())
+          .filter(cat => cat.length > 0)
+          .map(cat => cat.toLowerCase());
         return brandCategories.includes(selectedCategory.toLowerCase());
       });
     }
