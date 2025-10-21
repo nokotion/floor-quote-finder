@@ -32,9 +32,14 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               <Button variant="outline" size="sm" className="text-sm px-2 sm:px-4" asChild>
                 <Link to="/browse">Browse</Link>
               </Button>
-              <Button size="sm" className="text-sm px-2 sm:px-4" asChild>
-                <Link to="/quote">Get Quote</Link>
-              </Button>
+              <div className="hidden md:flex flex-col items-end text-right ml-2">
+                <span className="text-xs font-semibold text-primary leading-tight">
+                  No MSRP Markups
+                </span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground leading-tight">
+                  Just Local Prices
+                </span>
+              </div>
             </div>
           </div>
         </div>
