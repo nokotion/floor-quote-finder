@@ -31,14 +31,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-12 w-auto"
+                className="h-10 sm:h-14 md:h-16 w-auto"
+                style={{ maxHeight: '64px' }}
               />
             </Link>
             
             {/* Tagline - Center */}
             <div className="hidden lg:flex flex-1 justify-center px-4">
-              <p className="text-sm font-medium text-gray-500">
-                Canada's Largest Flooring Retailer Directory
+              <p className="text-sm font-medium text-gray-600">
+                Compare Local Retailers. Find Better Prices.
               </p>
             </div>
             
