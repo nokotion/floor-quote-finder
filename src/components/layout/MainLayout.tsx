@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Footer7 } from "@/components/ui/footer-7";
 
@@ -11,41 +11,60 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-20">
+      {/* Announcement Bar */}
+      <div className="bg-orange-50 border-b border-orange-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="h-10 flex items-center justify-center">
+            <p className="text-xs sm:text-sm font-medium text-orange-600">
+              🚫 No MSRP Markups — Just Local Prices
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navigation */}
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             {/* Logo - Left */}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex-shrink-0">
               <img 
                 src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
                 alt="Price My Floor Logo" 
-                className="h-10 sm:h-16 md:h-20 lg:h-24 w-auto"
-                style={{ maxHeight: '72px' }}
+                className="h-12 w-auto"
               />
             </Link>
             
             {/* Tagline - Center */}
-            <div className="hidden md:flex flex-1 justify-center items-center px-4">
-              <div className="text-center">
-                <div className="text-sm lg:text-lg font-bold text-orange-600 leading-tight">
-                  No MSRP Markups
-                </div>
-                <div className="text-xs lg:text-sm font-medium text-orange-700 leading-tight">
-                  Just Local Prices
-                </div>
-              </div>
+            <div className="hidden lg:flex flex-1 justify-center px-4">
+              <p className="text-sm font-medium text-gray-500">
+                Canada's Largest Flooring Retailer Directory
+              </p>
             </div>
             
             {/* Actions - Right */}
-            <div className="flex items-center space-x-1 sm:space-x-4">
-              <Badge variant="secondary" className="hidden sm:flex bg-green-100 text-green-800 text-xs">
-                <Shield className="w-3 h-3 mr-1" />
-                <span className="hidden md:inline">Verified Retailers Only</span>
-                <span className="md:hidden">Verified</span>
+            <div className="flex items-center space-x-3">
+              {/* Verified Badge */}
+              <Badge className="hidden md:flex bg-green-50 text-green-700 border border-green-200 rounded-full text-xs px-3 py-1.5">
+                <span className="text-green-600 mr-1">🟢</span>
+                Verified Retailers Only
               </Badge>
-              <Button variant="outline" size="sm" className="text-sm px-2 sm:px-4" asChild>
-                <Link to="/browse">Browse</Link>
+              
+              {/* Browse Button */}
+              <Button variant="outline" size="sm" className="rounded-lg" asChild>
+                <Link to="/browse">
+                  <span className="hidden sm:inline">Browse Brands</span>
+                  <span className="sm:hidden">Browse</span>
+                </Link>
+              </Button>
+              
+              {/* Mobile Menu Toggle */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden"
+              >
+                <Menu className="h-5 w-5" />
               </Button>
             </div>
           </div>
