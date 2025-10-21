@@ -26,9 +26,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             
             {/* Tagline - Center */}
             <div className="hidden lg:flex flex-1 justify-center px-4">
-              <p className="text-sm font-medium text-gray-600">
-                Compare Local Retailers. Find Better Prices.
-              </p>
+              <div className="bg-orange-100 px-4 py-2 rounded-full">
+                <p className="text-sm font-medium text-orange-800">
+                  Canada&apos;s Largest Flooring Retailer Directory
+                </p>
+              </div>
             </div>
             
             {/* Actions - Right */}
