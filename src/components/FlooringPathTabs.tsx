@@ -33,21 +33,24 @@ const FlooringPathTabs = memo(() => {
     brands.forEach(brand => {
       if (!brand.categories) return;
       
-      // Parse categories - could be string like "{vinyl,hardwood}" or array
-      let categoryArray: string[] = [];
+      let categoryString = '';
       if (typeof brand.categories === 'string') {
-        // Remove curly braces and split by comma
-        categoryArray = brand.categories
-          .replace(/[{}]/g, '')
-          .split(',')
-          .map(c => c.trim().toLowerCase());
+        categoryString = brand.categories;
       } else if (Array.isArray(brand.categories)) {
-        categoryArray = brand.categories.map(c => c.toLowerCase());
+        categoryString = brand.categories.join(',');
       }
+      
+      // Remove curly braces, split by comma, trim each value
+      const categoryArray = categoryString
+        .replace(/[{}]/g, '')
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c.length > 0)
+        .map(c => c.toLowerCase());
       
       // Count each category
       categoryArray.forEach(cat => {
-        const normalized = cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
+        const normalized = cat.charAt(0).toUpperCase() + cat.slice(1);
         if (counts[normalized] !== undefined) {
           counts[normalized]++;
         }
