@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useBrands } from "@/contexts/BrandContext";
 import { TabSwitcher } from "@/components/flooring/TabSwitcher";
@@ -16,6 +16,47 @@ const FlooringPathTabs = memo(() => {
   
   const [activeTab, setActiveTab] = useState("quick");
   const { brands, loading, error } = useBrands();
+  
+  // Calculate brand counts by category
+  const brandCounts = useMemo(() => {
+    if (!brands || brands.length === 0) return {};
+    
+    const counts: Record<string, number> = {
+      "Tile": 0,
+      "Vinyl": 0,
+      "Hardwood": 0,
+      "Laminate": 0,
+      "Carpet": 0,
+      "Sports": 0
+    };
+    
+    brands.forEach(brand => {
+      if (!brand.categories) return;
+      
+      // Parse categories - could be string like "{vinyl,hardwood}" or array
+      let categoryArray: string[] = [];
+      if (typeof brand.categories === 'string') {
+        // Remove curly braces and split by comma
+        categoryArray = brand.categories
+          .replace(/[{}]/g, '')
+          .split(',')
+          .map(c => c.trim().toLowerCase());
+      } else if (Array.isArray(brand.categories)) {
+        categoryArray = brand.categories.map(c => c.toLowerCase());
+      }
+      
+      // Count each category
+      categoryArray.forEach(cat => {
+        const normalized = cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
+        if (counts[normalized] !== undefined) {
+          counts[normalized]++;
+        }
+      });
+    });
+    
+    console.log(`[${componentId.current}] 📊 Brand counts calculated:`, counts);
+    return counts;
+  }, [brands]);
   
   // Track re-renders
   useEffect(() => {
@@ -108,7 +149,7 @@ const FlooringPathTabs = memo(() => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <FlooringTypeGrid brandCounts={{}} brandCountsLoading={loading} />
+            <FlooringTypeGrid brandCounts={brandCounts} brandCountsLoading={loading} />
           </motion.div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Brand {
   id: string;
   name: string;
+  categories?: string | string[];
 }
 
 interface BrandContextProps {
@@ -23,7 +24,7 @@ export const BrandProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const fetchBrands = async () => {
       try {
         console.log("Fetching brands from Supabase...");
-        const { data, error } = await supabase.from("flooring_brands").select("id, name").order("name");
+        const { data, error } = await supabase.from("flooring_brands").select("id, name, categories").order("name");
         if (error) {
           console.error("Supabase error:", error);
           throw error;
