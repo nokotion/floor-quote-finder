@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CreditCard, DollarSign, Calendar, Package, TrendingUp } from 'lucide-react';
+import PaymentMethodsSection from '@/components/retailer/PaymentMethodsSection';
 
 interface BillingStats {
   currentBalance: number;
@@ -36,6 +37,7 @@ const RetailerBilling = () => {
   });
   const [billingHistory, setBillingHistory] = useState<BillingRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retailerId, setRetailerId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBillingData();
@@ -68,6 +70,8 @@ const RetailerBilling = () => {
         .single();
 
       if (!profile?.retailer_id) return;
+      
+      setRetailerId(profile.retailer_id);
 
       // Get retailer info
       const { data: retailer } = await supabase
@@ -265,6 +269,9 @@ const RetailerBilling = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment Methods */}
+      {retailerId && <PaymentMethodsSection retailerId={retailerId} />}
 
       {/* Billing History */}
       <Card>

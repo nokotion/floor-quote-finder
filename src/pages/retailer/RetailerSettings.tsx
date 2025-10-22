@@ -12,8 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { formatAndValidatePostalCode } from '@/utils/postalCodeUtils';
-import EnhancedPostalCodeCoverage from '@/components/retailer/EnhancedPostalCodeCoverage';
 import { Building2, MapPin, Phone, Mail, Globe, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface RetailerProfile {
   id: string;
@@ -358,19 +358,26 @@ const RetailerSettings = () => {
         </Card>
       </div>
 
-      {/* Coverage Selection - Full Width */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Service Coverage Areas</h2>
-        <div className="grid gap-6">
-          {/* Map-based coverage (primary) */}
-          <div id="map-coverage">
-            {/* Map component will be loaded here */}
-          </div>
-          
-          {/* Text-based coverage (fallback) */}
-          <EnhancedPostalCodeCoverage retailerId={profile.id} />
-        </div>
-      </div>
+      {/* Coverage Areas Link */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MapPin className="w-5 h-5 mr-2" />
+            Service Coverage Areas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Manage your service coverage areas to receive leads from specific postal codes and regions.
+          </p>
+          <Link to="/retailer/coverage-map">
+            <Button variant="outline" className="w-full">
+              <MapPin className="w-4 h-4 mr-2" />
+              Go to Coverage Map
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
 
       {/* Save Button */}
       <div className="flex justify-end">
