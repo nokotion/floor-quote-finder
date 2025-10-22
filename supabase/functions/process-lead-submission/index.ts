@@ -231,14 +231,53 @@ serve(async (req) => {
           continue;
         }
 
-        distributionResults.push({
-          retailer_id: match.retailer_id,
-          business_name: match.business_name,
-          was_paid: false,
-          charge_amount: match.lead_price,
-          brand_matched: match.brand_matched,
-          installation_surcharge_applied: requiresInstallation
+        // Charge for the lead
+        logStep("Charging for lead", { 
+          distributionId: distribution.id, 
+          retailerId: match.retailer_id,
+          amount: match.lead_price 
         });
+
+        try {
+          const chargeResponse = await supabase.functions.invoke('charge-lead-payment', {
+            body: {
+              retailer_id: match.retailer_id,
+              lead_id: leadData.id,
+              amount: match.lead_price,
+              distribution_id: distribution.id
+            }
+          });
+
+          if (chargeResponse.error) {
+            logStep("Charge error", { error: chargeResponse.error });
+          } else {
+            logStep("Charge successful", { 
+              was_paid: chargeResponse.data?.was_paid,
+              payment_method: chargeResponse.data?.payment_method 
+            });
+          }
+
+          distributionResults.push({
+            retailer_id: match.retailer_id,
+            business_name: match.business_name,
+            was_paid: chargeResponse.data?.was_paid || false,
+            payment_method: chargeResponse.data?.payment_method || 'none',
+            charge_amount: match.lead_price,
+            brand_matched: match.brand_matched,
+            installation_surcharge_applied: requiresInstallation
+          });
+        } catch (chargeError) {
+          logStep("Charge exception", { error: (chargeError as Error).message });
+          distributionResults.push({
+            retailer_id: match.retailer_id,
+            business_name: match.business_name,
+            was_paid: false,
+            payment_method: 'error',
+            charge_amount: match.lead_price,
+            brand_matched: match.brand_matched,
+            installation_surcharge_applied: requiresInstallation
+          });
+        }
 
       } catch (retailerError) {
         logStep("Error processing retailer", { 

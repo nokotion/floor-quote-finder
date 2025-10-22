@@ -3,10 +3,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Plus, Trash2 } from 'lucide-react';
+import { CreditCard, Plus, Trash2, Loader2 } from 'lucide-react';
 import { useDevMode } from '@/contexts/DevModeContext';
+import { AddPaymentMethodDialog } from './AddPaymentMethodDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PaymentMethod {
   id: string;
@@ -28,6 +38,8 @@ const PaymentMethodsSection = ({ retailerId }: PaymentMethodsSectionProps) => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPaymentMethods();
@@ -73,13 +85,22 @@ const PaymentMethodsSection = ({ retailerId }: PaymentMethodsSectionProps) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const confirmDelete = (id: string) => {
+    setSelectedMethodId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedMethodId) return;
+
     if (isDevMode) {
       toast({
         title: "Success",
         description: "Payment method removed (dev mode)",
       });
-      setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
+      setPaymentMethods(prev => prev.filter(pm => pm.id !== selectedMethodId));
+      setDeleteDialogOpen(false);
+      setSelectedMethodId(null);
       return;
     }
 
@@ -87,11 +108,11 @@ const PaymentMethodsSection = ({ retailerId }: PaymentMethodsSectionProps) => {
       const { error } = await supabase
         .from('payment_methods')
         .delete()
-        .eq('id', id);
+        .eq('id', selectedMethodId);
 
       if (error) throw error;
 
-      setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
+      setPaymentMethods(prev => prev.filter(pm => pm.id !== selectedMethodId));
       toast({
         title: "Success",
         description: "Payment method removed",
@@ -102,6 +123,9 @@ const PaymentMethodsSection = ({ retailerId }: PaymentMethodsSectionProps) => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSelectedMethodId(null);
     }
   };
 
@@ -155,111 +179,107 @@ const PaymentMethodsSection = ({ retailerId }: PaymentMethodsSectionProps) => {
     return <CreditCard className="w-8 h-8 text-muted-foreground" />;
   };
 
-  if (loading) {
-    return (
+  return (
+    <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <CreditCard className="w-5 h-5 mr-2" />
-            Payment Methods
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <CreditCard className="w-5 h-5 mr-2" />
+              Payment Methods
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setAddDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Card
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-20 bg-muted/50 rounded animate-pulse"></div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            <CreditCard className="w-5 h-5 mr-2" />
-            Payment Methods
-          </div>
-          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Card
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Payment Method</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="bg-muted/50 rounded-lg p-8 text-center">
-                  <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Stripe payment integration will be added here.
-                    Contact support to add payment methods.
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {paymentMethods.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-sm">No payment methods added yet</p>
-            <p className="text-xs mt-1">Add a credit card to enable auto-pay</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  {getCardIcon(method.card_brand)}
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium capitalize">
-                        {method.card_brand} •••• {method.card_last4}
-                      </span>
-                      {method.is_default && (
-                        <Badge variant="default" className="text-xs">
-                          Default
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Expires {method.card_exp_month}/{method.card_exp_year}
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : paymentMethods.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <CreditCard className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-sm">No payment methods added yet</p>
+              <p className="text-xs mt-1">Add a card to automatically pay for leads when you have no credits</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {paymentMethods.map((method) => (
+                <div
+                  key={method.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    {getCardIcon(method.card_brand)}
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium capitalize">
+                          {method.card_brand} •••• {method.card_last4}
+                        </span>
+                        {method.is_default && (
+                          <Badge variant="default" className="text-xs">
+                            Default
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Expires {method.card_exp_month}/{method.card_exp_year}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {!method.is_default && (
+                  <div className="flex items-center space-x-2">
+                    {!method.is_default && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSetDefault(method.id)}
+                      >
+                        Set Default
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleSetDefault(method.id)}
+                      onClick={() => confirmDelete(method.id)}
+                      className="text-destructive hover:text-destructive"
                     >
-                      Set Default
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(method.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AddPaymentMethodDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        retailerId={retailerId}
+        onSuccess={fetchPaymentMethods}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Payment Method</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this payment method? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

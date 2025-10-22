@@ -138,6 +138,42 @@ serve(async (req) => {
             status: 'failed'
           })
           .eq('stripe_payment_intent_id', failedPayment.id);
+
+        // Update lead distribution status
+        if (failedPayment.metadata?.distribution_id) {
+          await supabase
+            .from('lead_distributions')
+            .update({
+              status: 'payment_failed',
+              was_paid: false
+            })
+            .eq('id', failedPayment.metadata.distribution_id);
+        }
+        break;
+
+      case 'setup_intent.succeeded':
+        const setupIntent = event.data.object as Stripe.SetupIntent;
+        logStep("Setup intent succeeded", { setupIntentId: setupIntent.id });
+
+        if (setupIntent.payment_method && setupIntent.metadata?.retailer_id) {
+          logStep("Calling save-payment-method", { 
+            paymentMethodId: setupIntent.payment_method,
+            retailerId: setupIntent.metadata.retailer_id 
+          });
+
+          // Call edge function to save payment method
+          await supabase.functions.invoke('save-payment-method', {
+            body: {
+              payment_method_id: setupIntent.payment_method,
+              retailer_id: setupIntent.metadata.retailer_id
+            }
+          });
+        }
+        break;
+
+      case 'payment_method.attached':
+        const paymentMethod = event.data.object as Stripe.PaymentMethod;
+        logStep("Payment method attached", { paymentMethodId: paymentMethod.id });
         break;
 
       default:
