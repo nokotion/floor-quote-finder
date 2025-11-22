@@ -81,12 +81,12 @@ const FlooringPathTabs = memo(() => {
       <div className="max-w-6xl mx-auto">
         {/* Hero Section */}
         <motion.div 
-          className="text-center mb-8"
+          className="text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-tight">
             <div className="flex flex-col items-center gap-2">
               <span>Get</span>
               <ContainerTextFlip 
@@ -99,7 +99,7 @@ const FlooringPathTabs = memo(() => {
               <span>Flooring Quotes from Verified Retailers</span>
             </div>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto">
             Compare prices, quality, and service from trusted flooring stores across Canada
           </p>
           
