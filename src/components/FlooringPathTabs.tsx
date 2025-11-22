@@ -78,7 +78,7 @@ const FlooringPathTabs = memo(() => {
         duration: 0.6
       }}>
           <h1 className="text-4xl lg:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-tight">
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-2 py-[10px]">
               <span>Get</span>
               <ContainerTextFlip words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} className="bg-transparent" textClassName="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent" interval={2500} minWidth={280} />
               <span>Flooring Quotes from Verified Retailers</span>
