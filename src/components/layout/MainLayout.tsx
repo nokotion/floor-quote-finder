@@ -3,31 +3,26 @@ import { Badge } from "@/components/ui/badge";
 import { Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Footer7 } from "@/components/ui/footer-7";
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }
-
-export const MainLayout = ({ children }: MainLayoutProps) => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+export const MainLayout = ({
+  children
+}: MainLayoutProps) => {
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Main Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo - Left */}
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img 
-                src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" 
-                alt="Price My Floor Logo" 
-                className="h-16 sm:h-20 w-auto"
-              />
+              <img src="https://syjxtyvsencbmhuprnyu.supabase.co/storage/v1/object/public/pricemyfloor-files//pricemyfloor%20_logo.png" alt="Price My Floor Logo" className="h-16 sm:h-20 w-auto" />
             </Link>
             
             {/* Tagline - Center */}
             <div className="hidden lg:flex flex-1 justify-center px-4">
-              <div className="bg-orange-100 px-4 py-2 rounded-full">
-                <p className="text-sm font-medium text-orange-800">
+              <div className="px-4 py-2 rounded-full bg-accent">
+                <p className="text-sm font-medium text-stone-100">
                   Canada&apos;s Largest Flooring Retailer Directory
                 </p>
               </div>
@@ -50,11 +45,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               </Button>
               
               {/* Mobile Menu Toggle */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden"
-              >
+              <Button variant="ghost" size="sm" className="lg:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </div>
@@ -65,6 +56,5 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       {children}
       
       <Footer7 />
-    </div>
-  );
+    </div>;
 };
