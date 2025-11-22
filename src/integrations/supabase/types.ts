@@ -1262,26 +1262,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_verify_lead: {
-        Args: { p_lead_id: string }
-        Returns: undefined
-      }
+      admin_verify_lead: { Args: { p_lead_id: string }; Returns: undefined }
       calculate_postal_distance: {
         Args: { postal1: string; postal2: string }
         Returns: number
       }
-      generate_slug: {
-        Args: { input_text: string }
-        Returns: string
-      }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      generate_slug: { Args: { input_text: string }; Returns: string }
+      is_admin_user: { Args: never; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       sqft_tier_enum: "0-100" | "100-500" | "500-1000" | "1000-5000" | "5000+"
