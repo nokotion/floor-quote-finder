@@ -5,6 +5,11 @@ import { TabSwitcher } from "@/components/flooring/TabSwitcher";
 import QuickQuoteForm from "@/components/flooring/QuickQuoteForm";
 import { FlooringTypeGrid } from "@/components/flooring/FlooringTypeGrid";
 import { ContainerTextFlip } from "@/components/ui/container-text-flip";
+import { AnimatedGradientBackground } from "@/components/ui/animated-gradient-background";
+import { FloatingShapes } from "@/components/ui/floating-shapes";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { GlassCard } from "@/components/ui/glass-card";
+
 const FlooringPathTabs = memo(() => {
   const componentId = useRef(`TABS_${Math.random().toString(36).substr(2, 9)}`);
   const renderCount = useRef(0);
@@ -37,10 +42,8 @@ const FlooringPathTabs = memo(() => {
         categoryString = brand.categories.join(',');
       }
 
-      // Remove curly braces, split by comma, trim each value
       const categoryArray = categoryString.replace(/[{}]/g, '').split(',').map(c => c.trim()).filter(c => c.length > 0).map(c => c.toLowerCase());
 
-      // Count each category
       categoryArray.forEach(cat => {
         const normalized = cat.charAt(0).toUpperCase() + cat.slice(1);
         if (counts[normalized] !== undefined) {
@@ -52,99 +55,130 @@ const FlooringPathTabs = memo(() => {
     return counts;
   }, [brands]);
 
-  // Track re-renders
   useEffect(() => {
     console.log(`[${componentId.current}] 🔄 FlooringPathTabs useEffect triggered`);
   });
 
-  // Track component lifecycle
   useEffect(() => {
     console.log(`[${componentId.current}] 🎬 FlooringPathTabs MOUNTED`);
     return () => {
       console.log(`[${componentId.current}] 🧹 FlooringPathTabs UNMOUNTING`);
     };
   }, []);
+
   console.log(`[${componentId.current}] 📤 Passing brands to QuickQuoteForm:`, brands?.length, "Loading:", loading, "Error:", error);
-  return <section className="py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+
+  return (
+    <section className="relative py-12 px-4 min-h-[80vh]">
+      {/* Animated Background */}
+      <AnimatedGradientBackground />
+      <FloatingShapes />
+
+      <div className="max-w-6xl mx-auto relative z-10">
         {/* Hero Section */}
-        <motion.div className="text-center mb-4" initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.6
-      }}>
-          <h1 className="text-4xl lg:text-5xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-tight">
-            <div className="flex flex-col items-center gap-2 py-[10px]">
-              <span>Get</span>
-              <ContainerTextFlip words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} className="bg-transparent" textClassName="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent" interval={2500} minWidth={280} />
-              <span>Flooring Quotes from Verified Retailers</span>
+        <motion.div 
+          className="text-center mb-6" 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.h1 
+            className="text-4xl lg:text-6xl font-bold mb-4 leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            <div className="flex flex-col items-center gap-1 py-2">
+              <span className="text-gradient">Get</span>
+              <ContainerTextFlip 
+                words={["Competitive", "Quality", "Affordable", "Trusted", "Local"]} 
+                className="bg-transparent" 
+                textClassName="text-4xl lg:text-6xl font-bold text-gradient-accent" 
+                interval={2500} 
+                minWidth={320} 
+              />
+              <span className="text-gradient">Flooring Quotes from</span>
+              <span className="text-gradient-accent">Verified Retailers</span>
             </div>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto">
+          </motion.h1>
+
+          <motion.p 
+            className="text-lg lg:text-xl text-muted-foreground mb-6 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
             Compare prices, quality, and service from trusted flooring stores across Canada
-          </p>
+          </motion.p>
           
-          {/* Statistics */}
-          <motion.div className="flex flex-col sm:flex-row justify-center items-center gap-8 mb-8" initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.6,
-          delay: 0.2
-        }}>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">
-                <ContainerTextFlip words={["2 Min", "Fast", "Quick", "Easy"]} className="bg-transparent shadow-none border-none" textClassName="text-3xl font-bold text-primary" interval={3000} />
+          {/* Statistics with Glass Cards */}
+          <motion.div 
+            className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <GlassCard variant="subtle" className="px-6 py-3 hover-lift">
+              <div className="text-center">
+                <div className="text-2xl lg:text-3xl font-bold text-gradient-accent">
+                  <ContainerTextFlip 
+                    words={["2 Min", "Fast", "Quick", "Easy"]} 
+                    className="bg-transparent shadow-none border-none" 
+                    textClassName="text-2xl lg:text-3xl font-bold text-gradient-accent" 
+                    interval={3000} 
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Average Quote Time</div>
               </div>
-              <div className="text-sm text-muted-foreground">Average Quote Time</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary py-[11px]">500+</div>
-              <div className="text-sm text-muted-foreground">Verified Retailers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary py-[11px]">98%</div>
-              <div className="text-sm text-muted-foreground">Customer Satisfaction</div>
-            </div>
+            </GlassCard>
+
+            <GlassCard variant="subtle" className="px-6 py-3 hover-lift">
+              <div className="text-center">
+                <div className="text-2xl lg:text-3xl font-bold text-gradient-accent py-[11px]">
+                  <AnimatedCounter value={500} suffix="+" />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Verified Retailers</div>
+              </div>
+            </GlassCard>
+
+            <GlassCard variant="subtle" className="px-6 py-3 hover-lift">
+              <div className="text-center">
+                <div className="text-2xl lg:text-3xl font-bold text-gradient-accent py-[11px]">
+                  <AnimatedCounter value={98} suffix="%" />
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">Customer Satisfaction</div>
+              </div>
+            </GlassCard>
           </motion.div>
         </motion.div>
 
-        {/* Enhanced Connected Tab Switcher - Bigger and More Prominent */}
+        {/* Tab Switcher */}
         <TabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Tab Content */}
-        {activeTab === "quick" && <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.4
-      }}>
+        {activeTab === "quick" && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <QuickQuoteForm brands={brands} brandsLoading={loading} />
-          </motion.div>}
+          </motion.div>
+        )}
 
-        {activeTab === "explore" && <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.4
-      }}>
+        {activeTab === "explore" && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <FlooringTypeGrid brandCounts={brandCounts} brandCountsLoading={loading} />
-          </motion.div>}
+          </motion.div>
+        )}
       </div>
-    </section>;
+    </section>
+  );
 });
+
 FlooringPathTabs.displayName = 'FlooringPathTabs';
 export default FlooringPathTabs;
