@@ -177,6 +177,27 @@ const RetailerLogin = () => {
                     Need help? <Link to="/" className="text-blue-600 hover:underline">Contact support</Link>
                   </p>
                 </div>
+
+                {/* Dev Mode Quick Access */}
+                {isDevMode && (
+                  <Card className="mt-6 border-dashed border-2 border-orange-300 bg-orange-50">
+                    <CardContent className="pt-4">
+                      <p className="text-xs text-orange-600 font-medium mb-2 text-center">🛠️ Dev Mode</p>
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-orange-400 text-orange-600 hover:bg-orange-100"
+                        onClick={() => {
+                          if (currentRole !== 'retailer') {
+                            // This would need setCurrentRole from context, but we can just navigate
+                          }
+                          navigate('/retailer/dashboard');
+                        }}
+                      >
+                        Skip Login → Dashboard
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             )}
           </div>
