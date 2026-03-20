@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ExternalLink, CheckCircle, MessageCircle, ShoppingBag, Wrench, Lock, Hammer, Droplet, Trees, Layers, LayoutGrid, Package } from "lucide-react";
+import { ArrowLeft, ExternalLink, Wrench, Lock, Hammer, Droplet, Trees, Layers, LayoutGrid, Package } from "lucide-react";
 
 interface Brand {
   id: string;
