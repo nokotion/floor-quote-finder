@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ExternalLink, CheckCircle, MessageCircle, ShoppingBag, Wrench, Lock, Hammer, Droplet, Trees, Layers, LayoutGrid, Package } from "lucide-react";
+import { ArrowLeft, ExternalLink, Wrench, Lock, Hammer, Droplet, Trees, Layers, LayoutGrid, Package } from "lucide-react";
 
 interface Brand {
   id: string;
@@ -297,33 +297,6 @@ const BrandDetail = () => {
           </div>
         </section>
 
-        {/* Why Choose PriceMyFloor */}
-        <section className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-2xl p-12">
-          <h2 className="text-3xl font-bold mb-12 text-center text-foreground">Why Choose PriceMyFloor</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary">
-                <CheckCircle className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">Verified Retailers Only</h3>
-              <p className="text-muted-foreground">Connect with licensed, insured professionals in your area</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary">
-                <MessageCircle className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">Instant Quotes from Local Stores</h3>
-              <p className="text-muted-foreground">Get competitive pricing from multiple retailers near you</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary">
-                <ShoppingBag className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">No Online MSRP Markups</h3>
-              <p className="text-muted-foreground">Direct retailer pricing without middleman costs</p>
-            </div>
-          </div>
-        </section>
 
         {/* Product Showcase */}
         <section>
